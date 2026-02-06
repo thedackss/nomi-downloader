@@ -1,0 +1,21 @@
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    svg {
+        pointer-events: none;
+        color: rgba(from var(--primary) r g b / 0.5);
+        width: 2.5rem;
+        height: 2.5rem;
+        animation: spin 1s linear infinite;
+    }
+}
