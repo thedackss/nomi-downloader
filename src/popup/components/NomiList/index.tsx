@@ -1,5 +1,5 @@
 import type { IconSettings } from "../../context/settings/interrfaces";
-import type { Nomi } from "../../hooks/interfaces/api.nomis";
+import type { Nomi } from "../../interfaces/nomi/api.nomis";
 import { useSettings } from "../../hooks/useSettings";
 import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";

@@ -1,6 +1,6 @@
-import axios from "axios";
+import type { ApiNomisResponse } from "../interfaces/nomi/api.nomis";
 import { useCallback } from "react";
-import type { ApiNomisResponse } from "./interfaces/api.nomis";
+import axios from "axios";
 
 const nomiUrl = new URL("https://beta.nomi.ai/api");
 
