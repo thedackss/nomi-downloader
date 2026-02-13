@@ -1,5 +1,7 @@
-import type { ApiNomisResponse } from "../interfaces/nomi/api.nomis";
-import { useCallback } from "react";
+import type { ApiNomisResponse, Nomi } from "../interfaces/nomi/api.nomis";
+import type { Nomis } from "../context/nomis/interrfaces";
+import { useCallback, useContext } from "react";
+import { NomisContext } from "../context/nomis";
 import axios from "axios";
 
 const nomiUrl = new URL("https://beta.nomi.ai/api");
@@ -11,11 +13,33 @@ const api = axios.create({
 });
 
 export const useNomi = () => {
-    const fetchNomis = useCallback(async () => {
-        const nomis = await api.get<ApiNomisResponse>("/nomis");
+    const context = useContext(NomisContext);
 
-        return nomis.data.nomis;
+    if (!context) {
+        throw new Error("useNomi must be used within a NomiProvider");
+    }
+
+    const { Nomis, setNomis } = context;
+
+    const fetchNomis = useCallback(async () => {
+        const { data } = await api.get<ApiNomisResponse>("/nomis");
+
+        const list = data.nomis as Nomi[];
+
+        setNomis((prev: Nomis) => ({
+            list: list,
+            selected: prev.selected,
+        }));
+
+        return list;
     }, []);
 
-    return { fetchNomis };
+    const selectNomi = useCallback((nomi: Nomi) => {
+        setNomis((prev: Nomis) => ({
+            list: prev.list,
+            selected: nomi,
+        }));
+    }, []);
+
+    return { Nomis, selectNomi, fetchNomis };
 };
