@@ -1,8 +1,10 @@
+export interface IconSettings {
+    iconSize: "small" | "medium" | "large";
+    iconShape: "circle" | "square" | "sharp";
+}
+
 export interface Settings {
-    list: {
-        iconSize: "small" | "medium" | "large";
-        iconShape: "circle" | "square" | "sharp";
-    };
+    list: IconSettings;
 }
 
 export type SettingsContextType = {
