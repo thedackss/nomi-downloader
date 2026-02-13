@@ -3,22 +3,17 @@ import { useSettings } from "../../hooks/useSettings";
 import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
-import { useEffect } from "react";
 
 export const NomiList = () => {
     const { Settings } = useSettings();
-    const { Nomis, fetchNomis, selectNomi } = useNomi();
-
-    useEffect(() => {
-        fetchNomis();
-    }, []);
+    const { Nomis, selectNomi } = useNomi();
 
     return (
         <ul className={styles.nomiList}>
             <LoadingSpin
-                className={`${styles.loading}${Nomis.list.length > 0 ? ` ${styles.hidden}` : ""}`}
+                className={`${styles.loading}${Nomis.list.nomi.length > 0 ? ` ${styles.hidden}` : ""}`}
             />
-            {Nomis.list.map((nomi) => {
+            {Nomis.list.nomi.map((nomi) => {
                 const api = `https://beta.nomi.ai/api`;
                 const base = `${api}/nomis/${nomi.id}`;
 
@@ -70,7 +65,7 @@ export const NomiList = () => {
                     }
                 }
 
-                const isSelected = Nomis.selected?.id === nomi.id;
+                const isSelected = Nomis.selected?.nomi?.id === nomi.id;
 
                 return (
                     <li
