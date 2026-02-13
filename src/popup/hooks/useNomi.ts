@@ -4,6 +4,7 @@ import { useCallback, useContext } from "react";
 import { NomisContext } from "../context/nomis";
 import axios from "axios";
 import { Log } from "../utils/log";
+import { useTab } from "./useTab";
 
 const nomiUrl = new URL("https://beta.nomi.ai/api");
 
@@ -22,18 +23,40 @@ export const useNomi = () => {
 
     const { Nomis, setNomis } = context;
 
+    const { getCurrentTab } = useTab();
+
     const fetchNomis = useCallback(async () => {
-        const { data } = await api.get<ApiNomisResponse>("/nomis");
+        try {
+            const { data } = await api.get<ApiNomisResponse>("/nomis");
 
-        const list = data.nomis as Nomi[];
+            const list = data.nomis as Nomi[];
 
-        setNomis((prev: Nomis) => ({
-            list: list,
-            selected: prev.selected,
-        }));
+            setNomis((prev: Nomis) => ({
+                list: list,
+                selected: prev.selected,
+            }));
 
-        return list;
+            return list;
+        } catch (error) {
+            Log("Error fetching Nomis:");
+            if (error instanceof Error) {
+                console.log(error.message);
+            }
+
+            return [];
+        }
     }, []);
+
+    function isNomiURL(url: string): boolean {
+        const regex =
+            /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}(\/photo-album)?\/?$/;
+        return regex.test(url);
+    }
+
+    function isGroupURL(url: string): boolean {
+        const regex = /^https:\/\/beta\.nomi\.ai\/group-chats\/\d{4,10}\/?$/;
+        return regex.test(url);
+    }
 
     const selectNomi = useCallback((nomi: Nomi) => {
         setNomis((prev: Nomis) => ({
@@ -43,5 +66,20 @@ export const useNomi = () => {
         Log("Selected Nomi:");
     }, []);
 
-    return { Nomis, selectNomi, fetchNomis };
+    const checkSelectedNomi = useCallback(async () => {
+        const { tabUrl } = await getCurrentTab();
+
+        if (!tabUrl) return;
+
+        if (isNomiURL(tabUrl)) {
+            const nomiId = tabUrl.split("/")[4];
+            const nomi = Nomis.list.find((n) => n.id.toString() === nomiId);
+
+            if (nomi) selectNomi(nomi);
+        } else if (isGroupURL(tabUrl)) {
+            const groupId = tabUrl.split("/")[4];
+        }
+    }, [Nomis.list, getCurrentTab, selectNomi]);
+
+    return { Nomis, selectNomi, fetchNomis, checkSelectedNomi };
 };
