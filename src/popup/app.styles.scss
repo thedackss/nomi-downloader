@@ -70,10 +70,9 @@ html {
                 height: 100%;
                 overflow: hidden;
 
-                display: flex;
-                flex-flow: column nowrap;
-                justify-content: flex-start;
-                align-items: flex-start;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
         }
     }
