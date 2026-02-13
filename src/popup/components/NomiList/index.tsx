@@ -1,32 +1,24 @@
 import type { IconSettings } from "../../context/settings/interrfaces";
-import type { Nomi } from "../../interfaces/nomi/api.nomis";
 import { useSettings } from "../../hooks/useSettings";
 import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";
-import { useEffect, useState } from "react";
 import styles from "./styles.module.scss";
+import { useEffect } from "react";
 
 export const NomiList = () => {
-    const [nomis, setNomis] = useState<Nomi[]>([]);
     const { Settings } = useSettings();
-
-    const { fetchNomis } = useNomi();
+    const { Nomis, fetchNomis, selectNomi } = useNomi();
 
     useEffect(() => {
-        const loadNomis = async () => {
-            const nomis = await fetchNomis();
-            setNomis(nomis);
-        };
-
-        loadNomis();
+        fetchNomis();
     }, []);
 
     return (
         <ul className={styles.nomiList}>
             <LoadingSpin
-                className={`${styles.loading}${nomis.length > 0 ? ` ${styles.hidden}` : ""}`}
+                className={`${styles.loading}${Nomis.list.length > 0 ? ` ${styles.hidden}` : ""}`}
             />
-            {nomis.map((nomi) => {
+            {Nomis.list.map((nomi) => {
                 const api = `https://beta.nomi.ai/api`;
                 const base = `${api}/nomis/${nomi.id}`;
 
@@ -78,8 +70,14 @@ export const NomiList = () => {
                     }
                 }
 
+                const isSelected = Nomis.selected?.id === nomi.id;
+
                 return (
-                    <li key={nomi.id}>
+                    <li
+                        className={`${isSelected ? styles.selected : ""}`}
+                        key={nomi.id}
+                        onClick={() => selectNomi(nomi)}
+                    >
                         <span
                             className={`${styles.icon} ${getIconSize()} ${getIconShape()}`}
                             style={{ backgroundImage: `url(${img})` }}

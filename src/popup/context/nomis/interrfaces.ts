@@ -2,7 +2,7 @@ import type { Nomi } from "../../interfaces/nomi/api.nomis";
 import type { Dispatch } from "react";
 
 export interface Nomis {
-    selected: string | null;
+    selected: Nomi | null;
     list: Nomi[];
 }
 
