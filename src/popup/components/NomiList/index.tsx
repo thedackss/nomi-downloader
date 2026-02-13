@@ -3,10 +3,25 @@ import { useSettings } from "../../hooks/useSettings";
 import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
+import { useEffect } from "react";
 
 export const NomiList = () => {
     const { Settings } = useSettings();
     const { Nomis, selectNomi } = useNomi();
+
+    useEffect(() => {
+        if (Nomis.selected?.nomi?.id) {
+            const element = document.getElementById(
+                `nomi-${Nomis.selected.nomi.id}`,
+            );
+            if (element) {
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }
+        }
+    }, [Nomis.selected]);
 
     return (
         <ul className={styles.nomiList}>
@@ -69,6 +84,7 @@ export const NomiList = () => {
 
                 return (
                     <li
+                        id={`nomi-${nomi.id}`}
                         className={`${isSelected ? styles.selected : ""}`}
                         key={nomi.id}
                         onClick={() => selectNomi(nomi)}
