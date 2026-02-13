@@ -2,9 +2,9 @@ import type { ApiNomisResponse, Nomi } from "../interfaces/nomi/api.nomis";
 import type { Nomis } from "../context/nomis/interrfaces";
 import { useCallback, useContext } from "react";
 import { NomisContext } from "../context/nomis";
-import axios from "axios";
 import { Log } from "../utils/log";
 import { useTab } from "./useTab";
+import axios from "axios";
 
 const nomiUrl = new URL("https://beta.nomi.ai/api");
 
@@ -32,7 +32,10 @@ export const useNomi = () => {
             const list = data.nomis as Nomi[];
 
             setNomis((prev: Nomis) => ({
-                list: list,
+                list: {
+                    nomi: list,
+                    group: prev.list.group,
+                },
                 selected: prev.selected,
             }));
 
@@ -61,9 +64,11 @@ export const useNomi = () => {
     const selectNomi = useCallback((nomi: Nomi) => {
         setNomis((prev: Nomis) => ({
             list: prev.list,
-            selected: nomi,
+            selected: {
+                nomi: nomi,
+                group: prev.selected.group,
+            },
         }));
-        Log("Selected Nomi:");
     }, []);
 
     const checkSelectedNomi = useCallback(async () => {
@@ -73,7 +78,9 @@ export const useNomi = () => {
 
         if (isNomiURL(tabUrl)) {
             const nomiId = tabUrl.split("/")[4];
-            const nomi = Nomis.list.find((n) => n.id.toString() === nomiId);
+            const nomi = Nomis.list.nomi.find(
+                (n) => n.id.toString() === nomiId,
+            );
 
             if (nomi) selectNomi(nomi);
         } else if (isGroupURL(tabUrl)) {

@@ -2,8 +2,14 @@ import type { Nomi } from "../../interfaces/nomi/api.nomis";
 import type { Dispatch } from "react";
 
 export interface Nomis {
-    selected: Nomi | null;
-    list: Nomi[];
+    selected: {
+        nomi: Nomi | null;
+        group: string | null;
+    };
+    list: {
+        nomi: Nomi[];
+        group: string[];
+    };
 }
 
 export type NomiContextType = {

@@ -6,8 +6,14 @@ const NomisContext = createContext<NomiContextType | null>(null);
 
 const NomisProvider: FC<ReactElement> = ({ children }) => {
     const Default: Nomis = {
-        selected: null,
-        list: [],
+        selected: {
+            group: null,
+            nomi: null,
+        },
+        list: {
+            nomi: [],
+            group: [],
+        },
     };
 
     const [Nomis, setNomis] = useState<Nomis>(Default);
