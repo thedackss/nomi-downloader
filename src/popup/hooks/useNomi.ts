@@ -3,6 +3,7 @@ import type { Nomis } from "../context/nomis/interrfaces";
 import { useCallback, useContext } from "react";
 import { NomisContext } from "../context/nomis";
 import axios from "axios";
+import { Log } from "../utils/log";
 
 const nomiUrl = new URL("https://beta.nomi.ai/api");
 
@@ -39,6 +40,7 @@ export const useNomi = () => {
             list: prev.list,
             selected: nomi,
         }));
+        Log("Selected Nomi:");
     }, []);
 
     return { Nomis, selectNomi, fetchNomis };
