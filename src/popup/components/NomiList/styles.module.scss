@@ -104,18 +104,4 @@
             object-fit: cover;
         }
     }
-
-    .loading {
-        background-color: var(--background);
-        transition: opacity 0.8s ease-in-out;
-
-        position: absolute;
-        left: 0;
-        top: 0;
-
-        &.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-    }
 }
