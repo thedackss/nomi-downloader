@@ -3,10 +3,11 @@ import "./app.styles.scss";
 import { NomiList } from "./components/NomiList";
 import { useSettings } from "./hooks/useSettings";
 import { useNomi } from "./hooks/useNomi";
+import { NomiInfo } from "./components/NomiInfo";
 
 function App() {
     const { InitializeSettings } = useSettings();
-    const { Nomis, checkSelectedNomi, fetchNomis } = useNomi();
+    const { fetchNomis } = useNomi();
 
     useEffect(() => {
         async function initialize() {
@@ -16,19 +17,13 @@ function App() {
         initialize();
     }, []);
 
-    useEffect(() => {
-        if (Nomis.list.length > 0) {
-            checkSelectedNomi();
-        }
-    }, [Nomis.list, checkSelectedNomi]);
-
     return (
         // body
         <>
             <h1>Nomi Downloader</h1>
             <div className="main-container">
                 <NomiList />
-                <NomiList />
+                <NomiInfo />
             </div>
         </>
     );
