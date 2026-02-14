@@ -1,8 +1,16 @@
 import styles from "./styles.module.scss";
 
-export const LoadingSpin = ({ className }: { className?: string }) => {
+interface LoadingSpinProps {
+    visible?: boolean;
+}
+
+export const LoadingSpin = ({ visible }: LoadingSpinProps) => {
+    if (visible === undefined) visible = true;
+
     return (
-        <div className={`${styles.loading}${className ? ` ${className}` : ""}`}>
+        <div
+            className={`${styles.loading}${visible === false ? ` ${styles.hidden}` : ""}`}
+        >
             <svg
                 stroke="currentColor"
                 fill="currentColor"
