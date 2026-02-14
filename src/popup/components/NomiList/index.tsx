@@ -25,9 +25,7 @@ export const NomiList = () => {
 
     return (
         <ul className={styles.nomiList}>
-            <LoadingSpin
-                className={`${styles.loading}${Nomis.list.nomi.length > 0 ? ` ${styles.hidden}` : ""}`}
-            />
+            <LoadingSpin visible={Nomis.list.nomi.length === 0} />
             {Nomis.list.nomi.map((nomi) => {
                 const api = `https://beta.nomi.ai/api`;
                 const base = `${api}/nomis/${nomi.id}`;
