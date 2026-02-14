@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { Log } from "../utils/log";
 type Tab = chrome.tabs.Tab;
 
 export const useTab = () => {
@@ -26,7 +27,7 @@ export const useTab = () => {
             };
         } catch (error) {
             if (error instanceof Error) {
-                console.error(error.message);
+                Log(error.message);
             }
             return { tab: null, tabId: null, tabUrl: null, ok: false };
         }
