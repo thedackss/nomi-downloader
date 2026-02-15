@@ -2,7 +2,7 @@ import type { ApiNomisResponse, Nomi } from "../interfaces/nomi/api.nomis";
 import type { Nomis } from "../context/nomis/interrfaces";
 import { useCallback, useContext } from "react";
 import { NomisContext } from "../context/nomis";
-import { Log } from "../utils/log";
+import { Log } from "../../utils/log";
 import { useTab } from "./useTab";
 import axios from "axios";
 

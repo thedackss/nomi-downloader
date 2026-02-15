@@ -1,7 +1,7 @@
 import type { Settings } from "../context/settings/interrfaces";
 import { SettingsContext } from "../context/settings";
 import { useContext } from "react";
-import { Log } from "../utils/log";
+import { Log } from "../../utils/log";
 
 export const useSettings = () => {
     const context = useContext(SettingsContext);

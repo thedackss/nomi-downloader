@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Log } from "../utils/log";
+import { Log } from "../../utils/log";
 type Tab = chrome.tabs.Tab;
 
 export const useTab = () => {
