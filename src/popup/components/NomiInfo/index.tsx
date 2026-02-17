@@ -27,9 +27,7 @@ export const NomiInfo = () => {
             const status = await chrome.runtime.sendMessage({
                 type: "GET_DOWNLOAD_STATUS",
             });
-            if (status) {
-                setDownloadStatus(status);
-            }
+            if (status) setDownloadStatus(status);
         }
         main();
     }, [Nomis.list, checkSelectedNomi]);
@@ -69,8 +67,6 @@ export const NomiInfo = () => {
                         </span>
                     );
                 } else {
-                    console.log({ downloadStatus, Nomi });
-
                     const isCurrentNomi = downloadStatus.id === Nomi.id;
 
                     function getMessage() {
@@ -138,7 +134,7 @@ export const NomiInfo = () => {
                                         <span>{Nomi.customTraits}</span>
                                     </li>
                                 )}
-                                <li>
+                                {/* <li>
                                     <span className={styles.bold}>
                                         Messages count:{" "}
                                     </span>
@@ -149,15 +145,17 @@ export const NomiInfo = () => {
                                         Album count:{" "}
                                     </span>
                                     <span>0</span>
-                                </li>
+                                </li> */}
                             </ul>
 
-                            <button
-                                onClick={handleDownloadAlbum}
-                                disabled={downloadStatus.inProgress}
-                            >
-                                {getMessage()}
-                            </button>
+                            <div className={styles.downloadSection}>
+                                <button
+                                    onClick={handleDownloadAlbum}
+                                    disabled={downloadStatus.inProgress}
+                                >
+                                    {getMessage()}
+                                </button>
+                            </div>
                         </>
                     );
                 }
