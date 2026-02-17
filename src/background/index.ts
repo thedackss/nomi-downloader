@@ -1,6 +1,65 @@
-console.log("Hello from the Background Service Worker!");
+import type { DownloadStatus } from "../popup/components/NomiInfo/interfaces";
+import { Log } from "../utils/log";
+import { Nomi } from "./nomi/index";
 
-// Example: Listen for when the extension is installed
-chrome.runtime.onInstalled.addListener(() => {
-    console.log("Extension installed successfully.");
-});
+const nomi = new Nomi();
+
+let downloadStatus: DownloadStatus = {
+    inProgress: false,
+    message: "You shouldn't be able to see this message",
+    id: null,
+    type: null,
+};
+
+function updateDownloadStatus(status: DownloadStatus) {
+    downloadStatus = status;
+    chrome.runtime
+        .sendMessage({
+            type: "DOWNLOAD_STATUS_UPDATE",
+            status,
+        })
+        .catch(() => {});
+}
+
+async function main() {
+    Log("Extension initialized");
+
+    chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
+        if (message.type === "GET_DOWNLOAD_STATUS") {
+            sendResponse(downloadStatus);
+        } else if (message.type === "DOWNLOAD_ALBUM") {
+            const nomiId = message.data.nomiId;
+
+            if (downloadStatus.inProgress) {
+                Log("Already downloading");
+                return;
+            }
+
+            updateDownloadStatus({
+                inProgress: true,
+                message: "Starting download...",
+                id: nomiId,
+                type: "nomi",
+            });
+
+            nomi.downloadAlbum(nomiId, (message) => {
+                Log(message);
+                updateDownloadStatus({
+                    inProgress: true,
+                    message,
+                    id: nomiId,
+                    type: "nomi",
+                });
+            }).then(() => {
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "Album downloaded!",
+                    id: null,
+                    type: null,
+                });
+            });
+            return true;
+        }
+    });
+}
+main();
