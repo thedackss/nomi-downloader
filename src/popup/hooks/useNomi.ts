@@ -5,6 +5,7 @@ import { NomisContext } from "../context/nomis";
 import { api } from "../../utils/nomiApi";
 import { Log } from "../../utils/log";
 import { useTab } from "./useTab";
+import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
 
 export const useNomi = () => {
     const context = useContext(NomisContext);
@@ -42,6 +43,23 @@ export const useNomi = () => {
         }
     }, []);
 
+    const fetchNomi = useCallback(async (nomiId: number) => {
+        try {
+            const { data } = await api.get<ApiNomisIdResponse>(
+                `/nomis/${nomiId}`,
+            );
+
+            return data;
+        } catch (error) {
+            Log("Error fetching Nomi:");
+            if (error instanceof Error) {
+                console.log(error.message);
+            }
+
+            return null;
+        }
+    }, []);
+
     function isNomiURL(url: string): boolean {
         const regex =
             /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}(\/photo-album)?\/?$/;
@@ -76,9 +94,9 @@ export const useNomi = () => {
 
             if (nomi) selectNomi(nomi);
         } else if (isGroupURL(tabUrl)) {
-            const groupId = tabUrl.split("/")[4];
+            // const groupId = tabUrl.split("/")[4];
         }
     }, [Nomis.list, getCurrentTab, selectNomi]);
 
-    return { Nomis, selectNomi, fetchNomis, checkSelectedNomi };
+    return { Nomis, selectNomi, fetchNomis, fetchNomi, checkSelectedNomi };
 };
