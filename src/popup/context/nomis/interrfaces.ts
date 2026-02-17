@@ -1,4 +1,4 @@
-import type { Nomi } from "../../interfaces/nomi/api.nomis";
+import type { Nomi } from "../../../interfaces/nomi/api.nomis";
 import type { Dispatch } from "react";
 
 export interface Nomis {

@@ -1,18 +1,10 @@
-import type { ApiNomisResponse, Nomi } from "../interfaces/nomi/api.nomis";
+import type { ApiNomisResponse, Nomi } from "../../interfaces/nomi/api.nomis";
 import type { Nomis } from "../context/nomis/interrfaces";
 import { useCallback, useContext } from "react";
 import { NomisContext } from "../context/nomis";
+import { api } from "../../utils/nomiApi";
 import { Log } from "../../utils/log";
 import { useTab } from "./useTab";
-import axios from "axios";
-
-const nomiUrl = new URL("https://beta.nomi.ai/api");
-
-const api = axios.create({
-    baseURL: nomiUrl.toString(),
-    timeout: 1000,
-    headers: { "Content-Type": "application/json" },
-});
 
 export const useNomi = () => {
     const context = useContext(NomisContext);
