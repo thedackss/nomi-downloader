@@ -54,7 +54,7 @@ export const NomiInfo = () => {
         setDownloadStatus({
             inProgress: true,
             message: "Starting download...",
-            id: `${Nomi.id}`,
+            id: Nomi.id,
             type: "nomi",
         });
     }
@@ -69,8 +69,9 @@ export const NomiInfo = () => {
                         </span>
                     );
                 } else {
-                    const isCurrentNomi =
-                        downloadStatus.id === Nomi.id.toString();
+                    console.log({ downloadStatus, Nomi });
+
+                    const isCurrentNomi = downloadStatus.id === Nomi.id;
 
                     function getMessage() {
                         if (downloadStatus.inProgress) {

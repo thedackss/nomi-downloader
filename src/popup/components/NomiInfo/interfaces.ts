@@ -1,7 +1,7 @@
 interface DownloadStatusActive {
     inProgress: boolean;
     message: string;
-    id: string;
+    id: number;
     type: "group" | "nomi";
 }
 
