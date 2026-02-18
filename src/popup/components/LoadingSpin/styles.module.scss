@@ -6,8 +6,10 @@
 
 .loading {
     display: flex;
+    flex-flow: column nowrap;
     align-items: center;
     justify-content: center;
+    gap: 1rem;
 
     background-color: var(--background);
     transition: opacity 0.25s ease-in-out;

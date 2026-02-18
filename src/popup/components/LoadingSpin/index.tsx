@@ -1,16 +1,22 @@
+import type { ComponentAttributes } from "../../interfaces/reactElement";
 import styles from "./styles.module.scss";
 
-interface LoadingSpinProps {
+interface LoadingSpinProps extends ComponentAttributes {
     visible?: boolean;
 }
 
-export const LoadingSpin = ({ visible }: LoadingSpinProps) => {
+export const LoadingSpin = ({
+    visible,
+    children,
+    className,
+}: LoadingSpinProps) => {
     if (visible === undefined) visible = true;
 
     return (
         <div
-            className={`${styles.loading}${visible === false ? ` ${styles.hidden}` : ""}`}
+            className={`${styles.loading}${className ? ` ${className}` : ""}${visible === false ? ` ${styles.hidden}` : ""}`}
         >
+            {children && children}
             <svg
                 stroke="currentColor"
                 fill="currentColor"
