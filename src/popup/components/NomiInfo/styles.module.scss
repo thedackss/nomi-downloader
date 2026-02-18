@@ -65,6 +65,42 @@
         padding-top: 1.5rem;
         border-top: 1px solid rgba(0, 0, 0, 0.1);
 
+        position: relative;
+
+        .loadingSpin {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            // position: relative;
+
+            h3 {
+                position: relative;
+                font-size: 1.4rem;
+                font-weight: 600;
+                margin: 0;
+                text-align: center;
+                width: 100%;
+                p {
+                    position: absolute;
+                    width: 100%;
+                    top: 150%;
+                    font-size: 0.9rem;
+                    font-weight: 400;
+                    opacity: 0.75;
+                }
+            }
+
+            svg {
+                animation-duration: 1.25s;
+                width: 24px;
+                height: 24px;
+                position: absolute;
+                left: 4rem;
+            }
+        }
+
         h2 {
             width: 100%;
         }
