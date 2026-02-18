@@ -42,6 +42,9 @@ export const NomiInfo = () => {
         return () => chrome.runtime.onMessage.removeListener(handleMessage);
     }, []);
 
+    async function handleDownloadChat() {}
+    async function handleDownloadMind() {}
+
     async function handleDownloadAlbum() {
         if (!Nomi) return;
         chrome.runtime.sendMessage({
@@ -69,19 +72,9 @@ export const NomiInfo = () => {
                 } else {
                     const isCurrentNomi = downloadStatus.id === Nomi.id;
 
-                    function getMessage() {
-                        if (downloadStatus.inProgress) {
-                            if (downloadStatus.type !== "nomi") {
-                                return "Another album is downloading...";
-                            } else if (isCurrentNomi) {
-                                return downloadStatus.message;
-                            } else {
-                                return "Another album is downloading...";
-                            }
-                        } else {
-                            return "Album";
-                        }
-                    }
+                    const message = isCurrentNomi
+                        ? downloadStatus.message
+                        : "Another Nomi is being downloaded";
 
                     return (
                         <>
@@ -147,15 +140,25 @@ export const NomiInfo = () => {
                             </ul>
 
                             <div className={styles.downloadSection}>
+                                <LoadingSpin
+                                    className={styles.loadingSpin}
+                                    visible={downloadStatus.inProgress}
+                                >
+                                    <h3>
+                                        Downloading
+                                        <p>{message}</p>
+                                    </h3>
+                                </LoadingSpin>
+
                                 <h2>Download</h2>
-                                {/* <button>General</button> */}
+
                                 <button>Chat</button>
                                 <button>Mind Map</button>
                                 <button
                                     onClick={handleDownloadAlbum}
                                     disabled={downloadStatus.inProgress}
                                 >
-                                    {getMessage()}
+                                    Album
                                 </button>
                             </div>
                         </>
