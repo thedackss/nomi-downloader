@@ -79,15 +79,13 @@ export const NomiInfo = () => {
                                 return "Another album is downloading...";
                             }
                         } else {
-                            return "Download Album";
+                            return "Album";
                         }
                     }
 
                     return (
                         <>
-                            <h2>
-                                {Nomi.name} ({Nomi.id})
-                            </h2>
+                            <h2>{Nomi.name}</h2>
 
                             <ul>
                                 <li>
@@ -149,6 +147,10 @@ export const NomiInfo = () => {
                             </ul>
 
                             <div className={styles.downloadSection}>
+                                <h2>Download</h2>
+                                {/* <button>General</button> */}
+                                <button>Chat</button>
+                                <button>Mind Map</button>
                                 <button
                                     onClick={handleDownloadAlbum}
                                     disabled={downloadStatus.inProgress}

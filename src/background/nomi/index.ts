@@ -28,27 +28,6 @@ class NomiError extends Error {
 export class Nomi {
     constructor() {}
 
-    public async downloadAlbum(
-        nomiId: string,
-        updateStatus: (message: string) => void,
-    ) {
-        Log("Downloading album for Nomi ID: " + nomiId);
-        updateStatus("Initializing download...");
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        updateStatus("Fetching images...");
-
-        for (let i = 0; i < 100; i++) {
-            updateStatus(`Processing image ${i + 1} of 100`);
-            await new Promise((resolve) => setTimeout(resolve, 750));
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        updateStatus("Zipping files...");
-
-        Log("Album downloaded!");
-    }
-
     private async exists({ nomiId }: NomiExistsProps) {
         try {
             Log("Checking if Nomi exists with ID: " + nomiId);
@@ -128,5 +107,26 @@ export class Nomi {
                 message: "Nomi with ID " + nomiId + " does not exist",
             });
         }
+    }
+
+    public async downloadAlbum(
+        nomiId: string,
+        updateStatus: (message: string) => void,
+    ) {
+        Log("Downloading album for Nomi ID: " + nomiId);
+        updateStatus("Initializing download...");
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        updateStatus("Fetching images...");
+
+        for (let i = 0; i < 100; i++) {
+            updateStatus(`Processing image ${i + 1} of 100`);
+            await new Promise((resolve) => setTimeout(resolve, 750));
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        updateStatus("Zipping files...");
+
+        Log("Album downloaded!");
     }
 }
