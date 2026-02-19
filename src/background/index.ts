@@ -28,7 +28,8 @@ async function main() {
         if (message.type === "GET_DOWNLOAD_STATUS") {
             sendResponse(downloadStatus);
         } else if (message.type === "DOWNLOAD_ALBUM") {
-            const nomiId = message.data.nomiId;
+            const { nomiId, downloadQuantity, folderization, quality } =
+                message.data;
 
             if (downloadStatus.inProgress) {
                 Log("Already downloading");
@@ -44,6 +45,9 @@ async function main() {
 
             await nomi.downloadAlbum({
                 nomiId,
+                downloadQuantity,
+                folderization,
+                quality,
                 onProgress: (status) => {
                     updateDownloadStatus({
                         inProgress: true,

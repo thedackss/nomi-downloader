@@ -3,9 +3,11 @@ import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
 import type { DownloadStatus } from "./interfaces";
+import { useSettings } from "../../hooks/useSettings";
 
 export const NomiInfo = () => {
     const { Nomis, checkSelectedNomi } = useNomi();
+    const { Settings } = useSettings();
 
     const [loading, setLoading] = useState(true);
     const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>({
@@ -49,7 +51,12 @@ export const NomiInfo = () => {
         if (!Nomi) return;
         chrome.runtime.sendMessage({
             type: "DOWNLOAD_ALBUM",
-            data: { nomiId: Nomi.id },
+            data: {
+                nomiId: Nomi.id,
+                downloadQuantity: Settings.albumDownload.downloadQuantity,
+                folderization: Settings.albumDownload.folderization,
+                quality: Settings.albumDownload.quality,
+            },
         });
         // Optimistic update or wait for poll
         setDownloadStatus({

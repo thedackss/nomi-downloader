@@ -7,6 +7,11 @@ const SettingsContext = createContext<SettingsContextType | null>(null);
 const SettingsProvider: FC<ReactElement> = ({ children }) => {
     const Default: Settings = {
         list: { iconShape: "circle", iconSize: "medium" },
+        albumDownload: {
+            quality: "HD",
+            folderization: true,
+            downloadQuantity: 10,
+        },
     };
 
     const [Settings, setSettings] = useState<Settings>(Default);

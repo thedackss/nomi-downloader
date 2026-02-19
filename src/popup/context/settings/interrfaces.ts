@@ -5,6 +5,11 @@ export interface IconSettings {
 
 export interface Settings {
     list: IconSettings;
+    albumDownload: {
+        quality: "HD" | "SD";
+        folderization: boolean;
+        downloadQuantity: number;
+    };
 }
 
 export type SettingsContextType = {
