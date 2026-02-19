@@ -3,6 +3,28 @@ import { SettingsContext } from "../context/settings";
 import { useContext } from "react";
 import { Log } from "../../utils/log";
 
+// Helper for deep merging objects
+function deepMerge(target: any, source: any): any {
+    const isObject = (obj: any) =>
+        obj && typeof obj === "object" && !Array.isArray(obj);
+
+    if (!isObject(target) || !isObject(source)) {
+        return source;
+    }
+
+    const output = { ...target };
+
+    Object.keys(source).forEach((key) => {
+        if (isObject(source[key]) && key in target) {
+            output[key] = deepMerge(target[key], source[key]);
+        } else {
+            output[key] = source[key];
+        }
+    });
+
+    return output;
+}
+
 export const useSettings = () => {
     const context = useContext(SettingsContext);
 
@@ -18,9 +40,34 @@ export const useSettings = () => {
             localStorage.setItem("config", JSON.stringify(Settings));
             Log("Initialized default settings in localStorage");
         } else {
-            const parsedConfig: Settings = JSON.parse(storedConfig);
-            setSettings(parsedConfig);
-            Log("Loaded settings from localStorage");
+            try {
+                const parsedConfig: Settings = JSON.parse(storedConfig);
+
+                // Check if parsedConfig is an object and not null
+                if (!parsedConfig || typeof parsedConfig !== "object") {
+                    throw new Error("Invalid format in localStorage");
+                }
+
+                // Merge with default settings to ensure new properties are present
+                const mergedConfig: Settings = deepMerge(
+                    Settings,
+                    parsedConfig,
+                );
+
+                setSettings(mergedConfig);
+
+                // Update local storage with the merged config (including new defaults)
+                localStorage.setItem("config", JSON.stringify(mergedConfig));
+
+                Log("Loaded and merged settings from localStorage");
+            } catch (error) {
+                console.error(
+                    "Failed to parse settings, resetting to defaults",
+                    error,
+                );
+                localStorage.setItem("config", JSON.stringify(Settings));
+                setSettings(Settings);
+            }
         }
     }
 
