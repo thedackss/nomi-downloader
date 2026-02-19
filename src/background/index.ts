@@ -24,7 +24,7 @@ function updateDownloadStatus(status: DownloadStatus) {
 async function main() {
     Log("Extension initialized");
 
-    chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
+    chrome.runtime.onMessage.addListener(async (message, _, sendResponse) => {
         if (message.type === "GET_DOWNLOAD_STATUS") {
             sendResponse(downloadStatus);
         } else if (message.type === "DOWNLOAD_ALBUM") {
@@ -42,21 +42,23 @@ async function main() {
                 type: "nomi",
             });
 
-            nomi.downloadAlbum(nomiId, (message) => {
-                Log(message);
-                updateDownloadStatus({
-                    inProgress: true,
-                    message,
-                    id: nomiId,
-                    type: "nomi",
-                });
-            }).then(() => {
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "Album downloaded!",
-                    id: null,
-                    type: null,
-                });
+            await nomi.downloadAlbum({
+                nomiId,
+                onProgress: (status) => {
+                    updateDownloadStatus({
+                        inProgress: true,
+                        message: status,
+                        id: nomiId,
+                        type: "nomi",
+                    });
+                },
+            });
+
+            updateDownloadStatus({
+                inProgress: false,
+                message: "Album downloaded!",
+                id: null,
+                type: null,
             });
             return true;
         }
