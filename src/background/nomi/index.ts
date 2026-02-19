@@ -12,7 +12,6 @@ import type {
     Media,
 } from "../../interfaces/nomi/api.nomis.id.medias";
 import type { GetMediasProps } from "./interfaces/getMedias";
-import JSZip from "jszip";
 import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
 
 interface NomiErrorProps {
@@ -188,14 +187,44 @@ export class Nomi {
         }
     }
 
+    private async setupOffscreenDocument(path: string) {
+        if (await chrome.offscreen.hasDocument()) {
+            return;
+        }
+
+        await chrome.offscreen.createDocument({
+            url: path,
+            reasons: [
+                chrome.offscreen.Reason.BLOBS,
+                chrome.offscreen.Reason.WORKERS,
+            ],
+            justification: "To generate ZIP files for download",
+        });
+    }
+
+    private blobToBase64(blob: Blob): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64data = reader.result as string;
+                const base64 = base64data.split(",")[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+
     public async downloadAlbum({
         nomiId,
         onProgress,
         quality = "HD",
         folderization = false,
-        downloadQuantity = 10,
+        downloadQuantity = 20,
     }: DownloadAlbumProps) {
         try {
+            await this.setupOffscreenDocument("src/offscreen/index.html");
+
             Log("Downloading album for Nomi ID: " + nomiId);
             const qualityBasedExtension = quality === "HD" ? "png" : "webp";
 
@@ -204,6 +233,10 @@ export class Nomi {
             }
 
             update("Checking if Nomi exists...");
+
+            // Get Nomi details for the filename
+            const nomi = await this.get({ nomiId });
+            const nomiName = nomi.name || `Nomi_${nomiId}`;
 
             const medias = await this.getMedias({
                 nomiId,
@@ -273,7 +306,14 @@ export class Nomi {
 
             for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
                 const chunk = chunks[chunkIndex];
-                const zip = new JSZip();
+                const chunkId = `chunk_${chunkIndex}_${Date.now()}`;
+
+                // Create ZIP in offscreen
+                await chrome.runtime.sendMessage({
+                    target: "offscreen",
+                    type: "create-zip",
+                    data: { id: chunkId },
+                });
 
                 let chunkMesage = `Chunk ${chunkIndex + 1}/${chunks.length}, `;
                 if (chunks.length < 2) chunkMesage = "";
@@ -316,8 +356,6 @@ export class Nomi {
                         url = `/image-edit-requests/${media.uuid}/edited-image.${qualityBasedExtension}`;
                     }
 
-                    let blob: Blob;
-
                     const stringDate = new Date(media.completed)
                         .toISOString()
                         .split("T")[0];
@@ -357,9 +395,18 @@ export class Nomi {
                             timeout: 60000, // 60 seconds timeout
                         });
 
-                        blob = data;
+                        const base64 = await this.blobToBase64(data);
 
-                        zip.file(getPath(type), blob);
+                        // Send file to offscreen ZIP
+                        await chrome.runtime.sendMessage({
+                            target: "offscreen",
+                            type: "add-file",
+                            data: {
+                                id: chunkId,
+                                path: getPath(type),
+                                content: base64,
+                            },
+                        });
                     } catch (error) {
                         update(
                             `[Processing]: ${chunkMesage}Error downloading media ${globalIndex + 1}/${medias.length}, skipping`,
@@ -384,13 +431,43 @@ export class Nomi {
                     await Promise.all(promises);
                 }
 
-                const zipFile = await zip.generateAsync({ type: `base64` });
-                const dataUrl = "data:application/zip;base64," + zipFile;
+                // Generate ZIP in offscreen
+                const response = await chrome.runtime.sendMessage({
+                    target: "offscreen",
+                    type: "generate-zip",
+                    data: { id: chunkId },
+                });
 
-                const date = new Date().toISOString().replace(/:/g, "-");
-                const filename = `nomi-album-${nomiId}-${date}-part${chunkIndex + 1}.zip`;
+                if (response.success && response.url) {
+                    // Format date: Thu-Feb-19-2026
+                    const dateStr = new Date()
+                        .toDateString()
+                        .replace(/ /g, "-");
 
-                downloads.push({ url: dataUrl, filename });
+                    const ext = quality === "HD" ? "png" : "webp";
+                    const count = medias.length;
+
+                    // Only add part suffix if there are multiple chunks
+                    const partSuffix =
+                        chunks.length > 1 ? `_Part${chunkIndex + 1}` : "";
+
+                    // Lexi_Media(360)_Thu-Feb-19-2026_(webp).zip
+                    const filename = `${nomiName}_Album(${count})_${dateStr}_(${ext})${partSuffix}.zip`;
+
+                    downloads.push({ url: response.url, filename });
+                } else {
+                    Log(
+                        "Failed to generate zip for chunk " + (chunkIndex + 1),
+                        response.error,
+                    );
+                }
+
+                // Clear ZIP from offscreen memory (but keep blob URL valid)
+                await chrome.runtime.sendMessage({
+                    target: "offscreen",
+                    type: "clear-zip",
+                    data: { id: chunkId },
+                });
 
                 console.log(
                     `Chunk ${chunkIndex + 1} processed. Found ${medias.length} items.`,
@@ -404,6 +481,8 @@ export class Nomi {
                         filename: download.filename,
                         saveAs: false,
                     });
+                    // Adding a small delay to avoid browser hiccups when starting multiple downloads
+                    await new Promise((resolve) => setTimeout(resolve, 500));
                 } catch (err) {
                     Log("Download failed", err);
                 }
