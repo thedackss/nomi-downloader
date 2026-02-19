@@ -1,9 +1,10 @@
+import { useSettings } from "./hooks/useSettings";
+import { NomiList } from "./components/NomiList";
+import { NomiInfo } from "./components/NomiInfo";
+import { Header } from "./components/Header";
+import { useNomi } from "./hooks/useNomi";
 import { useEffect } from "react";
 import "./app.styles.scss";
-import { NomiList } from "./components/NomiList";
-import { useSettings } from "./hooks/useSettings";
-import { useNomi } from "./hooks/useNomi";
-import { NomiInfo } from "./components/NomiInfo";
 
 function App() {
     const { InitializeSettings } = useSettings();
@@ -20,7 +21,7 @@ function App() {
     return (
         // body
         <>
-            <h1>Nomi Downloader</h1>
+            <Header />
             <div className="main-container">
                 <NomiList />
                 <NomiInfo />
