@@ -42,8 +42,8 @@ export const NomiInfo = () => {
         return () => chrome.runtime.onMessage.removeListener(handleMessage);
     }, []);
 
-    async function handleDownloadChat() {}
-    async function handleDownloadMind() {}
+    // async function handleDownloadChat() {}
+    // async function handleDownloadMind() {}
 
     async function handleDownloadAlbum() {
         if (!Nomi) return;
