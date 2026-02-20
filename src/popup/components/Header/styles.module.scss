@@ -1,0 +1,25 @@
+.header {
+    height: 5rem;
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    padding: 1.5rem;
+    padding-bottom: 0;
+
+    position: relative;
+
+    h1 {
+        width: 100%;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        color: var(--primary);
+        align-self: flex-end;
+
+        position: relative;
+        z-index: 3;
+    }
+}
