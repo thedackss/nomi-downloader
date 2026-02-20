@@ -83,8 +83,11 @@
             padding: 1rem;
             cursor: default;
 
-            &:hover .icon .img {
-                transform: scale(1);
+            &:hover .icon {
+                .img,
+                video {
+                    transform: scale(1);
+                }
             }
 
             .icon {
