@@ -60,6 +60,8 @@ export const NomiList = () => {
                             return styles.medium;
                         case "large":
                             return styles.large;
+                        case "xlarge":
+                            return styles.xlarge;
                         default:
                             return styles.medium;
                     }
@@ -89,14 +91,19 @@ export const NomiList = () => {
                     >
                         <span
                             className={`${styles.icon} ${getIconSize()} ${getIconShape()}`}
-                            style={{ backgroundImage: `url(${img})` }}
                         >
-                            <video
-                                src={media.video}
-                                loop
-                                muted
-                                autoPlay
-                            ></video>
+                            {media.video && (
+                                <video
+                                    src={media.video}
+                                    loop
+                                    muted
+                                    autoPlay
+                                ></video>
+                            )}
+                            <span
+                                className={styles.img}
+                                style={{ backgroundImage: `url(${img})` }}
+                            ></span>
                         </span>
                         <p>{nomi.name}</p>
                     </li>
