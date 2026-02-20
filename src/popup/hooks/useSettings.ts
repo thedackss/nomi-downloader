@@ -71,5 +71,11 @@ export const useSettings = () => {
         }
     }
 
-    return { Settings, InitializeSettings };
+    const updateSettings = (newSettings: Partial<Settings>) => {
+        const mergedSettings = deepMerge(Settings, newSettings);
+        setSettings(mergedSettings);
+        localStorage.setItem("config", JSON.stringify(mergedSettings));
+    };
+
+    return { Settings, InitializeSettings, updateSettings };
 };
