@@ -26,18 +26,21 @@
             border-radius 0.25s ease-in-out,
             height 2s ease-in-out;
 
-        &:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-        }
-
         .icon {
             display: inline-block;
             background-color: rgba(255, 255, 255, 0.2);
-
-            background-size: cover;
-            background-position: top;
             overflow: hidden;
+            position: relative;
+
+            .img {
+                display: inline-block;
+                width: 100%;
+                height: 100%;
+                background-size: cover;
+                background-position: top;
+
+                transition: transform 0.2s ease-in-out;
+            }
 
             &.medium {
                 width: 4rem;
@@ -80,6 +83,10 @@
             padding: 1rem;
             cursor: default;
 
+            &:hover .icon .img {
+                transform: scale(1);
+            }
+
             .icon {
                 width: 100%;
                 height: 100%;
@@ -102,6 +109,21 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 4;
+
+            transition: transform 0.2s ease-in-out;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            .icon .img,
+            video {
+                transform: scale(1.2);
+            }
         }
     }
 }

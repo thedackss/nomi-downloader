@@ -1,5 +1,5 @@
 export interface IconSettings {
-    iconSize: "small" | "medium" | "large";
+    iconSize: "small" | "medium" | "large" | "xlarge";
     iconShape: "circle" | "square" | "sharp";
 }
 
