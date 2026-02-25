@@ -13,6 +13,8 @@ import type {
 } from "../../interfaces/nomi/api.nomis.id.medias";
 import type { GetMediasProps } from "./interfaces/getMedias";
 import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
+import type { DownloadChatProps } from "./interfaces/downloadChat";
+import { ChatTemplate } from "./chatTemplate";
 
 interface NomiErrorProps {
     id?: number;
@@ -512,6 +514,195 @@ export class Nomi {
                 Log("Unexpected error during album download:", error);
                 if (onProgress)
                     onProgress("An unexpected error occurred during download.");
+            }
+        }
+    }
+
+    public async downloadChat({
+        nomiId,
+        includeSelfies,
+        onProgress,
+    }: DownloadChatProps) {
+        try {
+            Log("Downloading chat for Nomi ID: " + nomiId);
+            const nomi = await this.get({ nomiId });
+            const messages = await this.getMessages({ nomiId });
+
+            if (!messages || messages.length === 0) {
+                throw new NomiError({
+                    id: nomiId,
+                    message: "No messages found for Nomi with ID " + nomiId,
+                });
+            }
+
+            const stringDate = new Date().toDateString().replace(/ /g, "-");
+            const qualityBasedExtension = "webp"; // Default
+
+            function update(message: string) {
+                if (onProgress) onProgress(message);
+            }
+
+            update(`Scanning messages: ${messages.length} found`);
+
+            const estimateItemSize = (item: Message | SelfieRequest) => {
+                if ("sent" in item) {
+                    return 1500;
+                } else {
+                    return includeSelfies ? item.selfies.length * 100_000 : 0;
+                }
+            };
+
+            function chunkMessages(
+                messages: (Message | SelfieRequest)[],
+                maxCharsPerChunk = 10_000_000,
+            ) {
+                const chunks: (Message | SelfieRequest)[][] = [];
+                let currentChunk: (Message | SelfieRequest)[] = [];
+                let currentSize = 0;
+
+                for (const item of messages) {
+                    const itemSize = estimateItemSize(item);
+
+                    if (
+                        currentSize + itemSize > maxCharsPerChunk &&
+                        currentChunk.length > 0
+                    ) {
+                        chunks.push(currentChunk);
+                        currentChunk = [];
+                        currentSize = 0;
+                    }
+
+                    currentChunk.push(item);
+                    currentSize += itemSize;
+                }
+
+                if (currentChunk.length > 0) {
+                    chunks.push(currentChunk);
+                }
+
+                return chunks;
+            }
+
+            // If including selfies, use larger chunks to avoid too many files, but limit by size
+            // If text only, 10MB fits a LOT of text
+            const chunks = chunkMessages(
+                messages,
+                includeSelfies ? 75_000_000 : 10_000_000,
+            );
+
+            update(`Downloading ${messages.length} messages... 0%`);
+
+            let lastPercent = "0";
+            let messagesCount = 0;
+            let currentMessageIndex = 0;
+
+            const msgTemplate = (isNomi: boolean, msg: string, date: Date) => {
+                const className = isNomi ? "nomi" : "user";
+                const day = date.toDateString();
+                const hours = date.getHours().toString().padStart(2, "0");
+                const minutes = date.getMinutes().toString().padStart(2, "0");
+                const time = `${hours}:${minutes}`;
+
+                return `<li class='msg ${className}'>${msg}</li><li class='detail ${className}'>${day} ${time}</li>`;
+            };
+
+            const HTML_TEMPLATE = ChatTemplate;
+
+            for (let j = 0; j < chunks.length; j++) {
+                const chunk = chunks[j];
+                let messageList = "";
+
+                for (let i = 0; i < chunk.length; i++) {
+                    const element = chunk[i];
+                    const isMessage = "sent" in element;
+
+                    const percentage = (
+                        ((messagesCount + 1) / messages.length) *
+                        100
+                    ).toFixed(0);
+
+                    if (percentage !== lastPercent) {
+                        update(`Downloading messages... ${percentage}%`);
+                    }
+                    lastPercent = percentage;
+                    messagesCount++;
+
+                    if (isMessage) {
+                        const message = element as Message;
+                        const isNomi =
+                            message.type === "Nomi" ||
+                            message.type === "NomiStarter";
+                        const date = new Date(message.sent);
+
+                        // Handle potential HTML content or sanitize if needed, but for now assuming text
+                        messageList += msgTemplate(isNomi, message.text, date);
+                    } else if (includeSelfies) {
+                        const request = element as SelfieRequest;
+                        const selfies = request.selfies;
+
+                        for (let k = 0; k < selfies.length; k++) {
+                            const selfie = selfies[k];
+                            // Use the standard endpoint format
+                            const url = `/selfie-requests/${request.id}/images/${selfie.id}.${qualityBasedExtension}`;
+
+                            try {
+                                const { data } = await api.get(url, {
+                                    responseType: "blob",
+                                    timeout: 30000,
+                                });
+
+                                const base64 = await this.blobToBase64(data);
+                                messageList += `<img onclick="openImage(this.src)" src='data:image/${qualityBasedExtension};base64,${base64}' />`;
+                            } catch (err) {
+                                Log(`Failed to fetch selfie ${selfie.id}`, err);
+                                messageList += `<li class='msg result'>[Image Download Failed]</li>`;
+                            }
+                        }
+                    }
+                }
+
+                const chatHtml = HTML_TEMPLATE.replace(
+                    "{messages}",
+                    messageList,
+                );
+
+                // Use Data URI for download since URL.createObjectURL is not available in Service Worker
+                const base64Chat = btoa(unescape(encodeURIComponent(chatHtml)));
+                const url = `data:text/html;base64,${base64Chat}`;
+
+                const nomiNameSafe = nomi.name.replace(/ /g, "-");
+                const count = messages.length;
+
+                // Nomi_Chat(360)_Thu-Feb-19-2026.html
+                let fileName = `${nomiNameSafe}_Chat(${count})_${stringDate}.html`;
+
+                if (chunks.length > 1) {
+                    const start = currentMessageIndex + 1;
+                    const end = currentMessageIndex + chunk.length;
+                    fileName = `${nomiNameSafe}_Chat(${start}-${end})_${stringDate}_Part${j + 1}.html`;
+                }
+
+                await chrome.downloads.download({
+                    url: url,
+                    filename: fileName,
+                    saveAs: false,
+                });
+
+                // Small delay
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                currentMessageIndex += chunk.length;
+            }
+
+            update(`Downloaded ${messages.length} messages`);
+        } catch (error) {
+            if (error instanceof NomiError) {
+                Log("NomiError: " + error.message);
+                if (onProgress) onProgress("Error: " + error.message);
+            } else {
+                Log("Unexpected error during chat download:", error);
+                if (onProgress)
+                    onProgress("Unexpected error during chat download.");
             }
         }
     }

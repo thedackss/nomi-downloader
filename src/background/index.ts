@@ -65,6 +65,41 @@ async function main() {
                 type: null,
             });
             return true;
+        } else if (message.type === "DOWNLOAD_CHAT") {
+            const { nomiId } = message.data;
+
+            if (downloadStatus.inProgress) {
+                Log("Already downloading");
+                return;
+            }
+
+            updateDownloadStatus({
+                inProgress: true,
+                message: "Starting download...",
+                id: nomiId,
+                type: "nomi",
+            });
+
+            await nomi.downloadChat({
+                nomiId,
+                includeSelfies: true,
+                onProgress: (status) => {
+                    updateDownloadStatus({
+                        inProgress: true,
+                        message: status,
+                        id: nomiId,
+                        type: "nomi",
+                    });
+                },
+            });
+
+            updateDownloadStatus({
+                inProgress: false,
+                message: "Chat downloaded!",
+                id: null,
+                type: null,
+            });
+            return true;
         }
     });
 }

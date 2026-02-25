@@ -67,6 +67,22 @@ export const NomiInfo = () => {
         });
     }
 
+    async function handleDownloadChat() {
+        if (!Nomi) return;
+        chrome.runtime.sendMessage({
+            type: "DOWNLOAD_CHAT",
+            data: {
+                nomiId: Nomi.id,
+            },
+        });
+        setDownloadStatus({
+            inProgress: true,
+            message: "Starting chat download...",
+            id: Nomi.id,
+            type: "nomi",
+        });
+    }
+
     return (
         <div className={styles.nomiInfo}>
             {(() => {
@@ -159,7 +175,12 @@ export const NomiInfo = () => {
 
                                 <h2>Download</h2>
 
-                                <button>Chat</button>
+                                <button
+                                    onClick={handleDownloadChat}
+                                    disabled={downloadStatus.inProgress}
+                                >
+                                    Chat
+                                </button>
                                 <button>Mind Map</button>
                                 <button
                                     onClick={handleDownloadAlbum}
