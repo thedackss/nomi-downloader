@@ -188,6 +188,10 @@ export class Nomi {
     }
 
     private async setupOffscreenDocument(path: string) {
+        if (typeof chrome === "undefined" || !chrome.offscreen) {
+            return;
+        }
+
         if (await chrome.offscreen.hasDocument()) {
             return;
         }
@@ -200,6 +204,30 @@ export class Nomi {
             ],
             justification: "To generate ZIP files for download",
         });
+    }
+
+    private async callOffscreen(type: string, data: any) {
+        if (typeof chrome !== "undefined" && chrome.offscreen) {
+            return chrome.runtime.sendMessage({
+                target: "offscreen",
+                type,
+                data,
+            });
+        } else {
+            const { zipService } = await import("../../utils/zipService");
+            switch (type) {
+                case "create-zip":
+                    return zipService.createZip(data.id);
+                case "add-file":
+                    return zipService.addFile(data.id, data.path, data.content);
+                case "generate-zip":
+                    return zipService.generateZip(data.id);
+                case "clear-zip":
+                    return zipService.clearZip(data.id);
+                default:
+                    throw new Error(`Unknown offscreen type: ${type}`);
+            }
+        }
     }
 
     private blobToBase64(blob: Blob): Promise<string> {
@@ -308,12 +336,8 @@ export class Nomi {
                 const chunk = chunks[chunkIndex];
                 const chunkId = `chunk_${chunkIndex}_${Date.now()}`;
 
-                // Create ZIP in offscreen
-                await chrome.runtime.sendMessage({
-                    target: "offscreen",
-                    type: "create-zip",
-                    data: { id: chunkId },
-                });
+                // Create ZIP in offscreen (or locally via helper)
+                await this.callOffscreen("create-zip", { id: chunkId });
 
                 let chunkMesage = `Chunk ${chunkIndex + 1}/${chunks.length}, `;
                 if (chunks.length < 2) chunkMesage = "";
@@ -398,14 +422,10 @@ export class Nomi {
                         const base64 = await this.blobToBase64(data);
 
                         // Send file to offscreen ZIP
-                        await chrome.runtime.sendMessage({
-                            target: "offscreen",
-                            type: "add-file",
-                            data: {
-                                id: chunkId,
-                                path: getPath(type),
-                                content: base64,
-                            },
+                        await this.callOffscreen("add-file", {
+                            id: chunkId,
+                            path: getPath(type),
+                            content: base64,
                         });
                     } catch (error) {
                         update(
@@ -432,10 +452,8 @@ export class Nomi {
                 }
 
                 // Generate ZIP in offscreen
-                const response = await chrome.runtime.sendMessage({
-                    target: "offscreen",
-                    type: "generate-zip",
-                    data: { id: chunkId },
+                const response = await this.callOffscreen("generate-zip", {
+                    id: chunkId,
                 });
 
                 if (response.success && response.url) {
@@ -463,11 +481,8 @@ export class Nomi {
                 }
 
                 // Clear ZIP from offscreen memory (but keep blob URL valid)
-                await chrome.runtime.sendMessage({
-                    target: "offscreen",
-                    type: "clear-zip",
-                    data: { id: chunkId },
-                });
+                // Cleanup offscreen resource
+                await this.callOffscreen("clear-zip", { id: chunkId });
 
                 console.log(
                     `Chunk ${chunkIndex + 1} processed. Found ${medias.length} items.`,
