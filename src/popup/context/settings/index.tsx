@@ -8,9 +8,9 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
     const Default: Settings = {
         list: { iconShape: "circle", iconSize: "medium" },
         albumDownload: {
-            quality: "HD",
+            quality: "SD",
             folderization: true,
-            downloadQuantity: 10,
+            downloadQuantity: 2,
         },
     };
 
