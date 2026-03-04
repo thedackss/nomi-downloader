@@ -226,6 +226,16 @@ export class Nomi {
                     return zipService.generateZip(data.id);
                 case "clear-zip":
                     return zipService.clearZip(data.id);
+                case "create-blob-url":
+                    // Fallback for non-offscreen context (if necessary, though logic is weird here)
+                    // The whole point is to avoid this, but if offscreen is missing:
+                    const blob = new Blob([data.content], { type: data.type });
+                    return this.blobToBase64(blob).then((b64) => ({
+                        success: true,
+                        url: `data:${data.type};base64,${b64}`,
+                    }));
+                case "revoke-blob-url":
+                    return { success: true };
                 default:
                     throw new Error(`Unknown offscreen type: ${type}`);
             }
@@ -661,14 +671,40 @@ export class Nomi {
                     }
                 }
 
+                // Use Data URI for download since URL.createObjectURL is not available in Service Worker
                 const chatHtml = HTML_TEMPLATE.replace(
                     "{messages}",
                     messageList,
                 );
 
-                // Use Data URI for download since URL.createObjectURL is not available in Service Worker
-                const base64Chat = btoa(unescape(encodeURIComponent(chatHtml)));
-                const url = `data:text/html;base64,${base64Chat}`;
+                // For very large chats, try to use Offscreen to create a Blob URL (safer for big strings).
+                // Fallback to Data URI if that fails.
+                let url = "";
+                let isBlob = false;
+
+                try {
+                    await this.setupOffscreenDocument(
+                        "src/offscreen/index.html",
+                    );
+                    const res = await this.callOffscreen("create-blob-url", {
+                        content: chatHtml,
+                        type: "text/html",
+                    });
+
+                    if (res?.success && res.url) {
+                        url = res.url;
+                        isBlob = true;
+                    }
+                } catch (e) {
+                    // fallthrough to base64
+                }
+
+                if (!url) {
+                    const base64Chat = btoa(
+                        unescape(encodeURIComponent(chatHtml)),
+                    );
+                    url = `data:text/html;base64,${base64Chat}`;
+                }
 
                 const nomiNameSafe = nomi.name.replace(/ /g, "-");
                 const count = messages.length;
@@ -690,6 +726,13 @@ export class Nomi {
 
                 // Small delay
                 await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Cleanup Blob URL in offscreen if we used one
+                if (isBlob) {
+                    setTimeout(() => {
+                        this.callOffscreen("revoke-blob-url", { url });
+                    }, 60000); // 1 min timeout to allow download to start
+                }
 
                 currentMessageIndex += chunk.length;
             }
