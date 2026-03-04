@@ -30,6 +30,12 @@ function handleMessages(
         case "clear-zip":
             handleClearZip(message.data, sendResponse);
             break;
+        case "create-blob-url":
+            handleCreateBlobUrl(message.data, sendResponse);
+            break;
+        case "revoke-blob-url":
+            handleRevokeBlobUrl(message.data, sendResponse);
+            break;
         case "keep-alive":
             sendResponse(true);
             break;
@@ -83,5 +89,31 @@ function handleClearZip(
         sendResponse({ success: true });
     } catch (err: any) {
         sendResponse({ success: false, error: err.message });
+    }
+}
+
+function handleCreateBlobUrl(
+    data: { content: string; type: string },
+    sendResponse: (res: any) => void,
+) {
+    try {
+        const blob = new Blob([data.content], { type: data.type });
+        const url = URL.createObjectURL(blob);
+        sendResponse({ success: true, url });
+    } catch (err: any) {
+        sendResponse({ success: false, error: err.message });
+    }
+}
+
+function handleRevokeBlobUrl(
+    data: { url: string },
+    sendResponse: (res: any) => void,
+) {
+    try {
+        URL.revokeObjectURL(data.url);
+        sendResponse({ success: true });
+    } catch (err: any) {
+        // Can fail if url invalid, not big deal
+        sendResponse({ success: true });
     }
 }
