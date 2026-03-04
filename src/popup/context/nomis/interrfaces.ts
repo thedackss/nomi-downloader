@@ -1,14 +1,15 @@
+import type { GroupChat } from "../../../interfaces/nomi/api.groupChats";
 import type { Nomi } from "../../../interfaces/nomi/api.nomis";
 import type { Dispatch } from "react";
 
 export interface Nomis {
     selected: {
         nomi: Nomi | null;
-        group: string | null;
+        group: GroupChat | null;
     };
     list: {
-        nomi: Nomi[];
-        group: string[];
+        nomi: Nomi[] | null;
+        group: GroupChat[] | null;
     };
 }
 

@@ -21,7 +21,7 @@ export const NomiInfo = () => {
 
     useEffect(() => {
         async function main() {
-            if (Nomis.list.nomi.length < 1) return;
+            if (!Nomis.list.nomi || Nomis.list.nomi.length < 1) return;
             await checkSelectedNomi();
             setLoading(false);
 
@@ -145,7 +145,15 @@ export const NomiInfo = () => {
                                         <span className={styles.bold}>
                                             Custom Traits:{" "}
                                         </span>
-                                        <span>{Nomi.customTraits}</span>
+                                        <span>
+                                            {Nomi.customTraits
+                                                .map((t) =>
+                                                    typeof t === "string"
+                                                        ? t
+                                                        : t.name,
+                                                )
+                                                .join(", ")}
+                                        </span>
                                     </li>
                                 )}
                                 {/* <li>

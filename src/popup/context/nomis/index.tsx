@@ -11,8 +11,8 @@ const NomisProvider: FC<ReactElement> = ({ children }) => {
             nomi: null,
         },
         list: {
-            nomi: [],
-            group: [],
+            nomi: null,
+            group: null,
         },
     };
 

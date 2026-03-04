@@ -1,5 +1,5 @@
 import { useSettings } from "./hooks/useSettings";
-import { NomiList } from "./components/NomiList";
+import { List } from "./components/List";
 import { NomiInfo } from "./components/NomiInfo";
 import { Header } from "./components/Header";
 import { useNomi } from "./hooks/useNomi";
@@ -8,11 +8,12 @@ import "./app.styles.scss";
 
 function App() {
     const { InitializeSettings } = useSettings();
-    const { fetchNomis } = useNomi();
+    const { fetchNomis, fetchGroups } = useNomi();
 
     useEffect(() => {
         async function initialize() {
             InitializeSettings();
+            await fetchGroups();
             await fetchNomis();
         }
         initialize();
@@ -23,7 +24,7 @@ function App() {
         <>
             <Header />
             <div className="main-container">
-                <NomiList />
+                <List />
                 <NomiInfo />
             </div>
         </>

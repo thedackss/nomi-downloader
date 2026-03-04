@@ -1,7 +1,6 @@
 import type { IconSettings } from "../../context/settings/interrfaces";
 import { useSettings } from "../../hooks/useSettings";
 import { useNomi } from "../../hooks/useNomi";
-import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
 import { useEffect } from "react";
 
@@ -15,17 +14,20 @@ export const NomiList = () => {
                 `nomi-${Nomis.selected.nomi.id}`,
             );
             if (element) {
-                element.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
+                setTimeout(() => {
+                    element.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                }, 500);
             }
         }
     }, [Nomis.selected]);
 
+    if (!Nomis.list.nomi) return null;
+
     return (
-        <ul className={styles.nomiList}>
-            <LoadingSpin visible={Nomis.list.nomi.length === 0} />
+        <>
             {Nomis.list.nomi.map((nomi) => {
                 const api = `https://beta.nomi.ai/api`;
                 const base = `${api}/nomis/${nomi.id}`;
@@ -82,12 +84,17 @@ export const NomiList = () => {
 
                 const isSelected = Nomis.selected?.nomi?.id === nomi.id;
 
+                function handleSelect() {
+                    if (isSelected) return;
+                    selectNomi(nomi);
+                }
+
                 return (
                     <li
                         id={`nomi-${nomi.id}`}
                         className={`${isSelected ? styles.selected : ""}`}
                         key={nomi.id}
-                        onClick={() => selectNomi(nomi)}
+                        onClick={handleSelect}
                     >
                         <span
                             className={`${styles.icon} ${getIconSize()} ${getIconShape()}`}
@@ -103,12 +110,12 @@ export const NomiList = () => {
                             <span
                                 className={styles.img}
                                 style={{ backgroundImage: `url(${img})` }}
-                            ></span>
+                            />
                         </span>
                         <p>{nomi.name}</p>
                     </li>
                 );
             })}
-        </ul>
+        </>
     );
 };

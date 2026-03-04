@@ -6,6 +6,11 @@ import { api } from "../../utils/nomiApi";
 import { Log } from "../../utils/log";
 import { useTab } from "./useTab";
 import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
+import type {
+    ApiGroupChatsResponse,
+    GroupChat,
+} from "../../interfaces/nomi/api.groupChats";
+import type { ApiGroupChatsIdResponse } from "../../interfaces/nomi/api.groupChats.id";
 
 export const useNomi = () => {
     const context = useContext(NomisContext);
@@ -60,6 +65,49 @@ export const useNomi = () => {
         }
     }, []);
 
+    const fetchGroups = useCallback(async () => {
+        try {
+            const { data } =
+                await api.get<ApiGroupChatsResponse>("/group-chats");
+
+            const list = data.groupChats;
+
+            setNomis((prev: Nomis) => ({
+                list: {
+                    nomi: prev.list.nomi,
+                    group: list,
+                },
+                selected: prev.selected,
+            }));
+
+            return list;
+        } catch (error) {
+            Log("Error fetching Groups:");
+            if (error instanceof Error) {
+                console.log(error.message);
+            }
+
+            return [];
+        }
+    }, []);
+
+    const fetchGroup = useCallback(async (groupId: number) => {
+        try {
+            const { data } = await api.get<ApiGroupChatsIdResponse>(
+                `/group-chats/${groupId}`,
+            );
+
+            return data;
+        } catch (error) {
+            Log("Error fetching Group:");
+            if (error instanceof Error) {
+                console.log(error.message);
+            }
+
+            return null;
+        }
+    }, []);
+
     function isNomiURL(url: string): boolean {
         const regex =
             /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}(\/photo-album)?\/?$/;
@@ -76,12 +124,24 @@ export const useNomi = () => {
             list: prev.list,
             selected: {
                 nomi: nomi,
-                group: prev.selected.group,
+                group: null,
+            },
+        }));
+    }, []);
+
+    const selectGroup = useCallback((group: GroupChat) => {
+        setNomis((prev: Nomis) => ({
+            list: prev.list,
+            selected: {
+                nomi: null,
+                group: group,
             },
         }));
     }, []);
 
     const checkSelectedNomi = useCallback(async () => {
+        if (!Nomis.list.nomi || !Nomis.list.group) return;
+
         const { tabUrl } = await getCurrentTab();
 
         if (!tabUrl) return;
@@ -98,5 +158,14 @@ export const useNomi = () => {
         }
     }, [Nomis.list, getCurrentTab, selectNomi]);
 
-    return { Nomis, selectNomi, fetchNomis, fetchNomi, checkSelectedNomi };
+    return {
+        Nomis,
+        selectNomi,
+        selectGroup,
+        fetchNomis,
+        fetchNomi,
+        fetchGroup,
+        fetchGroups,
+        checkSelectedNomi,
+    };
 };
