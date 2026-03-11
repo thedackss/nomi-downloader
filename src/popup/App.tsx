@@ -1,6 +1,6 @@
 import { useSettings } from "./hooks/useSettings";
 import { List } from "./components/List";
-import { NomiInfo } from "./components/NomiInfo";
+import { Info } from "./components/Info";
 import { Header } from "./components/Header";
 import { useNomi } from "./hooks/useNomi";
 import { useEffect } from "react";
@@ -25,7 +25,7 @@ function App() {
             <Header />
             <div className="main-container">
                 <List />
-                <NomiInfo />
+                <Info />
             </div>
         </>
     );

@@ -105,45 +105,84 @@
             width: 100%;
         }
 
-        button {
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--primary);
-            background-color: transparent;
-            border: 1px solid var(--primary);
+        .splitButton {
+            position: relative;
+            display: flex;
+            width: 100%;
             border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: calc(50% - 0.375rem);
+            overflow: visible;
 
-            &:hover:not(:disabled) {
-                background-color: rgba(from var(--primary) r g b / 0.25);
-                transform: translateY(-1px);
-            }
-
-            // The last button is likely the primary action (Download)
-            &:last-child {
-                width: 100%;
+            .splitMain,
+            .splitArrow {
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 background-color: var(--primary);
                 color: #fff;
+                border: none;
+                cursor: pointer;
+                font-size: 0.9rem;
                 font-weight: 600;
-                padding: 0.75rem;
-                margin-top: 0.5rem;
+                transition: background-color 0.2s ease;
 
                 &:hover:not(:disabled) {
-                    background-color: rgba(from var(--primary) r g b / 0.9);
-                    box-shadow: 0 4px 12px rgba(from var(--primary) r g b / 0.2);
+                    background-color: rgba(from var(--primary) r g b / 0.85);
+                }
+
+                &:disabled {
+                    background-color: #c0c0c0;
+                    cursor: not-allowed;
                 }
             }
 
-            &:disabled {
-                border-color: #e0e0e0;
-                color: #a0a0a0;
-                background-color: rgba(245, 245, 245, 0.1);
-                cursor: not-allowed;
-                transform: none;
-                box-shadow: none;
+            .splitMain {
+                flex: 1;
+                padding: 0.75rem 1rem;
+                border-radius: 8px 0 0 8px;
+            }
+
+            .splitArrow {
+                padding: 0.75rem 0.65rem;
+                border-left: 1px solid rgba(255, 255, 255, 0.25);
+                border-radius: 0 8px 8px 0;
+            }
+
+            .splitDropdown {
+                position: absolute;
+                bottom: calc(100% + 6px);
+                right: 0;
+                min-width: 120px;
+                background: #fff;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                overflow: hidden;
+                z-index: 10;
+
+                button {
+                    display: block;
+                    width: 100%;
+                    padding: 0.6rem 1rem;
+                    text-align: left;
+                    background: transparent;
+                    border: none;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    color: #333;
+                    cursor: pointer;
+                    transition: background-color 0.15s ease;
+
+                    &:hover {
+                        background-color: rgba(
+                            from var(--primary) r g b / 0.08
+                        );
+                    }
+
+                    &.active {
+                        color: var(--primary);
+                        font-weight: 600;
+                    }
+                }
             }
         }
     }

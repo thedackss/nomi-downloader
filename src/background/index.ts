@@ -1,4 +1,4 @@
-import type { DownloadStatus } from "../popup/components/NomiInfo/interfaces";
+import type { DownloadStatus } from "../popup/components/Info/interfaces";
 import { Log } from "../utils/log";
 import { Nomi } from "./nomi/index";
 

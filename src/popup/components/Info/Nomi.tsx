@@ -1,0 +1,166 @@
+import { useEffect, useRef, useState } from "react";
+import type { Nomi } from "../../../interfaces/nomi/api.nomis";
+import type { DownloadStatus } from "./interfaces";
+import { LoadingSpin } from "../LoadingSpin";
+import styles from "./styles.module.scss";
+
+interface NomiInfoProps {
+    nomi: Nomi;
+    downloadStatus: DownloadStatus;
+    onDownloadAlbum: () => void;
+    onDownloadChat: () => void;
+}
+
+export const NomiInfo = ({
+    nomi,
+    downloadStatus,
+    onDownloadAlbum,
+    onDownloadChat,
+}: NomiInfoProps) => {
+    const downloadOptions = [
+        { name: "Chat", fn: onDownloadChat },
+        { name: "Album", fn: onDownloadAlbum },
+        { name: "Mind Map", fn: onDownloadAlbum },
+        { name: "JSON", fn: onDownloadAlbum },
+    ];
+
+    const [selected, setSelected] = useState(downloadOptions[0]);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const splitRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!dropdownOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (!splitRef.current?.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [dropdownOpen]);
+
+    const isCurrentNomi = downloadStatus.id === nomi.id;
+
+    const message = isCurrentNomi
+        ? downloadStatus.message
+        : "Another Nomi is being downloaded";
+
+    return (
+        <>
+            <h2>{nomi.name}</h2>
+
+            <ul>
+                <li>
+                    <span className={styles.bold}>Gender: </span>
+                    <span>{nomi.gender}</span>
+                </li>
+                <li>
+                    <span className={styles.bold}>Created: </span>
+                    <span>{new Date(nomi.created).toLocaleDateString()}</span>
+                </li>
+                <li>
+                    <span className={styles.bold}>Relation type: </span>
+                    <span>{nomi.relationshipType}</span>
+                </li>
+                <li>
+                    <span className={styles.bold}>Image style: </span>
+                    <span>{nomi.settings.imageStyle}</span>
+                </li>
+                {nomi.keyTraits.length > 0 && (
+                    <li>
+                        <span className={styles.bold}>Traits: </span>
+                        <span>{nomi.keyTraits.join(", ")}</span>
+                    </li>
+                )}
+                {nomi.customTraits.length > 0 && (
+                    <li>
+                        <span className={styles.bold}>Custom Traits: </span>
+                        <span>
+                            {nomi.customTraits
+                                .map((t) =>
+                                    typeof t === "string" ? t : t.name,
+                                )
+                                .join(", ")}
+                        </span>
+                    </li>
+                )}
+            </ul>
+
+            <div className={styles.downloadSection}>
+                <LoadingSpin
+                    className={styles.loadingSpin}
+                    visible={downloadStatus.inProgress}
+                >
+                    <h3>
+                        Downloading
+                        <p>{message}</p>
+                    </h3>
+                </LoadingSpin>
+
+                <div className={styles.splitButton} ref={splitRef}>
+                    <button
+                        className={styles.splitMain}
+                        onClick={selected.fn}
+                        disabled={downloadStatus.inProgress}
+                    >
+                        Download {selected.name}
+                    </button>
+                    <button
+                        className={styles.splitArrow}
+                        onClick={() => setDropdownOpen((o) => !o)}
+                        disabled={downloadStatus.inProgress}
+                        aria-label="Choose download type"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="14"
+                            height="14"
+                            style={{
+                                transform: dropdownOpen
+                                    ? "rotate(180deg)"
+                                    : undefined,
+                                transition: "transform 0.2s ease",
+                            }}
+                        >
+                            <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                        </svg>
+                    </button>
+                    {dropdownOpen && (
+                        <div className={styles.splitDropdown}>
+                            {downloadOptions.map((option) => (
+                                <button
+                                    key={option.name}
+                                    className={
+                                        selected.name === option.name
+                                            ? styles.active
+                                            : undefined
+                                    }
+                                    onClick={() => {
+                                        setSelected(option);
+                                        setDropdownOpen(false);
+                                    }}
+                                >
+                                    {option.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* <button
+                    onClick={onDownloadChat}
+                    disabled={downloadStatus.inProgress}
+                >
+                    Chat
+                </button>
+                <button>Mind Map</button>
+                <button
+                    onClick={onDownloadAlbum}
+                    disabled={downloadStatus.inProgress}
+                >
+                    Album
+                </button> */}
+            </div>
+        </>
+    );
+};
