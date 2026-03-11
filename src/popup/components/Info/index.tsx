@@ -114,6 +114,8 @@ export const Info = () => {
 
     async function handleDownloadMind() {}
 
+    async function handleDownloadBackstory() {}
+
     async function handleDownloadJSON() {}
 
     return (
@@ -131,7 +133,8 @@ export const Info = () => {
                             onDownloadAlbum={handleDownloadAlbum}
                             onDownloadChat={handleDownloadChat}
                             onDownloadMind={handleDownloadMind}
-                            onDownloadJSON={() => {}}
+                            onDownloadBackstory={handleDownloadBackstory}
+                            onDownloadJSON={handleDownloadJSON}
                         />
                     );
                 } else if (Group) {
@@ -139,7 +142,7 @@ export const Info = () => {
                         <GroupInfo
                             group={Group}
                             downloadStatus={downloadStatus}
-                            onDownloadChat={handleDownloadJSON}
+                            onDownloadChat={() => {}}
                         />
                     );
                 } else {

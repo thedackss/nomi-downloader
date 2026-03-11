@@ -10,6 +10,7 @@ interface NomiInfoProps {
     onDownloadAlbum: () => void;
     onDownloadChat: () => void;
     onDownloadMind: () => void;
+    onDownloadBackstory: () => void;
     onDownloadJSON: () => void;
 }
 
@@ -19,12 +20,14 @@ export const NomiInfo = ({
     onDownloadAlbum,
     onDownloadChat,
     onDownloadMind,
+    onDownloadBackstory,
     onDownloadJSON,
 }: NomiInfoProps) => {
     const downloadOptions = [
         { name: "Album", fn: onDownloadAlbum },
         { name: "Chat", fn: onDownloadChat },
         { name: "Mind Map", fn: onDownloadMind },
+        { name: "Backstory+", fn: onDownloadBackstory },
         { name: "JSON", fn: onDownloadJSON },
     ];
 
