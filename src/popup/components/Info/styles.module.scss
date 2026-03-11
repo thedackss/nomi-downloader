@@ -16,7 +16,7 @@
             content: "";
             position: absolute;
             inset: -10%;
-            z-index: 0;
+            z-index: -1;
 
             pointer-events: none;
             height: 80%;
@@ -32,11 +32,6 @@
             background-position: top center;
             background-repeat: no-repeat;
             filter: blur(2px) brightness(0.25) saturate(1);
-        }
-
-        > * {
-            position: absolute;
-            z-index: 1;
         }
     }
 
