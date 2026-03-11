@@ -8,7 +8,7 @@ import "./app.styles.scss";
 
 function App() {
     const { InitializeSettings, isMobile } = useSettings();
-    const { fetchNomis, fetchGroups, Nomis } = useNomi();
+    const { fetchNomis, fetchGroups, checkSelectedNomi, Nomis } = useNomi();
 
     useEffect(() => {
         async function initialize() {
@@ -18,8 +18,16 @@ function App() {
         }
         initialize();
     }, []);
+    useEffect(() => {
+        async function initialize() {
+            await checkSelectedNomi();
+        }
+        initialize();
+    }, [Nomis.list]);
 
     const hasSelection = Nomis.selected.nomi || Nomis.selected.group;
+
+    console.log("Selected Nomi:", Nomis.selected.nomi);
 
     return (
         <div className={isMobile ? "mobile" : "desktop"}>

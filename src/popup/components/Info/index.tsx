@@ -8,7 +8,7 @@ import { NomiInfo } from "./Nomi";
 import { GroupInfo } from "./Group";
 
 export const Info = () => {
-    const { Nomis, checkSelectedNomi } = useNomi();
+    const { Nomis } = useNomi();
     const { Settings } = useSettings();
 
     const [loading, setLoading] = useState(true);
@@ -24,8 +24,6 @@ export const Info = () => {
 
     useEffect(() => {
         async function main() {
-            if (!Nomis.list.nomi || Nomis.list.nomi.length < 1) return;
-            await checkSelectedNomi();
             setLoading(false);
 
             // Check download status
@@ -35,7 +33,7 @@ export const Info = () => {
             if (status) setDownloadStatus(status);
         }
         main();
-    }, [Nomis.list, checkSelectedNomi]);
+    }, []);
 
     useEffect(() => {
         const handleMessage = (message: any) => {
