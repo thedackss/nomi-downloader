@@ -7,8 +7,8 @@ import { useEffect } from "react";
 import "./app.styles.scss";
 
 function App() {
-    const { InitializeSettings } = useSettings();
-    const { fetchNomis, fetchGroups } = useNomi();
+    const { InitializeSettings, isMobile } = useSettings();
+    const { fetchNomis, fetchGroups, Nomis } = useNomi();
 
     useEffect(() => {
         async function initialize() {
@@ -19,15 +19,26 @@ function App() {
         initialize();
     }, []);
 
+    const hasSelection = Nomis.selected.nomi || Nomis.selected.group;
+
     return (
-        // body
-        <>
+        <div className={isMobile ? "mobile" : "desktop"}>
             <Header />
             <div className="main-container">
-                <List />
-                <Info />
+                {isMobile ? (
+                    hasSelection ? (
+                        <Info />
+                    ) : (
+                        <List />
+                    )
+                ) : (
+                    <>
+                        <List />
+                        <Info />
+                    </>
+                )}
             </div>
-        </>
+        </div>
     );
 }
 

@@ -78,24 +78,32 @@
         align-items: flex-start;
         gap: 0.8rem;
 
-        transition: opacity 0.3s ease;
         pointer-events: none;
         position: fixed;
-        opacity: 0;
         bottom: 0;
+        left: 0;
         right: 0;
         z-index: 2;
 
         background: var(--background);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1.25rem 1.25rem 0 0;
         padding: 1.5rem;
-        width: 50%;
-        height: calc(100% - 6rem);
+        width: 100%;
+        max-height: calc(100% - 5rem);
 
         overflow-y: auto;
+
+        opacity: 0;
+        transform: translateY(100%);
+        transition:
+            opacity 0.3s ease,
+            transform 0.3s ease;
 
         &.visible {
             pointer-events: all;
             opacity: 1;
+            transform: translateY(0);
         }
 
         h2 {

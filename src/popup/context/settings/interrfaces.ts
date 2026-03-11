@@ -10,6 +10,7 @@ export interface Settings {
         folderization: boolean;
         downloadQuantity: number;
     };
+    layout: "auto" | "mobile" | "desktop";
 }
 
 export type SettingsContextType = {

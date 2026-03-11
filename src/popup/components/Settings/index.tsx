@@ -26,9 +26,27 @@ export const Settings = () => {
                 <p>Here you can configure your settings.</p>
 
                 <ul>
-                    <label>
-                        <h3>General</h3>
-                    </label>
+                    <li>
+                        <h3>Interface</h3>
+                    </li>
+                    <li>
+                        <label>Layout</label>
+                        <select
+                            value={Settings.layout}
+                            onChange={(e) =>
+                                updateSettings({
+                                    layout: e.target.value as
+                                        | "auto"
+                                        | "mobile"
+                                        | "desktop",
+                                })
+                            }
+                        >
+                            <option value="auto">Auto (detect)</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="desktop">Desktop</option>
+                        </select>
+                    </li>
                     <li>
                         <label>Icon Shape</label>
                         <select
@@ -156,7 +174,7 @@ export const Settings = () => {
                         </select>
                     </li>
                     <li>
-                        <label>Create Folders</label>
+                        <label>Organize into folders</label>
                         <div className={styles.row}>
                             <label className={styles.switch}>
                                 <input

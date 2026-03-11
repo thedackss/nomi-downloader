@@ -77,5 +77,12 @@ export const useSettings = () => {
         localStorage.setItem("config", JSON.stringify(mergedSettings));
     };
 
-    return { Settings, InitializeSettings, updateSettings };
+    const isMobile =
+        Settings.layout === "mobile"
+            ? true
+            : Settings.layout === "desktop"
+              ? false
+              : window.innerHeight >= window.innerWidth;
+
+    return { Settings, InitializeSettings, updateSettings, isMobile };
 };

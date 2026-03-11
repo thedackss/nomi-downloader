@@ -158,10 +158,21 @@ export const useNomi = () => {
         }
     }, [Nomis.list, getCurrentTab, selectNomi]);
 
+    const clearSelection = useCallback(() => {
+        setNomis((prev: Nomis) => ({
+            list: prev.list,
+            selected: {
+                nomi: null,
+                group: null,
+            },
+        }));
+    }, []);
+
     return {
         Nomis,
         selectNomi,
         selectGroup,
+        clearSelection,
         fetchNomis,
         fetchNomi,
         fetchGroup,

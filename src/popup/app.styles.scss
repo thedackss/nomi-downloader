@@ -37,16 +37,19 @@
 }
 
 html {
-    width: 800px;
-    height: 600px;
+    --width: 400px;
+    --height: 600px;
+
+    width: var(--width);
+    height: var(--height);
     outline: outset 2px var(--primary);
 
     body {
         background-color: var(--background);
         color: var(--text);
 
-        width: 800px;
-        height: 600px;
+        width: var(--width);
+        height: var(--height);
         #root {
             display: flex;
             flex-direction: column;
@@ -58,6 +61,14 @@ html {
             width: 100%;
             height: 100%;
 
+            .mobile,
+            .desktop {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+
             .main-container {
                 padding: 1.5rem;
                 width: 100%;
@@ -65,8 +76,15 @@ html {
                 overflow: hidden;
 
                 display: grid;
-                grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
+            }
+
+            .mobile > .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .desktop > .main-container {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     }

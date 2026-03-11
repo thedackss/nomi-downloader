@@ -12,6 +12,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             folderization: true,
             downloadQuantity: 2,
         },
+        layout: "auto",
     };
 
     const [Settings, setSettings] = useState<Settings>(Default);
