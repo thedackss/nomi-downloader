@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type React from "react";
 import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
@@ -7,9 +8,22 @@ import { useSettings } from "../../hooks/useSettings";
 import { NomiInfo } from "./Nomi";
 import { GroupInfo } from "./Group";
 
+const API = "https://beta.nomi.ai/api";
+
+function getNomiImageUrl(nomi: {
+    id: number;
+    pictureImageId: string;
+    pictureSelfieImageId?: string | null;
+}) {
+    const base = `${API}/nomis/${nomi.id}`;
+    return nomi.pictureSelfieImageId
+        ? `${base}/selfies/${nomi.pictureSelfieImageId}.webp`
+        : `${base}/images/${nomi.pictureImageId}.webp`;
+}
+
 export const Info = () => {
     const { Nomis } = useNomi();
-    const { Settings } = useSettings();
+    const { Settings, isMobile } = useSettings();
 
     const [loading, setLoading] = useState(true);
     const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>({
@@ -22,6 +36,23 @@ export const Info = () => {
     const Nomi = Nomis.selected.nomi;
     const Group = Nomis.selected.group;
 
+    const bgImages = isMobile
+        ? Nomi
+            ? [getNomiImageUrl(Nomi)]
+            : Group
+              ? Group.nomis.slice(0, 4).map(getNomiImageUrl)
+              : []
+        : [];
+
+    const bgStyle =
+        bgImages.length > 0
+            ? ({
+                  "--bg-image-1": `url(${bgImages[0]})`,
+                  ...(bgImages[1] && { "--bg-image-2": `url(${bgImages[1]})` }),
+                  ...(bgImages[2] && { "--bg-image-3": `url(${bgImages[2]})` }),
+                  ...(bgImages[3] && { "--bg-image-4": `url(${bgImages[3]})` }),
+              } as React.CSSProperties)
+            : undefined;
     useEffect(() => {
         async function main() {
             setLoading(false);
@@ -85,7 +116,11 @@ export const Info = () => {
     }
 
     return (
-        <div className={styles.nomiInfo}>
+        <div
+            className={styles.nomiInfo}
+            style={bgStyle}
+            data-bg={bgImages.length > 0 ? "" : undefined}
+        >
             {(() => {
                 if (Nomi) {
                     return (

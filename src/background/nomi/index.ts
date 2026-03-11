@@ -354,9 +354,7 @@ export class Nomi {
                 let chunkMesage = `Chunk ${chunkIndex + 1}/${chunks.length}, `;
                 if (chunks.length < 2) chunkMesage = "";
 
-                update(
-                    `[Processing]: ${chunkMesage}${chunk.length} media items`,
-                );
+                update(`${chunkMesage}${chunk.length} media items`);
 
                 const processMedia = async (media: Media, i: number) => {
                     type MediaType = "Photo" | "Video" | "Art" | "PhotoEdit";
@@ -421,7 +419,7 @@ export class Nomi {
                     }
 
                     update(
-                        `[Processing]: ${chunkMesage}Downloading media ${globalIndex + 1}/${medias.length}`,
+                        `${chunkMesage}Downloading media ${globalIndex + 1}/${medias.length}`,
                     );
 
                     try {
@@ -441,7 +439,7 @@ export class Nomi {
                         });
                     } catch (error) {
                         update(
-                            `[Processing]: ${chunkMesage}Error downloading media ${globalIndex + 1}/${medias.length}, skipping`,
+                            `${chunkMesage}Error downloading media ${globalIndex + 1}/${medias.length}, skipping`,
                         );
 
                         Log(
