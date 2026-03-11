@@ -9,6 +9,8 @@ interface NomiInfoProps {
     downloadStatus: DownloadStatus;
     onDownloadAlbum: () => void;
     onDownloadChat: () => void;
+    onDownloadMind: () => void;
+    onDownloadJSON: () => void;
 }
 
 export const NomiInfo = ({
@@ -16,12 +18,14 @@ export const NomiInfo = ({
     downloadStatus,
     onDownloadAlbum,
     onDownloadChat,
+    onDownloadMind,
+    onDownloadJSON,
 }: NomiInfoProps) => {
     const downloadOptions = [
-        { name: "Chat", fn: onDownloadChat },
         { name: "Album", fn: onDownloadAlbum },
-        { name: "Mind Map", fn: onDownloadAlbum },
-        { name: "JSON", fn: onDownloadAlbum },
+        { name: "Chat", fn: onDownloadChat },
+        { name: "Mind Map", fn: onDownloadMind },
+        { name: "JSON", fn: onDownloadJSON },
     ];
 
     const [selected, setSelected] = useState(downloadOptions[0]);

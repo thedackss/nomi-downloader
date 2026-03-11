@@ -76,9 +76,6 @@ export const Info = () => {
         return () => chrome.runtime.onMessage.removeListener(handleMessage);
     }, []);
 
-    // async function handleDownloadChat() {}
-    // async function handleDownloadMind() {}
-
     async function handleDownloadAlbum() {
         if (!Nomi) return;
         chrome.runtime.sendMessage({
@@ -115,6 +112,10 @@ export const Info = () => {
         });
     }
 
+    async function handleDownloadMind() {}
+
+    async function handleDownloadJSON() {}
+
     return (
         <div
             className={styles.nomiInfo}
@@ -129,6 +130,8 @@ export const Info = () => {
                             downloadStatus={downloadStatus}
                             onDownloadAlbum={handleDownloadAlbum}
                             onDownloadChat={handleDownloadChat}
+                            onDownloadMind={handleDownloadMind}
+                            onDownloadJSON={() => {}}
                         />
                     );
                 } else if (Group) {
@@ -136,6 +139,7 @@ export const Info = () => {
                         <GroupInfo
                             group={Group}
                             downloadStatus={downloadStatus}
+                            onDownloadChat={handleDownloadJSON}
                         />
                     );
                 } else {

@@ -5,11 +5,13 @@ import styles from "./styles.module.scss";
 interface GroupInfoProps {
     group: GroupChat;
     downloadStatus: DownloadStatus;
+    onDownloadChat: () => void;
 }
 
 export const GroupInfo = ({
     group,
     downloadStatus: _downloadStatus,
+    onDownloadChat,
 }: GroupInfoProps) => {
     return (
         <>
