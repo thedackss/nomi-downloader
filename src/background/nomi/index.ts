@@ -15,6 +15,11 @@ import type { GetMediasProps } from "./interfaces/getMedias";
 import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
 import type { DownloadChatProps } from "./interfaces/downloadChat";
 import { ChatTemplate } from "./chatTemplate";
+import type {
+    ApiMindMapsTermsResponse,
+    MemoryTermItem,
+} from "../../interfaces/nomi/api.mindMaps.nomis.id.memoryTerms";
+import type { ApiMindMapsGraphResponse } from "../../interfaces/nomi/api.mindMaps.nomis.id.graph";
 
 interface NomiErrorProps {
     id?: number;
@@ -745,6 +750,58 @@ export class Nomi {
                 if (onProgress)
                     onProgress("Unexpected error during chat download.");
             }
+        }
+    }
+
+    public async getMindInfo({ nomiId }: NomiExistsProps) {
+        try {
+            const categories = ["Entity", "Keyword", "Goal"];
+            const base = `mind-maps/nomis/${nomiId}`;
+            const memoryUrl = `${base}/memory-terms`;
+            const graphUrl = `${base}/graph`;
+
+            const Terms: any[] = [];
+
+            const { data: Graph } = await api.get<ApiMindMapsGraphResponse>(
+                `${graphUrl}`,
+            );
+
+            for (let i = 0; i < categories.length; i++) {
+                const category = categories[i];
+
+                const url = `${memoryUrl}?category=${category}`;
+
+                const { data } = await api.get<ApiMindMapsTermsResponse>(url);
+
+                Terms.push({ category, items: [] });
+
+                for (const term of data.memoryTerms) {
+                    const { data } = await api.get<MemoryTermItem>(
+                        `${memoryUrl}/${term.uuid}`,
+                    );
+                    Terms[i].items.push(data);
+                }
+            }
+
+            if (
+                Graph.nodes.length === 0 &&
+                Graph.edges.length === 0 &&
+                Terms.every((t) => t.items.length === 0)
+            ) {
+                return null;
+            }
+
+            return {
+                graph: Graph,
+                terms: Terms,
+            };
+        } catch (error) {
+            if (error instanceof NomiError) {
+                Log("NomiError: " + error.message);
+            } else {
+                Log("Unexpected error during mind info download:", error);
+            }
+            return null;
         }
     }
 }

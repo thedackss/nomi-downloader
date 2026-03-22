@@ -115,11 +115,53 @@ export const Info = () => {
         });
     }
 
-    async function handleDownloadMind() {}
+    async function handleDownloadMind() {
+        if (!Nomi) return;
+        chrome.runtime.sendMessage({
+            type: "DOWNLOAD_MIND",
+            data: {
+                nomiId: Nomi.id,
+            },
+        });
+        setDownloadStatus({
+            inProgress: true,
+            message: "Starting mind download...",
+            id: Nomi.id,
+            type: "nomi",
+        });
+    }
 
-    async function handleDownloadBackstory() {}
+    async function handleDownloadBackstory() {
+        if (!Nomi) return;
+        chrome.runtime.sendMessage({
+            type: "DOWNLOAD_BACKSTORY",
+            data: {
+                nomiId: Nomi.id,
+            },
+        });
+        setDownloadStatus({
+            inProgress: true,
+            message: "Starting backstory download...",
+            id: Nomi.id,
+            type: "nomi",
+        });
+    }
 
-    async function handleDownloadJSON() {}
+    async function handleDownloadJSON() {
+        if (!Nomi) return;
+        chrome.runtime.sendMessage({
+            type: "DOWNLOAD_JSON",
+            data: {
+                nomiId: Nomi.id,
+            },
+        });
+        setDownloadStatus({
+            inProgress: true,
+            message: "Starting JSON download...",
+            id: Nomi.id,
+            type: "nomi",
+        });
+    }
 
     return (
         <div

@@ -1,6 +1,7 @@
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
 import { Log } from "../utils/log";
 import { Nomi } from "./nomi/index";
+import { generateMindMapHtml } from "../utils/mindMapHtml";
 
 const nomi = new Nomi();
 
@@ -99,6 +100,124 @@ async function main() {
                 id: null,
                 type: null,
             });
+            return true;
+        } else if (message.type === "DOWNLOAD_MIND") {
+            const { nomiId } = message.data;
+
+            if (downloadStatus.inProgress) {
+                Log("Already downloading");
+                return;
+            }
+
+            updateDownloadStatus({
+                inProgress: true,
+                message: "Starting mind download...",
+                id: nomiId,
+                type: "nomi",
+            });
+
+            try {
+                const data = await nomi.getMindInfo({ nomiId });
+
+                if (!data) return;
+
+                // Generate HTML from mind data
+                const htmlContent = generateMindMapHtml(data);
+
+                // Convert HTML to data URL for download
+                const encodedHtml = encodeURIComponent(htmlContent);
+                const dataUrl = `data:text/html;charset=utf-8,${encodedHtml}`;
+
+                // Use Chrome download API
+                chrome.downloads.download({
+                    url: dataUrl,
+                    filename: `mind-map-${nomiId}-${new Date().getTime()}.html`,
+                    saveAs: true,
+                });
+
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "Mind downloaded!",
+                    id: null,
+                    type: null,
+                });
+            } catch (error) {
+                Log("Error downloading mind:", error);
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "Error downloading mind",
+                    id: null,
+                    type: null,
+                });
+            }
+            return true;
+        } else if (message.type === "DOWNLOAD_BACKSTORY") {
+            const { nomiId } = message.data;
+
+            if (downloadStatus.inProgress) {
+                Log("Already downloading");
+                return;
+            }
+
+            updateDownloadStatus({
+                inProgress: true,
+                message: "Starting backstory download...",
+                id: nomiId,
+                type: "nomi",
+            });
+
+            try {
+                // TODO: Implement backstory download logic
+                await nomi.get({ nomiId });
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "Backstory downloaded!",
+                    id: null,
+                    type: null,
+                });
+            } catch (error) {
+                Log("Error downloading backstory:", error);
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "Error downloading backstory",
+                    id: null,
+                    type: null,
+                });
+            }
+            return true;
+        } else if (message.type === "DOWNLOAD_JSON") {
+            const { nomiId } = message.data;
+
+            if (downloadStatus.inProgress) {
+                Log("Already downloading");
+                return;
+            }
+
+            updateDownloadStatus({
+                inProgress: true,
+                message: "Starting JSON download...",
+                id: nomiId,
+                type: "nomi",
+            });
+
+            try {
+                // TODO: Implement JSON download logic
+                await nomi.get({ nomiId });
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "JSON downloaded!",
+                    id: null,
+                    type: null,
+                });
+            } catch (error) {
+                Log("Error downloading JSON:", error);
+                updateDownloadStatus({
+                    inProgress: false,
+                    message: "Error downloading JSON",
+                    id: null,
+                    type: null,
+                });
+            }
             return true;
         }
     });
