@@ -155,7 +155,7 @@
                 }
 
                 &:disabled {
-                    background-color: #c0c0c0;
+                    filter: brightness(0.75);
                     cursor: not-allowed;
                 }
             }
@@ -206,6 +206,11 @@
                     &.active {
                         color: var(--primary);
                         font-weight: 600;
+                    }
+
+                    &:disabled {
+                        filter: brightness(0.75);
+                        cursor: not-allowed;
                     }
                 }
             }

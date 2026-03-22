@@ -3,6 +3,8 @@ import type { Nomi } from "../../../interfaces/nomi/api.nomis";
 import type { DownloadStatus } from "./interfaces";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
+import { Nomi as NomiClass } from "../../../background/nomi";
+import { useNomi } from "../../hooks/useNomi";
 
 interface NomiInfoProps {
     nomi: Nomi;
@@ -31,9 +33,26 @@ export const NomiInfo = ({
         { name: "JSON", fn: onDownloadJSON },
     ];
 
+    const [mindMapActive, setMindMapActive] = useState(false);
     const [selected, setSelected] = useState(downloadOptions[0]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const splitRef = useRef<HTMLDivElement>(null);
+
+    const { Nomis } = useNomi();
+
+    useEffect(() => {
+        async function main() {
+            const api = new NomiClass();
+            const data = await api.getMindInfo({ nomiId: nomi.id });
+
+            if (data) {
+                setMindMapActive(true);
+            } else {
+                setMindMapActive(false);
+            }
+        }
+        main();
+    }, [Nomis.selected]);
 
     useEffect(() => {
         if (!dropdownOpen) return;
@@ -108,7 +127,12 @@ export const NomiInfo = ({
                     <button
                         className={styles.splitMain}
                         onClick={selected.fn}
-                        disabled={downloadStatus.inProgress}
+                        // disabled={downloadStatus.inProgress}
+                        disabled={
+                            downloadStatus.inProgress ||
+                            (mindMapActive === false &&
+                                selected.name === "Mind Map")
+                        }
                     >
                         Download {selected.name}
                     </button>
@@ -146,6 +170,11 @@ export const NomiInfo = ({
                                         setSelected(option);
                                         setDropdownOpen(false);
                                     }}
+                                    disabled={
+                                        downloadStatus.inProgress ||
+                                        (mindMapActive === false &&
+                                            option.name === "Mind Map")
+                                    }
                                 >
                                     {option.name}
                                 </button>
