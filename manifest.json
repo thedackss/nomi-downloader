@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "My Hot Reload Extension",
+    "name": "Nomi Downloader",
     "version": "1.0.0",
     "action": { "default_popup": "index.html" },
 
