@@ -11,7 +11,6 @@ interface GroupInfoProps {
 export const GroupInfo = ({
     group,
     downloadStatus: _downloadStatus,
-    onDownloadChat,
 }: GroupInfoProps) => {
     return (
         <>
