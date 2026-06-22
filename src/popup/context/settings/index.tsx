@@ -1,4 +1,4 @@
-import type { Settings, SettingsContextType } from "./interrfaces";
+import type { Settings, SettingsContextType } from "./interfaces";
 import type { ReactElement } from "../../interfaces/reactElement";
 import { createContext, useState, type FC } from "react";
 

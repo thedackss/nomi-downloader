@@ -1,5 +1,5 @@
 import type { ReactElement } from "../../interfaces/reactElement";
-import type { Nomis, NomiContextType } from "./interrfaces";
+import type { Nomis, NomiContextType } from "./interfaces";
 import { createContext, useState, type FC } from "react";
 
 const NomisContext = createContext<NomiContextType | null>(null);

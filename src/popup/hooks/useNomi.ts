@@ -1,5 +1,5 @@
 import type { ApiNomisResponse, Nomi } from "../../interfaces/nomi/api.nomis";
-import type { Nomis } from "../context/nomis/interrfaces";
+import type { Nomis } from "../context/nomis/interfaces";
 import { useCallback, useContext } from "react";
 import { NomisContext } from "../context/nomis";
 import { api } from "../../utils/nomiApi";

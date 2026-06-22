@@ -1,4 +1,4 @@
-import type { IconSettings } from "../../context/settings/interrfaces";
+import type { IconSettings } from "../../context/settings/interfaces";
 import { useSettings } from "../../hooks/useSettings";
 import { useNomi } from "../../hooks/useNomi";
 import styles from "./styles.module.scss";

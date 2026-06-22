@@ -1,4 +1,4 @@
-import type { Settings } from "../context/settings/interrfaces";
+import type { Settings } from "../context/settings/interfaces";
 import { SettingsContext } from "../context/settings";
 import { useContext } from "react";
 import { Log } from "../../utils/log";
