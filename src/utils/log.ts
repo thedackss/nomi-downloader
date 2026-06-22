@@ -1,7 +1,7 @@
-export function Log(...data: any[]) {
+export function Log(...data: unknown[]) {
     const { MODE } = import.meta.env;
 
     if (MODE === "development") {
-        console.log(`[NomiDownloader] ${data}`);
+        console.log("[NomiDownloader]", ...data);
     }
 }
