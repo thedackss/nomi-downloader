@@ -22,203 +22,153 @@ function updateDownloadStatus(status: DownloadStatus) {
         .catch(() => {});
 }
 
-async function main() {
+type ProgressFn = (message: string) => void;
+
+/**
+ * Shared lifecycle for every download: guards against concurrent downloads,
+ * publishes start/done/error status, and exposes a progress callback to the work.
+ */
+async function runDownload(
+    nomiId: number,
+    messages: { start: string; done: string; error: string },
+    work: (onProgress: ProgressFn) => Promise<void>,
+) {
+    if (downloadStatus.inProgress) {
+        Log("Already downloading");
+        return;
+    }
+
+    const setNomiStatus = (message: string) =>
+        updateDownloadStatus({
+            inProgress: true,
+            message,
+            id: nomiId,
+            type: "nomi",
+        });
+
+    const setIdleStatus = (message: string) =>
+        updateDownloadStatus({
+            inProgress: false,
+            message,
+            id: null,
+            type: null,
+        });
+
+    setNomiStatus(messages.start);
+
+    try {
+        await work(setNomiStatus);
+        setIdleStatus(messages.done);
+    } catch (error) {
+        Log(messages.error, error);
+        setIdleStatus(messages.error);
+    }
+}
+
+function main() {
     Log("Extension initialized");
 
-    chrome.runtime.onMessage.addListener(async (message, _, sendResponse) => {
+    chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
         if (message.type === "GET_DOWNLOAD_STATUS") {
             sendResponse(downloadStatus);
-        } else if (message.type === "DOWNLOAD_ALBUM") {
-            const { nomiId, downloadQuantity, folderization, quality } =
-                message.data;
+            return;
+        }
 
-            if (downloadStatus.inProgress) {
-                Log("Already downloading");
-                return;
+        const { nomiId } = message.data;
+
+        switch (message.type) {
+            case "DOWNLOAD_ALBUM": {
+                const { downloadQuantity, folderization, quality } =
+                    message.data;
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting download...",
+                        done: "Album downloaded!",
+                        error: "Error downloading album",
+                    },
+                    (onProgress) =>
+                        nomi.downloadAlbum({
+                            nomiId,
+                            downloadQuantity,
+                            folderization,
+                            quality,
+                            onProgress,
+                        }),
+                );
+                break;
             }
-
-            updateDownloadStatus({
-                inProgress: true,
-                message: "Starting download...",
-                id: nomiId,
-                type: "nomi",
-            });
-
-            await nomi.downloadAlbum({
-                nomiId,
-                downloadQuantity,
-                folderization,
-                quality,
-                onProgress: (status) => {
-                    updateDownloadStatus({
-                        inProgress: true,
-                        message: status,
-                        id: nomiId,
-                        type: "nomi",
-                    });
-                },
-            });
-
-            updateDownloadStatus({
-                inProgress: false,
-                message: "Album downloaded!",
-                id: null,
-                type: null,
-            });
-            return true;
-        } else if (message.type === "DOWNLOAD_CHAT") {
-            const { nomiId } = message.data;
-
-            if (downloadStatus.inProgress) {
-                Log("Already downloading");
-                return;
+            case "DOWNLOAD_CHAT": {
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting download...",
+                        done: "Chat downloaded!",
+                        error: "Error downloading chat",
+                    },
+                    (onProgress) =>
+                        nomi.downloadChat({
+                            nomiId,
+                            includeSelfies: true,
+                            onProgress,
+                        }),
+                );
+                break;
             }
+            case "DOWNLOAD_MIND": {
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting mind download...",
+                        done: "Mind downloaded!",
+                        error: "Error downloading mind",
+                    },
+                    async () => {
+                        const data = await nomi.getMindInfo({ nomiId });
+                        if (!data) throw new Error("No mind map data found");
 
-            updateDownloadStatus({
-                inProgress: true,
-                message: "Starting download...",
-                id: nomiId,
-                type: "nomi",
-            });
+                        const htmlContent = generateMindMapHtml(data);
+                        const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
 
-            await nomi.downloadChat({
-                nomiId,
-                includeSelfies: true,
-                onProgress: (status) => {
-                    updateDownloadStatus({
-                        inProgress: true,
-                        message: status,
-                        id: nomiId,
-                        type: "nomi",
-                    });
-                },
-            });
-
-            updateDownloadStatus({
-                inProgress: false,
-                message: "Chat downloaded!",
-                id: null,
-                type: null,
-            });
-            return true;
-        } else if (message.type === "DOWNLOAD_MIND") {
-            const { nomiId } = message.data;
-
-            if (downloadStatus.inProgress) {
-                Log("Already downloading");
-                return;
+                        await chrome.downloads.download({
+                            url: dataUrl,
+                            filename: `mind-map-${nomiId}-${new Date().getTime()}.html`,
+                            saveAs: true,
+                        });
+                    },
+                );
+                break;
             }
-
-            updateDownloadStatus({
-                inProgress: true,
-                message: "Starting mind download...",
-                id: nomiId,
-                type: "nomi",
-            });
-
-            try {
-                const data = await nomi.getMindInfo({ nomiId });
-
-                if (!data) return;
-
-                // Generate HTML from mind data
-                const htmlContent = generateMindMapHtml(data);
-
-                // Convert HTML to data URL for download
-                const encodedHtml = encodeURIComponent(htmlContent);
-                const dataUrl = `data:text/html;charset=utf-8,${encodedHtml}`;
-
-                // Use Chrome download API
-                chrome.downloads.download({
-                    url: dataUrl,
-                    filename: `mind-map-${nomiId}-${new Date().getTime()}.html`,
-                    saveAs: true,
-                });
-
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "Mind downloaded!",
-                    id: null,
-                    type: null,
-                });
-            } catch (error) {
-                Log("Error downloading mind:", error);
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "Error downloading mind",
-                    id: null,
-                    type: null,
-                });
+            case "DOWNLOAD_BACKSTORY": {
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting backstory download...",
+                        done: "Backstory downloaded!",
+                        error: "Error downloading backstory",
+                    },
+                    // TODO: Implement backstory download logic
+                    async () => {
+                        await nomi.get({ nomiId });
+                    },
+                );
+                break;
             }
-            return true;
-        } else if (message.type === "DOWNLOAD_BACKSTORY") {
-            const { nomiId } = message.data;
-
-            if (downloadStatus.inProgress) {
-                Log("Already downloading");
-                return;
+            case "DOWNLOAD_JSON": {
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting JSON download...",
+                        done: "JSON downloaded!",
+                        error: "Error downloading JSON",
+                    },
+                    // TODO: Implement JSON download logic
+                    async () => {
+                        await nomi.get({ nomiId });
+                    },
+                );
+                break;
             }
-
-            updateDownloadStatus({
-                inProgress: true,
-                message: "Starting backstory download...",
-                id: nomiId,
-                type: "nomi",
-            });
-
-            try {
-                // TODO: Implement backstory download logic
-                await nomi.get({ nomiId });
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "Backstory downloaded!",
-                    id: null,
-                    type: null,
-                });
-            } catch (error) {
-                Log("Error downloading backstory:", error);
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "Error downloading backstory",
-                    id: null,
-                    type: null,
-                });
-            }
-            return true;
-        } else if (message.type === "DOWNLOAD_JSON") {
-            const { nomiId } = message.data;
-
-            if (downloadStatus.inProgress) {
-                Log("Already downloading");
-                return;
-            }
-
-            updateDownloadStatus({
-                inProgress: true,
-                message: "Starting JSON download...",
-                id: nomiId,
-                type: "nomi",
-            });
-
-            try {
-                // TODO: Implement JSON download logic
-                await nomi.get({ nomiId });
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "JSON downloaded!",
-                    id: null,
-                    type: null,
-                });
-            } catch (error) {
-                Log("Error downloading JSON:", error);
-                updateDownloadStatus({
-                    inProgress: false,
-                    message: "Error downloading JSON",
-                    id: null,
-                    type: null,
-                });
-            }
-            return true;
         }
     });
 }
