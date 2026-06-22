@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { crx } from "@crxjs/vite-plugin";
 import manifest from "./manifest.json";
+import { version } from "./package.json";
 import fs from "fs";
 import path from "path";
 
@@ -42,6 +43,7 @@ const firefoxManifestFix = () => {
 
 const extensionManifest = {
     ...manifest,
+    version,
 } as any;
 
 if (isFirefox) {
