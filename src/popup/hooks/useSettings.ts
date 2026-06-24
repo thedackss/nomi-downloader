@@ -2,31 +2,7 @@ import type { Settings } from "../context/settings/interfaces";
 import { SettingsContext } from "../context/settings";
 import { useContext } from "react";
 import { Log } from "../../utils/log";
-
-type Dict = Record<string, unknown>;
-
-function isObject(value: unknown): value is Dict {
-    return !!value && typeof value === "object" && !Array.isArray(value);
-}
-
-// Helper for deep merging objects
-function deepMerge<T>(target: T, source: unknown): T {
-    if (!isObject(target) || !isObject(source)) {
-        return source as T;
-    }
-
-    const output: Dict = { ...target };
-
-    Object.keys(source).forEach((key) => {
-        if (isObject(source[key]) && key in target) {
-            output[key] = deepMerge(target[key], source[key]);
-        } else {
-            output[key] = source[key];
-        }
-    });
-
-    return output as T;
-}
+import { deepMerge } from "../../utils/deepMerge";
 
 export const useSettings = () => {
     const context = useContext(SettingsContext);
