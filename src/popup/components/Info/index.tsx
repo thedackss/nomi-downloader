@@ -7,19 +7,7 @@ import type { DownloadStatus } from "./interfaces";
 import { useSettings } from "../../hooks/useSettings";
 import { NomiInfo } from "./Nomi";
 import { GroupInfo } from "./Group";
-
-const API = "https://beta.nomi.ai/api";
-
-function getNomiImageUrl(nomi: {
-    id: number;
-    pictureImageId: string;
-    pictureSelfieImageId?: string | null;
-}) {
-    const base = `${API}/nomis/${nomi.id}`;
-    return nomi.pictureSelfieImageId
-        ? `${base}/selfies/${nomi.pictureSelfieImageId}.webp`
-        : `${base}/images/${nomi.pictureImageId}.webp`;
-}
+import { getNomiImageUrl } from "../../../utils/nomiMedia";
 
 export const Info = () => {
     const { Nomis } = useNomi();
@@ -70,8 +58,11 @@ export const Info = () => {
     }, []);
 
     useEffect(() => {
-        const handleMessage = (message: any) => {
-            if (message && message.type === "DOWNLOAD_STATUS_UPDATE") {
+        const handleMessage = (message: {
+            type?: string;
+            status?: DownloadStatus;
+        }) => {
+            if (message?.type === "DOWNLOAD_STATUS_UPDATE" && message.status) {
                 setDownloadStatus(message.status);
             }
         };
@@ -79,89 +70,43 @@ export const Info = () => {
         return () => chrome.runtime.onMessage.removeListener(handleMessage);
     }, []);
 
-    async function handleDownloadAlbum() {
+    function startDownload(
+        type: string,
+        message: string,
+        extraData?: Record<string, unknown>,
+    ) {
         if (!Nomi) return;
         chrome.runtime.sendMessage({
-            type: "DOWNLOAD_ALBUM",
-            data: {
-                nomiId: Nomi.id,
-                downloadQuantity: Settings.albumDownload.downloadQuantity,
-                folderization: Settings.albumDownload.folderization,
-                quality: Settings.albumDownload.quality,
-            },
+            type,
+            data: { nomiId: Nomi.id, ...extraData },
         });
-        // Optimistic update or wait for poll
+        // Optimistic update; the background broadcasts real progress
         setDownloadStatus({
             inProgress: true,
-            message: "Starting download...",
+            message,
             id: Nomi.id,
             type: "nomi",
         });
     }
 
-    async function handleDownloadChat() {
-        if (!Nomi) return;
-        chrome.runtime.sendMessage({
-            type: "DOWNLOAD_CHAT",
-            data: {
-                nomiId: Nomi.id,
-            },
+    const handleDownloadAlbum = () =>
+        startDownload("DOWNLOAD_ALBUM", "Starting download...", {
+            downloadQuantity: Settings.albumDownload.downloadQuantity,
+            folderization: Settings.albumDownload.folderization,
+            quality: Settings.albumDownload.quality,
         });
-        setDownloadStatus({
-            inProgress: true,
-            message: "Starting chat download...",
-            id: Nomi.id,
-            type: "nomi",
-        });
-    }
 
-    async function handleDownloadMind() {
-        if (!Nomi) return;
-        chrome.runtime.sendMessage({
-            type: "DOWNLOAD_MIND",
-            data: {
-                nomiId: Nomi.id,
-            },
-        });
-        setDownloadStatus({
-            inProgress: true,
-            message: "Starting mind download...",
-            id: Nomi.id,
-            type: "nomi",
-        });
-    }
+    const handleDownloadChat = () =>
+        startDownload("DOWNLOAD_CHAT", "Starting chat download...");
 
-    async function handleDownloadBackstory() {
-        if (!Nomi) return;
-        chrome.runtime.sendMessage({
-            type: "DOWNLOAD_BACKSTORY",
-            data: {
-                nomiId: Nomi.id,
-            },
-        });
-        setDownloadStatus({
-            inProgress: true,
-            message: "Starting backstory download...",
-            id: Nomi.id,
-            type: "nomi",
-        });
-    }
+    const handleDownloadMind = () =>
+        startDownload("DOWNLOAD_MIND", "Starting mind download...");
 
-    async function handleDownloadJSON() {
-        if (!Nomi) return;
-        chrome.runtime.sendMessage({
-            type: "DOWNLOAD_JSON",
-            data: {
-                nomiId: Nomi.id,
-            },
-        });
-        setDownloadStatus({
-            inProgress: true,
-            message: "Starting JSON download...",
-            id: Nomi.id,
-            type: "nomi",
-        });
-    }
+    const handleDownloadBackstory = () =>
+        startDownload("DOWNLOAD_BACKSTORY", "Starting backstory download...");
+
+    const handleDownloadJSON = () =>
+        startDownload("DOWNLOAD_JSON", "Starting JSON download...");
 
     return (
         <div
