@@ -35,7 +35,7 @@ export interface Media {
     selfieImageId?: string;
     characterImageId?: null;
     parentImageEditRequestUuid?: null;
-    mediaTagIds?: any[];
+    mediaTagIds?: unknown[];
     memory?: null;
     selfieType?: Type;
     requestedFrom?: string;

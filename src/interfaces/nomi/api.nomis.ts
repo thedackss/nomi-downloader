@@ -1,3 +1,5 @@
+import type { CustomTrait } from "./shared";
+
 export interface ApiNomisResponse {
     nomis: Nomi[];
 }
@@ -10,26 +12,26 @@ export interface Nomi {
     created: string;
     updated: string;
     relationshipType: string;
-    archived: any;
+    archived: string | null;
     status: string;
     characterId: string;
     pictureImageId: string;
     pictureSelfieImageId?: string;
     settings: Settings;
     artSettings: ArtSettings;
-    customTraits: any[];
+    customTraits: CustomTrait[];
     keyTraits: string[];
-    generatingSpeechChatMessageId: any;
+    generatingSpeechChatMessageId: string | null;
     communicationStyle: string;
     useAvvi: boolean;
-    elevenLabsVoiceId: any;
+    elevenLabsVoiceId: string | null;
     hasPendingAutoSelfiesRequest: boolean;
     uuid: string;
     hasEverEnabledProactiveMessaging: boolean;
-    customVoiceId: any;
+    customVoiceId: string | null;
     voiceSource: string;
-    builtInVoiceId: any;
-    imageEditRequestUuid: any;
+    builtInVoiceId: string | null;
+    imageEditRequestUuid: string | null;
     hasUnreadMedia: boolean;
     optOutRoleplayStarter?: boolean;
     videoRequestUuid?: string;
@@ -38,7 +40,7 @@ export interface Nomi {
     lastVisibleMessage: LastVisibleMessage;
     hasActiveArtRequest: boolean;
     hasActiveVideoRequest: boolean;
-    unreadNomiMessageUuids: any[];
+    unreadNomiMessageUuids: string[];
     videoRequestCompleted?: string;
     traits: Trait[];
 }
@@ -51,7 +53,7 @@ interface Settings {
     selfieFaceFidelityRatio: number;
     allowCoupleSelfies: boolean;
     useBetaAi: boolean;
-    proactiveNomiMessageFrequency: any;
+    proactiveNomiMessageFrequency: string | null;
     allowAutomaticSelfies: boolean;
     aiSystem: string;
     videoResolution: string;
@@ -62,7 +64,7 @@ interface ArtSettings {
     faceMatch: boolean;
     aspectRatio: string;
     style: string;
-    poseReference: any;
+    poseReference: string | null;
 }
 
 interface LastVisibleMessage {

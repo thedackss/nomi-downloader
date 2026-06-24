@@ -1,3 +1,5 @@
+import type { CustomTrait } from "./shared";
+
 export interface ApiNomisIdResponse {
     id: number;
     userId: number;
@@ -6,35 +8,35 @@ export interface ApiNomisIdResponse {
     created: string;
     updated: string;
     relationshipType: string;
-    archived: any;
+    archived: string | null;
     status: string;
     characterId: string;
     pictureImageId: string;
     pictureSelfieImageId: string;
     settings: Settings;
     artSettings: ArtSettings;
-    customTraits: any[];
-    keyTraits: any[];
-    generatingSpeechChatMessageId: any;
+    customTraits: CustomTrait[];
+    keyTraits: string[];
+    generatingSpeechChatMessageId: string | null;
     communicationStyle: string;
     useAvvi: boolean;
-    elevenLabsVoiceId: any;
+    elevenLabsVoiceId: string | null;
     hasPendingAutoSelfiesRequest: boolean;
     uuid: string;
     hasEverEnabledProactiveMessaging: boolean;
-    customVoiceId: any;
+    customVoiceId: string | null;
     voiceSource: string;
-    builtInVoiceId: any;
-    imageEditRequestUuid: any;
+    builtInVoiceId: string | null;
+    imageEditRequestUuid: string | null;
     hasUnreadMedia: boolean;
-    optOutRoleplayStarter: any;
-    videoRequestUuid: any;
-    baseCharacterImageId: any;
+    optOutRoleplayStarter: boolean | null;
+    videoRequestUuid: string | null;
+    baseCharacterImageId: string | null;
     baseSelfieImageId: string;
-    traits: any[];
+    traits: Trait[];
     messageDraft: string;
-    unreadNomiMessageUuids: any[];
-    videoRequestCompleted: any;
+    unreadNomiMessageUuids: string[];
+    videoRequestCompleted: string | null;
     socketToken: string;
     inService: boolean;
 }
@@ -47,7 +49,7 @@ interface Settings {
     selfieFaceFidelityRatio: number;
     allowCoupleSelfies: boolean;
     useBetaAi: boolean;
-    proactiveNomiMessageFrequency: any;
+    proactiveNomiMessageFrequency: string | null;
     allowAutomaticSelfies: boolean;
     aiSystem: string;
     videoResolution: string;
@@ -58,5 +60,12 @@ interface ArtSettings {
     faceMatch: boolean;
     aspectRatio: string;
     style: string;
-    poseReference: any;
+    poseReference: string | null;
+}
+
+interface Trait {
+    id: number;
+    type: string;
+    name: string;
+    is18Plus: boolean;
 }

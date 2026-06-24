@@ -1,9 +1,9 @@
 export interface ApiNomisMessagesResponse {
     messages: Message[];
     selfies: SelfieRequest[];
-    voiceCalls: any[];
+    voiceCalls: unknown[];
     nextMax: string | undefined;
-    roleplays: any[];
+    roleplays: unknown[];
 }
 
 export interface Message {
@@ -19,8 +19,8 @@ export interface Message {
     timezone: string;
     text: string;
     aiBackendId?: string;
-    speech: any;
-    policyViolations: any[];
+    speech: unknown;
+    policyViolations: unknown[];
     attachment?: Attachment;
 }
 
@@ -30,7 +30,7 @@ export interface Attachment {
     sizeInBytes: number;
     sha256HashBase64: string;
     created: string;
-    reaped: any;
+    reaped: unknown;
 }
 
 export interface SelfieRequest {
@@ -45,8 +45,8 @@ export interface Selfie {
     id: string;
     hidden: boolean;
     nsfwScore: number;
-    reaction: any;
-    feedback: any;
-    flagged: any;
+    reaction: unknown;
+    feedback: unknown;
+    flagged: unknown;
     selfieRequestId: number;
 }
