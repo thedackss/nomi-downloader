@@ -143,14 +143,12 @@ function main() {
                 runDownload(
                     nomiId,
                     {
-                        start: "Starting backstory download...",
-                        done: "Backstory downloaded!",
-                        error: "Error downloading backstory",
+                        start: "Preparing backstory...",
+                        // Not implemented yet — report honestly, don't fake success.
+                        done: "Backstory export isn't available yet",
+                        error: "Backstory export isn't available yet",
                     },
-                    // TODO: Implement backstory download logic
-                    async () => {
-                        await nomi.get({ nomiId });
-                    },
+                    async () => {},
                 );
                 break;
             }
@@ -162,9 +160,16 @@ function main() {
                         done: "JSON downloaded!",
                         error: "Error downloading JSON",
                     },
-                    // TODO: Implement JSON download logic
                     async () => {
-                        await nomi.get({ nomiId });
+                        const data = await nomi.get({ nomiId });
+                        const json = JSON.stringify(data, null, 2);
+                        const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
+
+                        await chrome.downloads.download({
+                            url: dataUrl,
+                            filename: `nomi-${nomiId}-${new Date().getTime()}.json`,
+                            saveAs: true,
+                        });
                     },
                 );
                 break;
