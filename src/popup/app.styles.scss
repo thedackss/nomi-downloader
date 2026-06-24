@@ -45,16 +45,25 @@ html {
     --width: 800px;
     --height: 600px;
 
-    width: var(--width);
+    // Fluid to the popup viewport so html never exceeds it. body keeps the
+    // fixed 800px that sizes the popup; when the popup renders a few px under
+    // 800 (outline/scrollbar), html stays in-bounds and clips the slight body
+    // overflow (only the right padding) instead of growing a scrollbar.
+    width: 100%;
     height: var(--height);
     outline: outset 2px var(--primary);
+    overflow-x: hidden;
 
     body {
         background-color: var(--background);
         color: var(--text);
 
-        width: var(--width);
+        // Fixed 800 to size the popup, but cap at the viewport so a slightly
+        // narrower popup shrinks the body instead of overflowing it.
+        width: 100%;
+        max-width: var(--width);
         height: var(--height);
+        overflow-x: hidden;
         #root {
             display: flex;
             flex-direction: column;
