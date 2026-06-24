@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { Nomi } from "../../../interfaces/nomi/api.nomis";
-import type { DownloadStatus } from "./interfaces";
-import { LoadingSpin } from "../LoadingSpin";
-import styles from "./styles.module.scss";
 import { Nomi as NomiClass } from "../../../background/nomi";
+import type { Nomi } from "../../../interfaces/nomi/api.nomis";
+import { LoadingSpin } from "../LoadingSpin";
+import type { DownloadStatus } from "./interfaces";
+import styles from "./styles.module.scss";
 
 interface NomiInfoProps {
     nomi: Nomi;
@@ -112,8 +112,7 @@ export const NomiInfo = ({
             <div className={styles.downloadSection}>
                 <LoadingSpin
                     className={styles.loadingSpin}
-                    visible={downloadStatus.inProgress}
-                >
+                    visible={downloadStatus.inProgress}>
                     <h3>
                         Downloading
                         <p>{message}</p>
@@ -122,24 +121,24 @@ export const NomiInfo = ({
 
                 <div className={styles.splitButton} ref={splitRef}>
                     <button
+                        type="button"
                         className={styles.splitMain}
                         onClick={selected.fn}
-                        // disabled={downloadStatus.inProgress}
                         disabled={
                             downloadStatus.inProgress ||
                             (mindMapActive === false &&
                                 selected.name === "Mind Map")
-                        }
-                    >
+                        }>
                         Download {selected.name}
                     </button>
                     <button
+                        type="button"
                         className={styles.splitArrow}
                         onClick={() => setDropdownOpen((o) => !o)}
                         disabled={downloadStatus.inProgress}
-                        aria-label="Choose download type"
-                    >
+                        aria-label="Choose download type">
                         <svg
+                            aria-hidden="true"
                             viewBox="0 0 24 24"
                             width="14"
                             height="14"
@@ -148,8 +147,7 @@ export const NomiInfo = ({
                                     ? "rotate(180deg)"
                                     : undefined,
                                 transition: "transform 0.2s ease",
-                            }}
-                        >
+                            }}>
                             <path fill="currentColor" d="M7 10l5 5 5-5z" />
                         </svg>
                     </button>
@@ -157,6 +155,7 @@ export const NomiInfo = ({
                         <div className={styles.splitDropdown}>
                             {downloadOptions.map((option) => (
                                 <button
+                                    type="button"
                                     key={option.name}
                                     className={
                                         selected.name === option.name
@@ -171,8 +170,7 @@ export const NomiInfo = ({
                                         downloadStatus.inProgress ||
                                         (mindMapActive === false &&
                                             option.name === "Mind Map")
-                                    }
-                                >
+                                    }>
                                     {option.name}
                                 </button>
                             ))}

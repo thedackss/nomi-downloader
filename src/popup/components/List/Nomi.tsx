@@ -1,9 +1,9 @@
-import { useSettings } from "../../hooks/useSettings";
-import { useNomi } from "../../hooks/useNomi";
-import { getNomiMedia } from "../../../utils/nomiMedia";
-import { getIconSize, getIconShape } from "./iconClasses";
-import styles from "./styles.module.scss";
 import { useEffect } from "react";
+import { getNomiMedia } from "../../../utils/nomiMedia";
+import { useNomi } from "../../hooks/useNomi";
+import { useSettings } from "../../hooks/useSettings";
+import { getIconShape, getIconSize } from "./iconClasses";
+import styles from "./styles.module.scss";
 
 export const NomiList = () => {
     const { Settings } = useSettings();
@@ -44,17 +44,18 @@ export const NomiList = () => {
                         className={`${isSelected ? styles.selected : ""}`}
                         key={nomi.id}
                         onClick={handleSelect}
-                    >
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ")
+                                handleSelect();
+                        }}>
                         <span
-                            className={`${styles.icon} ${getIconSize(Settings.list.iconSize)} ${getIconShape(Settings.list.iconShape)}`}
-                        >
+                            className={`${styles.icon} ${getIconSize(Settings.list.iconSize)} ${getIconShape(Settings.list.iconShape)}`}>
                             {media.video && (
                                 <video
                                     src={media.video}
                                     loop
                                     muted
-                                    autoPlay
-                                ></video>
+                                    autoPlay></video>
                             )}
                             <span
                                 className={styles.img}

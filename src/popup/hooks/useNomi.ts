@@ -1,16 +1,27 @@
-import type { ApiNomisResponse, Nomi } from "../../interfaces/nomi/api.nomis";
-import type { Nomis } from "../context/nomis/interfaces";
 import { useCallback, useContext } from "react";
-import { NomisContext } from "../context/nomis";
-import { api } from "../../utils/nomiApi";
-import { Log } from "../../utils/log";
-import { useTab } from "./useTab";
-import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
 import type {
     ApiGroupChatsResponse,
     GroupChat,
 } from "../../interfaces/nomi/api.groupChats";
 import type { ApiGroupChatsIdResponse } from "../../interfaces/nomi/api.groupChats.id";
+import type { ApiNomisResponse, Nomi } from "../../interfaces/nomi/api.nomis";
+import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
+import { Log } from "../../utils/log";
+import { api } from "../../utils/nomiApi";
+import { NomisContext } from "../context/nomis";
+import type { Nomis } from "../context/nomis/interfaces";
+import { useTab } from "./useTab";
+
+function isNomiURL(url: string): boolean {
+    const regex =
+        /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}(\/photo-album)?\/?$/;
+    return regex.test(url);
+}
+
+function isGroupURL(url: string): boolean {
+    const regex = /^https:\/\/beta\.nomi\.ai\/group-chats\/\d{4,10}\/?$/;
+    return regex.test(url);
+}
 
 export const useNomi = () => {
     const context = useContext(NomisContext);
@@ -108,36 +119,31 @@ export const useNomi = () => {
         }
     }, []);
 
-    function isNomiURL(url: string): boolean {
-        const regex =
-            /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}(\/photo-album)?\/?$/;
-        return regex.test(url);
-    }
+    const selectNomi = useCallback(
+        (nomi: Nomi) => {
+            setNomis((prev: Nomis) => ({
+                list: prev.list,
+                selected: {
+                    nomi: nomi,
+                    group: null,
+                },
+            }));
+        },
+        [setNomis],
+    );
 
-    function isGroupURL(url: string): boolean {
-        const regex = /^https:\/\/beta\.nomi\.ai\/group-chats\/\d{4,10}\/?$/;
-        return regex.test(url);
-    }
-
-    const selectNomi = useCallback((nomi: Nomi) => {
-        setNomis((prev: Nomis) => ({
-            list: prev.list,
-            selected: {
-                nomi: nomi,
-                group: null,
-            },
-        }));
-    }, [setNomis]);
-
-    const selectGroup = useCallback((group: GroupChat) => {
-        setNomis((prev: Nomis) => ({
-            list: prev.list,
-            selected: {
-                nomi: null,
-                group: group,
-            },
-        }));
-    }, [setNomis]);
+    const selectGroup = useCallback(
+        (group: GroupChat) => {
+            setNomis((prev: Nomis) => ({
+                list: prev.list,
+                selected: {
+                    nomi: null,
+                    group: group,
+                },
+            }));
+        },
+        [setNomis],
+    );
 
     const checkSelectedNomi = useCallback(async () => {
         if (!Nomis.list.nomi || !Nomis.list.group) return;

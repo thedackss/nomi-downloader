@@ -1,7 +1,7 @@
+import { useState } from "react";
 import { useSettings } from "../../hooks/useSettings";
 import { RiSettingsLine } from "./RiSettingsLine";
 import styles from "./styles.module.scss";
-import { useState } from "react";
 
 export const Settings = () => {
     const { Settings, updateSettings } = useSettings();
@@ -12,16 +12,16 @@ export const Settings = () => {
     return (
         <div className={styles.settings}>
             <button
+                type="button"
+                aria-label="Toggle settings"
                 className={isOpen ? styles.active : undefined}
-                onClick={toggleSettings}
-            >
+                onClick={toggleSettings}>
                 <RiSettingsLine />
                 <RiSettingsLine />
             </button>
 
             <div
-                className={`${styles.menu}${isOpen ? ` ${styles.visible}` : ""}`}
-            >
+                className={`${styles.menu}${isOpen ? ` ${styles.visible}` : ""}`}>
                 <h2>Settings</h2>
                 <p>Here you can configure your settings.</p>
 
@@ -30,8 +30,9 @@ export const Settings = () => {
                         <h3>Interface</h3>
                     </li>
                     <li>
-                        <label>Layout</label>
+                        <label htmlFor="set-layout">Layout</label>
                         <select
+                            id="set-layout"
                             value={Settings.layout}
                             onChange={(e) =>
                                 updateSettings({
@@ -40,16 +41,16 @@ export const Settings = () => {
                                         | "mobile"
                                         | "desktop",
                                 })
-                            }
-                        >
+                            }>
                             <option value="auto">Auto (detect)</option>
                             <option value="mobile">Mobile</option>
                             <option value="desktop">Desktop</option>
                         </select>
                     </li>
                     <li>
-                        <label>Icon Shape</label>
+                        <label htmlFor="set-icon-shape">Icon Shape</label>
                         <select
+                            id="set-icon-shape"
                             value={Settings.list.iconShape}
                             onChange={(e) =>
                                 updateSettings({
@@ -61,16 +62,16 @@ export const Settings = () => {
                                             | "sharp",
                                     },
                                 })
-                            }
-                        >
+                            }>
                             <option value="square">Square</option>
                             <option value="circle">Circle</option>
                             <option value="sharp">Sharp</option>
                         </select>
                     </li>
                     <li>
-                        <label>Icon Size</label>
+                        <label htmlFor="set-icon-size">Icon Size</label>
                         <select
+                            id="set-icon-size"
                             value={Settings.list.iconSize}
                             onChange={(e) =>
                                 updateSettings({
@@ -83,8 +84,7 @@ export const Settings = () => {
                                             | "xlarge",
                                     },
                                 })
-                            }
-                        >
+                            }>
                             <option value="small">Small</option>
                             <option value="medium">Medium</option>
                             <option value="large">Large</option>
@@ -95,7 +95,7 @@ export const Settings = () => {
                         <h3>Album</h3>
                     </li>
                     <li>
-                        <label>
+                        <label htmlFor="set-quantity">
                             <span>Concurrent Downloads</span>
                             {Settings.albumDownload.downloadQuantity > 5 ? (
                                 <span className={styles.warning}>
@@ -110,6 +110,7 @@ export const Settings = () => {
                         </label>
                         <div className={styles.row}>
                             <input
+                                id="set-quantity"
                                 type="range"
                                 min={1}
                                 max={10}
@@ -120,6 +121,7 @@ export const Settings = () => {
                                             ...Settings.albumDownload,
                                             downloadQuantity: parseInt(
                                                 e.target.value,
+                                                10,
                                             ),
                                         },
                                     })
@@ -136,6 +138,7 @@ export const Settings = () => {
                                             ...Settings.albumDownload,
                                             downloadQuantity: parseInt(
                                                 e.target.value,
+                                                10,
                                             ),
                                         },
                                     })
@@ -144,7 +147,7 @@ export const Settings = () => {
                         </div>
                     </li>
                     <li>
-                        <label>
+                        <label htmlFor="set-quality">
                             Image Quality
                             {Settings.albumDownload.quality === "HD" ? (
                                 <span className={styles.warning}>
@@ -159,6 +162,7 @@ export const Settings = () => {
                             )}
                         </label>
                         <select
+                            id="set-quality"
                             value={Settings.albumDownload.quality}
                             onChange={(e) =>
                                 updateSettings({
@@ -167,17 +171,19 @@ export const Settings = () => {
                                         quality: e.target.value as "HD" | "SD",
                                     },
                                 })
-                            }
-                        >
+                            }>
                             <option value="HD">HD</option>
                             <option value="SD">SD</option>
                         </select>
                     </li>
                     <li>
-                        <label>Organize into folders</label>
+                        <label htmlFor="set-folders">
+                            Organize into folders
+                        </label>
                         <div className={styles.row}>
                             <label className={styles.switch}>
                                 <input
+                                    id="set-folders"
                                     type="checkbox"
                                     checked={
                                         Settings.albumDownload.folderization
@@ -198,8 +204,7 @@ export const Settings = () => {
                                     margin: 0,
                                     opacity: 0.7,
                                     fontSize: "0.8rem",
-                                }}
-                            >
+                                }}>
                                 {Settings.albumDownload.folderization
                                     ? "Enabled"
                                     : "Disabled"}

@@ -1,18 +1,18 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
+    type BrowserContext,
     test as base,
     chromium,
     expect,
-    type BrowserContext,
 } from "@playwright/test";
-import path from "path";
-import { fileURLToPath } from "url";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const EXT_PATH = path.resolve(dir, "../dist");
 
 // Load the built extension into a persistent context and expose its id.
 const test = base.extend<{ context: BrowserContext; extensionId: string }>({
-    // eslint-disable-next-line no-empty-pattern
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures declare deps via destructuring; this one has none
     context: async ({}, use) => {
         const context = await chromium.launchPersistentContext("", {
             headless: false,
