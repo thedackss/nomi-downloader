@@ -76,6 +76,19 @@ if (isFirefox) {
 
 // https://vite.dev/config/
 export default defineConfig({
+    build: {
+        // Stable (unhashed) output names. With the build-on-server →
+        // load-on-desktop workflow, hashed names rename every build and a
+        // reloaded extension 404s on the old files. Stable names overwrite
+        // in place, so a reload just picks up fresh content.
+        rollupOptions: {
+            output: {
+                entryFileNames: "assets/[name].js",
+                chunkFileNames: "assets/[name].js",
+                assetFileNames: "assets/[name].[ext]",
+            },
+        },
+    },
     server: {
         port: 5173,
         strictPort: true,
