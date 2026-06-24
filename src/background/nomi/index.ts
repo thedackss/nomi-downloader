@@ -213,7 +213,16 @@ export class Nomi {
         });
     }
 
-    private async callOffscreen(type: string, data: any) {
+    private async callOffscreen(
+        type: string,
+        data: {
+            id?: string;
+            path?: string;
+            content?: string;
+            type?: string;
+            url?: string;
+        },
+    ) {
         if (typeof chrome !== "undefined" && chrome.offscreen) {
             return chrome.runtime.sendMessage({
                 target: "offscreen",
@@ -224,17 +233,21 @@ export class Nomi {
             const { zipService } = await import("../../utils/zipService");
             switch (type) {
                 case "create-zip":
-                    return zipService.createZip(data.id);
+                    return zipService.createZip(data.id!);
                 case "add-file":
-                    return zipService.addFile(data.id, data.path, data.content);
+                    return zipService.addFile(
+                        data.id!,
+                        data.path!,
+                        data.content!,
+                    );
                 case "generate-zip":
-                    return zipService.generateZip(data.id);
+                    return zipService.generateZip(data.id!);
                 case "clear-zip":
-                    return zipService.clearZip(data.id);
+                    return zipService.clearZip(data.id!);
                 case "create-blob-url":
                     // Fallback for non-offscreen context (if necessary, though logic is weird here)
                     // The whole point is to avoid this, but if offscreen is missing:
-                    const blob = new Blob([data.content], { type: data.type });
+                    const blob = new Blob([data.content!], { type: data.type });
                     return this.blobToBase64(blob).then((b64) => ({
                         success: true,
                         url: `data:${data.type};base64,${b64}`,
@@ -760,7 +773,7 @@ export class Nomi {
             const memoryUrl = `${base}/memory-terms`;
             const graphUrl = `${base}/graph`;
 
-            const Terms: any[] = [];
+            const Terms: { category: string; items: MemoryTermItem[] }[] = [];
 
             const { data: Graph } = await api.get<ApiMindMapsGraphResponse>(
                 `${graphUrl}`,

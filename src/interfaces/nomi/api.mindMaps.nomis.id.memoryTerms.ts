@@ -48,9 +48,9 @@ export interface MemoryTermItem {
     summary: null;
     locked: boolean;
     memoryCount: number;
-    created: Date;
+    created: string;
     userEdited: null;
-    aiEdited: Date;
+    aiEdited: string;
     state: string;
     error: null;
     selected: boolean;

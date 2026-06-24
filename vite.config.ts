@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { crx } from "@crxjs/vite-plugin";
+import { crx, type ManifestV3Export } from "@crxjs/vite-plugin";
 import manifest from "./manifest.json";
 import { version } from "./package.json";
 import fs from "fs";
@@ -41,10 +41,22 @@ const firefoxManifestFix = () => {
     };
 };
 
-const extensionManifest = {
+type ExtensionManifest = Omit<
+    typeof manifest,
+    "background" | "permissions" | "browser_specific_settings"
+> & {
+    version: string;
+    background: { service_worker?: string; scripts?: string[]; type: string };
+    permissions: string[];
+    browser_specific_settings?: {
+        gecko: { id: string; strict_min_version: string };
+    };
+};
+
+const extensionManifest: ExtensionManifest = {
     ...manifest,
     version,
-} as any;
+};
 
 if (isFirefox) {
     extensionManifest.background = {
@@ -79,7 +91,7 @@ export default defineConfig({
     plugins: [
         react(),
         crx({
-            manifest: extensionManifest,
+            manifest: extensionManifest as ManifestV3Export,
             browser: isFirefox ? "firefox" : "chrome",
         }),
         firefoxManifestFix(),

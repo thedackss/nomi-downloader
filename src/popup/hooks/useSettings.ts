@@ -3,16 +3,19 @@ import { SettingsContext } from "../context/settings";
 import { useContext } from "react";
 import { Log } from "../../utils/log";
 
-// Helper for deep merging objects
-function deepMerge(target: any, source: any): any {
-    const isObject = (obj: any) =>
-        obj && typeof obj === "object" && !Array.isArray(obj);
+type Dict = Record<string, unknown>;
 
+function isObject(value: unknown): value is Dict {
+    return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+// Helper for deep merging objects
+function deepMerge<T>(target: T, source: unknown): T {
     if (!isObject(target) || !isObject(source)) {
-        return source;
+        return source as T;
     }
 
-    const output = { ...target };
+    const output: Dict = { ...target };
 
     Object.keys(source).forEach((key) => {
         if (isObject(source[key]) && key in target) {
@@ -22,7 +25,7 @@ function deepMerge(target: any, source: any): any {
         }
     });
 
-    return output;
+    return output as T;
 }
 
 export const useSettings = () => {
