@@ -47,7 +47,7 @@ export class Nomi {
             await api.head("nomis/" + nomiId);
 
             return true;
-        } catch (error) {
+        } catch {
             throw new NomiError({
                 id: nomiId,
                 message: "Nomi with ID " + nomiId + " not found",
@@ -62,7 +62,7 @@ export class Nomi {
                 "nomis/" + nomiId,
             );
             return data;
-        } catch (error) {
+        } catch {
             throw new NomiError({
                 message: "Failed to get Nomi with ID " + nomiId,
             });
@@ -78,7 +78,6 @@ export class Nomi {
             const messages: Message[] = [];
             const requests: SelfieRequest[] = [];
 
-            let messagesFound = 0;
             let nextMax: string | undefined = "default";
             let url = `/nomis/${nomiId}/chat/messages`;
 
@@ -95,7 +94,6 @@ export class Nomi {
                     requests.push(...data.selfies);
 
                     nextMax = data.nextMax ?? undefined;
-                    messagesFound += data.messages.length;
                 }
             } catch (error) {
                 Log(
@@ -244,14 +242,14 @@ export class Nomi {
                     return zipService.generateZip(data.id!);
                 case "clear-zip":
                     return zipService.clearZip(data.id!);
-                case "create-blob-url":
-                    // Fallback for non-offscreen context (if necessary, though logic is weird here)
-                    // The whole point is to avoid this, but if offscreen is missing:
+                case "create-blob-url": {
+                    // Fallback for non-offscreen context
                     const blob = new Blob([data.content!], { type: data.type });
                     return this.blobToBase64(blob).then((b64) => ({
                         success: true,
                         url: `data:${data.type};base64,${b64}`,
                     }));
+                }
                 case "revoke-blob-url":
                     return { success: true };
                 default:
@@ -711,7 +709,7 @@ export class Nomi {
                         url = res.url;
                         isBlob = true;
                     }
-                } catch (e) {
+                } catch {
                     // fallthrough to base64
                 }
 
