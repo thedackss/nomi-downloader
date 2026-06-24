@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
 import type React from "react";
-import { useNomi } from "../../hooks/useNomi";
-import { LoadingSpin } from "../LoadingSpin";
-import styles from "./styles.module.scss";
-import type { DownloadStatus } from "./interfaces";
-import { useSettings } from "../../hooks/useSettings";
-import { NomiInfo } from "./Nomi";
-import { GroupInfo } from "./Group";
+import { useEffect, useState } from "react";
 import { getNomiImageUrl } from "../../../utils/nomiMedia";
+import { useNomi } from "../../hooks/useNomi";
+import { useSettings } from "../../hooks/useSettings";
+import { LoadingSpin } from "../LoadingSpin";
+import { GroupInfo } from "./Group";
+import type { DownloadStatus } from "./interfaces";
+import { NomiInfo } from "./Nomi";
+import styles from "./styles.module.scss";
 
 export const Info = () => {
     const { Nomis } = useNomi();
@@ -112,8 +112,7 @@ export const Info = () => {
         <div
             className={styles.nomiInfo}
             style={bgStyle}
-            data-bg={bgImages.length > 0 ? "" : undefined}
-        >
+            data-bg={bgImages.length > 0 ? "" : undefined}>
             {(() => {
                 if (Nomi) {
                     return (

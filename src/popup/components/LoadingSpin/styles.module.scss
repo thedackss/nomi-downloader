@@ -10,7 +10,6 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
-
     background-color: var(--background);
     transition: opacity 0.25s ease-in-out;
     position: absolute;
@@ -27,7 +26,7 @@
 
     svg {
         pointer-events: none;
-        color: rgba(from var(--primary) r g b / 0.5);
+        color: rgb(from var(--primary) r g b / 50%);
         width: 2.5rem;
         height: 2.5rem;
         animation: spin 0.5s linear infinite;

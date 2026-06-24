@@ -1,11 +1,8 @@
-import { api } from "../../utils/nomiApi";
-import { Log } from "../../utils/log";
-import { NomiError } from "./errors";
-import { chunkBySize } from "./chunk";
-import type { NomiApiClient } from "./api";
-import type { OffscreenClient } from "./offscreenClient";
-import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
 import type { Media } from "../../interfaces/nomi/api.nomis.id.medias";
+import { Log } from "../../utils/log";
+import { api } from "../../utils/nomiApi";
+import type { NomiApiClient } from "./api";
+import { chunkBySize } from "./chunk";
 import {
     ALBUM_CHUNK_MAX_BYTES,
     ALBUM_FINALIZE_DELAY_MS,
@@ -17,6 +14,9 @@ import {
     SD_IMAGE_BYTES,
     VIDEO_BYTES,
 } from "./constants";
+import { NomiError } from "./errors";
+import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
+import type { OffscreenClient } from "./offscreenClient";
 
 type MediaType = "Photo" | "Video" | "Art" | "PhotoEdit";
 
@@ -39,7 +39,7 @@ export class AlbumDownloader {
         try {
             await this.offscreen.setupDocument();
 
-            Log("Downloading album for Nomi ID: " + nomiId);
+            Log(`Downloading album for Nomi ID: ${nomiId}`);
             const ext = quality === "HD" ? "png" : "webp";
 
             update("Checking if Nomi exists...");
@@ -52,7 +52,7 @@ export class AlbumDownloader {
             if (medias.length === 0) {
                 throw new NomiError({
                     id: nomiId,
-                    message: "No media found for Nomi with ID " + nomiId,
+                    message: `No media found for Nomi with ID ${nomiId}`,
                 });
             }
 
@@ -154,7 +154,7 @@ export class AlbumDownloader {
                     });
                 } else {
                     Log(
-                        "Failed to generate zip for chunk " + (chunkIndex + 1),
+                        `Failed to generate zip for chunk ${chunkIndex + 1}`,
                         response.error,
                     );
                 }
@@ -186,8 +186,8 @@ export class AlbumDownloader {
             );
         } catch (error) {
             if (error instanceof NomiError) {
-                Log("NomiError: " + error.message);
-                update("Error: " + error.message);
+                Log(`NomiError: ${error.message}`);
+                update(`Error: ${error.message}`);
             } else {
                 Log("Unexpected error during album download:", error);
                 update("An unexpected error occurred during download.");

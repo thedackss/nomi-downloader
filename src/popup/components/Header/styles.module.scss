@@ -5,9 +5,7 @@
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
-
     padding: 0 1.5rem;
-
     position: relative;
 
     h1 {
@@ -17,16 +15,18 @@
         text-align: center;
         color: var(--primary);
         align-self: flex-end;
-
         position: relative;
         z-index: 3;
+
         :global(.desktop) & {
             font-size: 2rem;
         }
     }
+
     :global(.desktop) & h1 {
         font-size: 2rem;
     }
+
     .backButton {
         display: flex;
         align-items: center;
@@ -46,7 +46,7 @@
         transition: background-color 0.2s ease;
 
         &:hover {
-            background-color: rgba(from var(--primary) r g b / 0.15);
+            background-color: rgb(from var(--primary) r g b / 15%);
         }
     }
 }

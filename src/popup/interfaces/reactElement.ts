@@ -1,4 +1,4 @@
-import { type HTMLAttributes, type JSX } from "react";
+import type { HTMLAttributes, JSX } from "react";
 
 export type ReactElement = HTMLAttributes<HTMLDivElement>;
 

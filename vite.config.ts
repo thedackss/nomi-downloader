@@ -1,10 +1,10 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import fs from "node:fs";
+import path from "node:path";
 import { crx, type ManifestV3Export } from "@crxjs/vite-plugin";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 import manifest from "./manifest.json";
 import { version } from "./package.json";
-import fs from "fs";
-import path from "path";
 
 const isFirefox = process.env.BROWSER_TARGET === "firefox";
 
@@ -22,7 +22,7 @@ const firefoxManifestFix = () => {
                     fs.readFileSync(manifestPath, "utf-8"),
                 );
 
-                if (manifest.background && manifest.background.service_worker) {
+                if (manifest.background?.service_worker) {
                     manifest.background.scripts = [
                         manifest.background.service_worker,
                     ];

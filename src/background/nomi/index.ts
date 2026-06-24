@@ -1,10 +1,10 @@
-import { NomiApiClient } from "./api";
-import { OffscreenClient } from "./offscreenClient";
 import { AlbumDownloader } from "./albumDownloader";
+import { NomiApiClient } from "./api";
 import { ChatDownloader } from "./chatDownloader";
-import type { NomiExistsProps } from "./interfaces/exists";
 import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
 import type { DownloadChatProps } from "./interfaces/downloadChat";
+import type { NomiExistsProps } from "./interfaces/exists";
+import { OffscreenClient } from "./offscreenClient";
 
 /**
  * Facade over the Nomi data API, offscreen/zip bridge, and the album/chat

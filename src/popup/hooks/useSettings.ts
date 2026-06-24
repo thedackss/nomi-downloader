@@ -1,8 +1,8 @@
-import type { Settings } from "../context/settings/interfaces";
-import { SettingsContext } from "../context/settings";
 import { useContext } from "react";
-import { Log } from "../../utils/log";
 import { deepMerge } from "../../utils/deepMerge";
+import { Log } from "../../utils/log";
+import { SettingsContext } from "../context/settings";
+import type { Settings } from "../context/settings/interfaces";
 
 export const useSettings = () => {
     const context = useContext(SettingsContext);

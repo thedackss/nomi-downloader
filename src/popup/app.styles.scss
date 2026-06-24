@@ -1,105 +1,102 @@
-@import url("https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
+@import "https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap";
 
 :root {
-  --primary: rgb(150, 16, 255);
-  --background: rgb(24, 26, 32);
-  --background-secondary: rgb(36, 38, 43);
-  --text: rgb(255, 255, 255);
-
-  --scroll-size: 8px;
+    --primary: rgb(150 16 255);
+    --background: rgb(24 26 32);
+    --background-secondary: rgb(36 38 43);
+    --text: rgb(255 255 255);
+    --scroll-size: 8px;
 }
 
 * {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  font-family: "Urbanist", sans-serif;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: Urbanist, sans-serif;
 
-  &::-webkit-scrollbar {
-    width: var(--scroll-size);
-    border-radius: var(--scroll-size);
-    background: rgba(0, 0, 0, 0.1);
-  }
-
-  &::-webkit-scrollbar-track {
-    border-radius: var(--scroll-size);
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--scroll-size);
-    transition: background 0.2s ease-in-out;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.1);
+    &::-webkit-scrollbar {
+        width: var(--scroll-size);
+        border-radius: var(--scroll-size);
+        background: rgb(0 0 0 / 10%);
     }
-  }
 
-  // Where horizontal + vertical scrollbars meet; unstyled it renders white.
-  &::-webkit-scrollbar-corner {
-    background: transparent;
-  }
+    &::-webkit-scrollbar-track {
+        border-radius: var(--scroll-size);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgb(255 255 255 / 5%);
+        border-radius: var(--scroll-size);
+        transition: background 0.2s ease-in-out;
+
+        &:hover {
+            background: rgb(255 255 255 / 10%);
+        }
+    }
+
+    // Where horizontal + vertical scrollbars meet; unstyled it renders white.
+    &::-webkit-scrollbar-corner {
+        background: transparent;
+    }
 }
 
 html {
-  --width: 800px;
-  --height: 600px;
+    --width: 800px;
+    --height: 600px;
 
-  // Fluid to the popup viewport so html never exceeds it. body keeps the
-  // fixed 800px that sizes the popup; when the popup renders a few px under
-  // 800 (outline/scrollbar), html stays in-bounds and clips the slight body
-  // overflow (only the right padding) instead of growing a scrollbar.
-  width: var(--width);
-  height: var(--height);
-  outline: outset 2px var(--primary);
-  overflow-x: hidden;
-
-  body {
-    background-color: var(--background);
-    color: var(--text);
-
-    // Fixed 800 to size the popup, but cap at the viewport so a slightly
-    // narrower popup shrinks the body instead of overflowing it.
-    width: 100%;
-    max-width: var(--width);
+    // Fluid to the popup viewport so html never exceeds it. body keeps the
+    // fixed 800px that sizes the popup; when the popup renders a few px under
+    // 800 (outline/scrollbar), html stays in-bounds and clips the slight body
+    // overflow (only the right padding) instead of growing a scrollbar.
+    width: var(--width);
     height: var(--height);
+    outline: outset 2px var(--primary);
     overflow-x: hidden;
-    #root {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      flex-shrink: 0;
-      justify-content: flex-start;
-      align-items: stretch;
 
-      width: 100%;
-      height: 100%;
+    body {
+        background-color: var(--background);
+        color: var(--text);
 
-      .mobile,
-      .desktop {
-        display: flex;
-        flex-direction: column;
+        // Fixed 800 to size the popup, but cap at the viewport so a slightly
+        // narrower popup shrinks the body instead of overflowing it.
         width: 100%;
-        height: 100%;
-      }
+        max-width: var(--width);
+        height: var(--height);
+        overflow-x: hidden;
 
-      .main-container {
-        padding: 1.5rem;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+        #root {
+            display: flex;
+            flex-flow: column nowrap;
+            flex-shrink: 0;
+            justify-content: flex-start;
+            align-items: stretch;
+            width: 100%;
+            height: 100%;
 
-        display: grid;
-        gap: 1rem;
-      }
+            .mobile,
+            .desktop {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
 
-      .mobile > .main-container {
-        grid-template-columns: 1fr;
-      }
+            .main-container {
+                padding: 1.5rem;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                display: grid;
+                gap: 1rem;
+            }
 
-      .desktop > .main-container {
-        grid-template-columns: repeat(2, 1fr);
-      }
+            .mobile > .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .desktop > .main-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     }
-  }
 }

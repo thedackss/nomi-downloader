@@ -52,15 +52,15 @@ function handleMessages(
     }
 }
 
-function handleCreateZip(
-    data: { id: string },
-    sendResponse: SendResponse,
-) {
+function handleCreateZip(data: { id: string }, sendResponse: SendResponse) {
     try {
         zipService.createZip(data.id);
         sendResponse({ success: true });
     } catch (err) {
-        sendResponse({ success: false, error: err instanceof Error ? err.message : String(err) });
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
     }
 }
 
@@ -72,7 +72,10 @@ function handleAddFile(
         zipService.addFile(data.id, data.path, data.content);
         sendResponse({ success: true });
     } catch (err) {
-        sendResponse({ success: false, error: err instanceof Error ? err.message : String(err) });
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
     }
 }
 
@@ -84,19 +87,22 @@ async function handleGenerateZip(
         const result = await zipService.generateZip(data.id);
         sendResponse(result);
     } catch (err) {
-        sendResponse({ success: false, error: err instanceof Error ? err.message : String(err) });
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
     }
 }
 
-function handleClearZip(
-    data: { id: string },
-    sendResponse: SendResponse,
-) {
+function handleClearZip(data: { id: string }, sendResponse: SendResponse) {
     try {
         zipService.clearZip(data.id);
         sendResponse({ success: true });
     } catch (err) {
-        sendResponse({ success: false, error: err instanceof Error ? err.message : String(err) });
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
     }
 }
 
@@ -109,7 +115,10 @@ function handleCreateBlobUrl(
         const url = URL.createObjectURL(blob);
         sendResponse({ success: true, url });
     } catch (err) {
-        sendResponse({ success: false, error: err instanceof Error ? err.message : String(err) });
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
     }
 }
 

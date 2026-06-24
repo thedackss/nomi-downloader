@@ -1,6 +1,6 @@
-import type { Settings, SettingsContextType } from "./interfaces";
+import { createContext, type FC, useState } from "react";
 import type { ReactElement } from "../../interfaces/reactElement";
-import { createContext, useState, type FC } from "react";
+import type { Settings, SettingsContextType } from "./interfaces";
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
@@ -22,8 +22,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             value={{
                 Settings,
                 setSettings,
-            }}
-        >
+            }}>
             {children}
         </SettingsContext.Provider>
     );

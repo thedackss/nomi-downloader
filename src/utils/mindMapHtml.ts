@@ -53,7 +53,7 @@ function convertMarkdownToHtml(markdown: string): string {
 }
 
 export function generateMindMapHtml(data: MindMapData): string {
-    if (!data || !data.terms) {
+    if (!data?.terms) {
         return "<html><body><p>No data available</p></body></html>";
     }
 

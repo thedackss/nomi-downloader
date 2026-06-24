@@ -1,7 +1,7 @@
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
 import { Log } from "../utils/log";
-import { Nomi } from "./nomi/index";
 import { generateMindMapHtml } from "../utils/mindMapHtml";
+import { Nomi } from "./nomi/index";
 
 const nomi = new Nomi();
 
@@ -132,7 +132,7 @@ function main() {
 
                         await chrome.downloads.download({
                             url: dataUrl,
-                            filename: `mind-map-${nomiId}-${new Date().getTime()}.html`,
+                            filename: `mind-map-${nomiId}-${Date.now()}.html`,
                             saveAs: true,
                         });
                     },
@@ -167,7 +167,7 @@ function main() {
 
                         await chrome.downloads.download({
                             url: dataUrl,
-                            filename: `nomi-${nomiId}-${new Date().getTime()}.json`,
+                            filename: `nomi-${nomiId}-${Date.now()}.json`,
                             saveAs: true,
                         });
                     },

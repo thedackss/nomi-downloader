@@ -1,8 +1,8 @@
-import { api } from "../../utils/nomiApi";
-import { Log } from "../../utils/log";
-import { NomiError } from "./errors";
-import type { NomiExistsProps } from "./interfaces/exists";
-import type { GetMediasProps } from "./interfaces/getMedias";
+import type { ApiMindMapsGraphResponse } from "../../interfaces/nomi/api.mindMaps.nomis.id.graph";
+import type {
+    ApiMindMapsTermsResponse,
+    MemoryTermItem,
+} from "../../interfaces/nomi/api.mindMaps.nomis.id.memoryTerms";
 import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
 import type {
     ApiNomisMessagesResponse,
@@ -13,44 +13,44 @@ import type {
     APINomisIDMediasResponse,
     Media,
 } from "../../interfaces/nomi/api.nomis.id.medias";
-import type {
-    ApiMindMapsTermsResponse,
-    MemoryTermItem,
-} from "../../interfaces/nomi/api.mindMaps.nomis.id.memoryTerms";
-import type { ApiMindMapsGraphResponse } from "../../interfaces/nomi/api.mindMaps.nomis.id.graph";
+import { Log } from "../../utils/log";
+import { api } from "../../utils/nomiApi";
+import { NomiError } from "./errors";
+import type { NomiExistsProps } from "./interfaces/exists";
+import type { GetMediasProps } from "./interfaces/getMedias";
 
 /** Read-only access to the nomi.ai API for a single Nomi. */
 export class NomiApiClient {
     private async exists({ nomiId }: NomiExistsProps) {
         try {
-            Log("Checking if Nomi exists with ID: " + nomiId);
-            await api.head("nomis/" + nomiId);
+            Log(`Checking if Nomi exists with ID: ${nomiId}`);
+            await api.head(`nomis/${nomiId}`);
 
             return true;
         } catch {
             throw new NomiError({
                 id: nomiId,
-                message: "Nomi with ID " + nomiId + " not found",
+                message: `Nomi with ID ${nomiId} not found`,
             });
         }
     }
 
     public async get({ nomiId }: NomiExistsProps) {
         try {
-            Log("Getting Nomi with ID: " + nomiId);
+            Log(`Getting Nomi with ID: ${nomiId}`);
             const { data } = await api.get<ApiNomisIdResponse>(
-                "nomis/" + nomiId,
+                `nomis/${nomiId}`,
             );
             return data;
         } catch {
             throw new NomiError({
-                message: "Failed to get Nomi with ID " + nomiId,
+                message: `Failed to get Nomi with ID ${nomiId}`,
             });
         }
     }
 
     public async getMessages({ nomiId }: NomiExistsProps) {
-        Log("Getting messages for Nomi ID: " + nomiId);
+        Log(`Getting messages for Nomi ID: ${nomiId}`);
 
         const exists = await this.exists({ nomiId });
 
@@ -76,10 +76,7 @@ export class NomiApiClient {
                     nextMax = data.nextMax ?? undefined;
                 }
             } catch (error) {
-                Log(
-                    "Error fetching messages for Nomi ID " + nomiId + ":",
-                    error,
-                );
+                Log(`Error fetching messages for Nomi ID ${nomiId}:`, error);
             }
 
             const sorted = [...messages, ...requests].sort((a, b) => {
@@ -95,13 +92,13 @@ export class NomiApiClient {
         } else {
             throw new NomiError({
                 id: nomiId,
-                message: "Nomi with ID " + nomiId + " does not exist",
+                message: `Nomi with ID ${nomiId} does not exist`,
             });
         }
     }
 
     public async getMedias({ nomiId, onProgress }: GetMediasProps) {
-        Log("Getting media for Nomi ID: " + nomiId);
+        Log(`Getting media for Nomi ID: ${nomiId}`);
 
         const exists = await this.exists({ nomiId });
 
@@ -135,7 +132,7 @@ export class NomiApiClient {
         } else {
             throw new NomiError({
                 id: nomiId,
-                message: "Nomi with ID " + nomiId + " does not exist",
+                message: `Nomi with ID ${nomiId} does not exist`,
             });
         }
     }
@@ -184,7 +181,7 @@ export class NomiApiClient {
             };
         } catch (error) {
             if (error instanceof NomiError) {
-                Log("NomiError: " + error.message);
+                Log(`NomiError: ${error.message}`);
             } else {
                 Log("Unexpected error during mind info download:", error);
             }

@@ -1,15 +1,12 @@
-import { api } from "../../utils/nomiApi";
-import { Log } from "../../utils/log";
-import { NomiError } from "./errors";
-import { chunkBySize } from "./chunk";
-import { ChatTemplate } from "./chatTemplate";
-import type { NomiApiClient } from "./api";
-import type { OffscreenClient } from "./offscreenClient";
-import type { DownloadChatProps } from "./interfaces/downloadChat";
 import type {
     Message,
     SelfieRequest,
 } from "../../interfaces/nomi/api.nomis.id.chat";
+import { Log } from "../../utils/log";
+import { api } from "../../utils/nomiApi";
+import type { NomiApiClient } from "./api";
+import { ChatTemplate } from "./chatTemplate";
+import { chunkBySize } from "./chunk";
 import {
     BLOB_URL_REVOKE_DELAY_MS,
     CHAT_CHUNK_MAX_BYTES_TEXT,
@@ -19,6 +16,9 @@ import {
     SELFIE_BYTES,
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
+import { NomiError } from "./errors";
+import type { DownloadChatProps } from "./interfaces/downloadChat";
+import type { OffscreenClient } from "./offscreenClient";
 
 const SELFIE_EXTENSION = "webp";
 
@@ -33,14 +33,14 @@ export class ChatDownloader {
         const update = (message: string) => onProgress?.(message);
 
         try {
-            Log("Downloading chat for Nomi ID: " + nomiId);
+            Log(`Downloading chat for Nomi ID: ${nomiId}`);
             const nomi = await this.nomiApi.get({ nomiId });
             const messages = await this.nomiApi.getMessages({ nomiId });
 
             if (!messages || messages.length === 0) {
                 throw new NomiError({
                     id: nomiId,
-                    message: "No messages found for Nomi with ID " + nomiId,
+                    message: `No messages found for Nomi with ID ${nomiId}`,
                 });
             }
 
@@ -97,7 +97,10 @@ export class ChatDownloader {
                     }
                 }
 
-                const chatHtml = ChatTemplate.replace("{messages}", messageList);
+                const chatHtml = ChatTemplate.replace(
+                    "{messages}",
+                    messageList,
+                );
 
                 // Prefer an offscreen Blob URL (safer for big strings); fall
                 // back to a base64 data URI if offscreen is unavailable.
@@ -134,8 +137,8 @@ export class ChatDownloader {
             update(`Downloaded ${messages.length} messages`);
         } catch (error) {
             if (error instanceof NomiError) {
-                Log("NomiError: " + error.message);
-                update("Error: " + error.message);
+                Log(`NomiError: ${error.message}`);
+                update(`Error: ${error.message}`);
             } else {
                 Log("Unexpected error during chat download:", error);
                 update("Unexpected error during chat download.");

@@ -1,8 +1,8 @@
 import { useNomi } from "../../hooks/useNomi";
 import { LoadingSpin } from "../LoadingSpin";
-import styles from "./styles.module.scss";
 import { GroupList } from "./Group";
 import { NomiList } from "./Nomi";
+import styles from "./styles.module.scss";
 
 export const List = () => {
     const { Nomis } = useNomi();

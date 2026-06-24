@@ -2,15 +2,12 @@
     position: relative;
     width: 100%;
     height: 100%;
-
     overflow-y: scroll;
-
     list-style: none;
     padding-right: 2.5%;
 
     li {
         margin-bottom: 1rem;
-
         display: flex;
         flex-flow: row nowrap;
         justify-content: flex-start;
@@ -20,9 +17,7 @@
         cursor: pointer;
         border-radius: 0.25rem;
         border: 1px solid transparent;
-
         interpolate-size: allow-keywords;
-
         transition:
             background-color 0.15s ease-in-out,
             border-radius 0.25s ease-in-out,
@@ -32,12 +27,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgb(255 255 255 / 20%);
             overflow: hidden;
             position: relative;
 
             &.group {
-                background: rgba(255, 255, 255, 0.01);
+                background: rgb(255 255 255 / 1%);
+
                 svg {
                     width: 80%;
                     height: 80%;
@@ -47,26 +43,20 @@
             .groupImg {
                 z-index: 1;
                 opacity: 0;
-
                 display: flex;
                 flex-wrap: wrap;
-
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
                 height: 100%;
-
                 pointer-events: none;
-
                 interpolate-size: allow-keywords;
-
                 transition: all 0.2s ease-in-out;
 
                 .img {
                     flex: 1 0 6rem;
                     height: auto;
-
                     position: relative;
                     z-index: -1;
                 }
@@ -78,7 +68,6 @@
                 height: 100%;
                 background-size: cover;
                 background-position: top;
-
                 transition: transform 0.2s ease-in-out;
             }
 
@@ -117,7 +106,7 @@
 
         &.selected {
             flex-direction: column-reverse;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgb(255 255 255 / 5%);
             border-radius: 1rem;
             height: 100%;
             padding: 1rem;
@@ -160,17 +149,18 @@
             top: 0;
             left: 0;
             z-index: 4;
-
             transition: transform 0.2s ease-in-out;
         }
 
         &:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgb(255 255 255 / 10%);
             border-radius: 1rem;
+
             .icon .img,
             video {
                 transform: scale(1.2);
             }
+
             .icon.group .img,
             .icon.group video {
                 transform: scale(1);
