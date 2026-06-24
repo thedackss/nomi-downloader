@@ -1,8 +1,22 @@
 # Nomi Downloader
 
-A browser extension (Chrome & Firefox, Manifest V3) for downloading content from nomi.ai.
-Built with React + TypeScript + Vite, using [`@crxjs/vite-plugin`](https://crxjs.dev/) for
-extension bundling and HMR.
+A browser extension (Chrome & Firefox, Manifest V3) for exporting your content from
+[nomi.ai](https://beta.nomi.ai). Built with React + TypeScript + Vite, using
+[`@crxjs/vite-plugin`](https://crxjs.dev/) for extension bundling and HMR.
+
+## Features
+
+Open the popup on a `beta.nomi.ai` tab, pick a Nomi or group, and export:
+
+- **Album** — all of a Nomi's media, packed into one or more `.zip` files (split by size for
+  large albums).
+- **Chat** — the full conversation as a standalone `.html` file (optionally with selfies
+  inlined).
+- **Mind map** — the Nomi's memory graph and terms as an `.html` file.
+- **JSON** — the raw Nomi data as a `.json` file.
+
+> The extension uses your **existing browser session** with nomi.ai (via `host_permissions`);
+> there is no separate login. You must be signed in to nomi.ai in the same browser.
 
 ## Requirements
 
@@ -17,14 +31,16 @@ npm install
 
 ## Scripts
 
-| Command                 | What it does                                              |
-| ----------------------- | -------------------------------------------------------- |
-| `npm run dev`           | Vite dev server with HMR, Chrome target                  |
-| `npm run dev:firefox`   | Vite dev server with HMR, Firefox target                 |
-| `npm run build`         | Standalone production build → `dist/`, Chrome target     |
-| `npm run build:firefox` | Standalone production build → `dist/`, Firefox target    |
-| `npm run lint`          | ESLint                                                   |
-| `npm run preview`       | Preview a production build                               |
+| Command                 | What it does                                           |
+| ----------------------- | ------------------------------------------------------ |
+| `npm run dev`           | Vite dev server with HMR, Chrome target                |
+| `npm run dev:firefox`   | Vite dev server with HMR, Firefox target               |
+| `npm run build`         | Standalone production build → `dist/`, Chrome target   |
+| `npm run build:firefox` | Standalone production build → `dist/`, Firefox target  |
+| `npm run lint`          | ESLint                                                  |
+| `npm test`              | Unit tests (Vitest)                                    |
+| `npm run test:e2e`      | Playwright popup smoke test (builds first, headful)    |
+| `npm run preview`       | Preview a production build                             |
 
 > There is a single `dist/` folder that is overwritten per target. Build the target you
 > intend to load — last build wins.
@@ -45,6 +61,49 @@ npm install
 3. Click **Load Temporary Add-on…** and select `dist/manifest.json`
 
 > Temporary add-ons are removed when Firefox restarts, so re-load each session.
+
+## Architecture
+
+```
+src/
+├── popup/            React UI shown in the toolbar popup
+│   ├── components/   List, Info, Settings, Header, LoadingSpin
+│   ├── context/      nomis + settings React contexts
+│   └── hooks/        useNomi, useSettings, useTab
+├── background/       MV3 service worker
+│   ├── index.ts      message router; maps popup actions → download workflows
+│   └── nomi/         Nomi facade + focused modules:
+│       ├── api.ts            NomiApiClient (HTTP data layer)
+│       ├── offscreenClient.ts  zip/blob bridge to the offscreen document
+│       ├── albumDownloader.ts  album workflow
+│       ├── chatDownloader.ts   chat workflow
+│       ├── chunk.ts            chunkBySize() shared by both downloaders
+│       └── constants.ts        chunk sizes, timeouts, pacing
+├── offscreen/        Offscreen document (runs JSZip / Blob APIs MV3 can't)
+├── content/          Content script injected on nomi.ai
+├── interfaces/nomi/  Typed nomi.ai API responses (shared.ts holds common shapes)
+└── utils/            axios instance, logging, zip, deepMerge, media URLs
+```
+
+Flow: the **popup** sends a message to the **background** worker, which drives a
+**downloader** (data fetched via `NomiApiClient`, zipped/encoded via the **offscreen**
+document) and reports progress back to the popup, finishing with `chrome.downloads`.
+
+## Testing
+
+- **`npm test`** — Vitest unit tests for the pure helpers (`getNomiMedia`, `deepMerge`,
+  `chunkBySize`). No browser needed.
+- **`npm run test:e2e`** — builds the extension, then loads it in a real (headful) Chromium
+  via Playwright and asserts the popup mounts, renders, and opens settings without errors.
+  Browser extensions can't load in headless Chromium, so the script wraps Playwright in
+  `xvfb-run` for headless servers. First run needs the browser + system deps:
+
+  ```bash
+  npx playwright install --with-deps chromium
+  ```
+
+  The e2e covers rendering only; authenticated download flows require a signed-in nomi.ai
+  session and are best verified manually in your own browser.
 
 ## Dev on a headless server (build over SSH, load on a desktop)
 
