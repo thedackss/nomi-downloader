@@ -117,45 +117,13 @@ export class NomiApiClient {
                 const url = `${mediasUrl}?page=${i}`;
 
                 const { data } = await api.get<APINomisIDMediasResponse>(url);
+                selfies.push(...data.medias);
 
-                const newSelfies = data.medias;
-                const totalFoundSoFar = selfies.length + newSelfies.length;
-
-                // Determine increment step based on total count
-                let step = 1;
-                if (totalFoundSoFar > 500) step = 50;
-                else if (totalFoundSoFar > 300) step = 20;
-                else if (totalFoundSoFar > 100) step = 10;
-
-                // Simulate smooth counting
-                let currentCount = selfies.length;
-                while (currentCount < totalFoundSoFar) {
-                    const remaining = totalFoundSoFar - currentCount;
-
-                    // Force step to 1 for the last 10 items
-                    let currentStep = step;
-                    let currentMs = 10;
-
-                    if (i === totalPages) currentMs = 100;
-                    if (remaining <= 50) currentStep = 5;
-                    if (remaining <= 20) currentStep = 2;
-                    if (remaining <= 10) currentStep = 1;
-
-                    currentCount += currentStep;
-
-                    if (currentCount > totalFoundSoFar)
-                        currentCount = totalFoundSoFar;
-
-                    const log = `[Scanning]: ${currentCount} selfies found...`;
-                    if (onProgress) onProgress(log);
-
-                    // Tiny delay to make it visible but not slow
-                    await new Promise((resolve) =>
-                        setTimeout(resolve, currentMs),
+                if (onProgress) {
+                    onProgress(
+                        `[Scanning]: ${selfies.length} selfies found...`,
                     );
                 }
-
-                selfies.push(...newSelfies);
             }
 
             return selfies.sort((a, b) => {
