@@ -8,7 +8,7 @@
         "dev:firefox": "BROWSER_TARGET=firefox vite",
         "build:firefox": "tsc -b && BROWSER_TARGET=firefox vite build",
         "build": "tsc -b && vite build",
-        "lint": "biome lint && npm run lint:scss",
+        "lint": "biome lint ; npm run lint:scss",
         "lint:scss": "stylelint \"src/**/*.scss\"",
         "format": "biome check --write && npm run format:scss",
         "format:scss": "stylelint --fix \"src/**/*.scss\" && prettier --write \"src/**/*.scss\"",
