@@ -10,6 +10,7 @@ function App() {
     const { InitializeSettings, isMobile } = useSettings();
     const { fetchNomis, fetchGroups, checkSelectedNomi, Nomis } = useNomi();
 
+    // Bootstrap settings and lists once on mount.
     useEffect(() => {
         async function initialize() {
             InitializeSettings();
@@ -17,17 +18,15 @@ function App() {
             await fetchNomis();
         }
         initialize();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Re-resolve the selection whenever the loaded lists change.
     useEffect(() => {
-        async function initialize() {
-            await checkSelectedNomi();
-        }
-        initialize();
-    }, [Nomis.list]);
+        checkSelectedNomi();
+    }, [checkSelectedNomi]);
 
     const hasSelection = Nomis.selected.nomi || Nomis.selected.group;
-
-    console.log("Selected Nomi:", Nomis.selected.nomi);
 
     return (
         <div className={isMobile ? "mobile" : "desktop"}>

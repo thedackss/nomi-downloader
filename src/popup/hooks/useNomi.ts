@@ -46,7 +46,7 @@ export const useNomi = () => {
 
             return [];
         }
-    }, []);
+    }, [setNomis]);
 
     const fetchNomi = useCallback(async (nomiId: number) => {
         try {
@@ -89,7 +89,7 @@ export const useNomi = () => {
 
             return [];
         }
-    }, []);
+    }, [setNomis]);
 
     const fetchGroup = useCallback(async (groupId: number) => {
         try {
@@ -127,7 +127,7 @@ export const useNomi = () => {
                 group: null,
             },
         }));
-    }, []);
+    }, [setNomis]);
 
     const selectGroup = useCallback((group: GroupChat) => {
         setNomis((prev: Nomis) => ({
@@ -137,7 +137,7 @@ export const useNomi = () => {
                 group: group,
             },
         }));
-    }, []);
+    }, [setNomis]);
 
     const checkSelectedNomi = useCallback(async () => {
         if (!Nomis.list.nomi || !Nomis.list.group) return;
@@ -166,7 +166,7 @@ export const useNomi = () => {
                 group: null,
             },
         }));
-    }, []);
+    }, [setNomis]);
 
     return {
         Nomis,
