@@ -4,7 +4,6 @@ import type { DownloadStatus } from "./interfaces";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
 import { Nomi as NomiClass } from "../../../background/nomi";
-import { useNomi } from "../../hooks/useNomi";
 
 interface NomiInfoProps {
     nomi: Nomi;
@@ -38,21 +37,19 @@ export const NomiInfo = ({
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const splitRef = useRef<HTMLDivElement>(null);
 
-    const { Nomis } = useNomi();
-
     useEffect(() => {
+        let cancelled = false;
         async function main() {
             const api = new NomiClass();
             const data = await api.getMindInfo({ nomiId: nomi.id });
 
-            if (data) {
-                setMindMapActive(true);
-            } else {
-                setMindMapActive(false);
-            }
+            if (!cancelled) setMindMapActive(!!data);
         }
         main();
-    }, [Nomis.selected]);
+        return () => {
+            cancelled = true;
+        };
+    }, [nomi.id]);
 
     useEffect(() => {
         if (!dropdownOpen) return;
