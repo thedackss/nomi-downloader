@@ -9,24 +9,17 @@ export const GroupList = () => {
     const { Nomis, selectGroup } = useNomi();
 
     useEffect(() => {
-        if (Nomis.selected?.group?.id) {
-            const element = document.getElementById(
-                `group-${Nomis.selected.group.id}`,
-            );
-            if (element) {
-                setTimeout(() => {
-                    element.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                    });
+        const groupId = Nomis.selected?.group?.id;
+        if (!groupId) return;
 
-                    const { children: icon } = element;
-                    const groupImg = icon[0].children[0];
+        const element = document.getElementById(`group-${groupId}`);
+        if (!element) return;
 
-                    groupImg.classList.add(styles.selected);
-                }, 500);
-            }
-        }
+        const timer = setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 500);
+
+        return () => clearTimeout(timer);
     }, [Nomis.selected]);
 
     if (!Nomis.list.group) return null;
@@ -115,7 +108,9 @@ export const GroupList = () => {
                         <span
                             className={`${styles.icon} ${styles.group} ${getIconSize()} ${getIconShape()}`}
                         >
-                            <span className={styles.groupImg}>
+                            <span
+                                className={`${styles.groupImg} ${isSelected ? styles.selected : ""}`}
+                            >
                                 {images.map((img, index) => (
                                     <span
                                         key={index}

@@ -9,19 +9,17 @@ export const NomiList = () => {
     const { Nomis, selectNomi } = useNomi();
 
     useEffect(() => {
-        if (Nomis.selected?.nomi?.id) {
-            const element = document.getElementById(
-                `nomi-${Nomis.selected.nomi.id}`,
-            );
-            if (element) {
-                setTimeout(() => {
-                    element.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                    });
-                }, 500);
-            }
-        }
+        const nomiId = Nomis.selected?.nomi?.id;
+        if (!nomiId) return;
+
+        const element = document.getElementById(`nomi-${nomiId}`);
+        if (!element) return;
+
+        const timer = setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 500);
+
+        return () => clearTimeout(timer);
     }, [Nomis.selected]);
 
     if (!Nomis.list.nomi) return null;
