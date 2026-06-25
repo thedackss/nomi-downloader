@@ -64,7 +64,15 @@ export function ChatImageFailed() {
     return <li className="msg result">[Image Download Failed]</li>;
 }
 
-function ChatDocument({ children }: { children: ReactNode }) {
+interface ChatDocumentProps {
+    /** Nomi name shown in the header and document title. */
+    name: string;
+    /** Avatar image as a data URI; omitted if it couldn't be fetched. */
+    avatar?: string;
+    children: ReactNode;
+}
+
+function ChatDocument({ name, avatar, children }: ChatDocumentProps) {
     return (
         <html lang="en">
             <head>
@@ -73,11 +81,17 @@ function ChatDocument({ children }: { children: ReactNode }) {
                     name="viewport"
                     content="width=device-width, initial-scale=1.0"
                 />
-                <title>Nomi chat</title>
+                <title>{name} — Nomi chat</title>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: inlining the compiled SCSS so the export is self-contained */}
                 <style dangerouslySetInnerHTML={{ __html: css }} />
             </head>
             <body>
+                <header className="chat-header">
+                    {avatar ? (
+                        <img className="avatar" src={avatar} alt={name} />
+                    ) : null}
+                    <h1>{name}</h1>
+                </header>
                 <ul id="messages">{children}</ul>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static click-to-zoom helper, no user input */}
                 <script dangerouslySetInnerHTML={{ __html: SCRIPT }} />
@@ -87,8 +101,6 @@ function ChatDocument({ children }: { children: ReactNode }) {
 }
 
 /** Render the full standalone chat HTML document to a string. */
-export function renderChatDocument(children: ReactNode): string {
-    return `<!DOCTYPE html>${renderToStaticMarkup(
-        <ChatDocument>{children}</ChatDocument>,
-    )}`;
+export function renderChatDocument(props: ChatDocumentProps): string {
+    return `<!DOCTYPE html>${renderToStaticMarkup(<ChatDocument {...props} />)}`;
 }

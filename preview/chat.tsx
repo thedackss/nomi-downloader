@@ -52,4 +52,10 @@ const sample = (
 );
 
 const frame = document.getElementById("preview") as HTMLIFrameElement | null;
-if (frame) frame.srcdoc = renderChatDocument(sample);
+if (frame) {
+    frame.srcdoc = renderChatDocument({
+        name: "Veronica",
+        avatar: placeholderSelfie,
+        children: sample,
+    });
+}
