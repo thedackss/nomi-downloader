@@ -91,8 +91,13 @@
         width: 100%;
         margin-top: auto;
         padding-top: 1.5rem;
-        border-top: 1px solid rgb(255 255 255 / 10%);
         position: relative;
+
+        &.inProgress {
+            .splitButton {
+                box-shadow: none !important;
+            }
+        }
 
         .loadingSpin {
             display: flex;

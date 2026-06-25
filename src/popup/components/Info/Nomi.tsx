@@ -112,7 +112,13 @@ export const NomiInfo = ({
                 )}
             </ul>
 
-            <div className={styles.downloadSection}>
+            <div
+                className={
+                    styles.downloadSection +
+                    `${
+                        downloadStatus.inProgress ? ` ${styles.inProgress}` : ""
+                    }`
+                }>
                 <LoadingSpin
                     className={styles.loadingSpin}
                     visible={downloadStatus.inProgress}>
@@ -121,7 +127,6 @@ export const NomiInfo = ({
                         <p>{message}</p>
                     </h3>
                 </LoadingSpin>
-
                 <div className={styles.splitButton} ref={splitRef}>
                     <button
                         type="button"
