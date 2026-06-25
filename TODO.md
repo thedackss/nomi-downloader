@@ -11,7 +11,7 @@ Legend: [x] done · [~] partial · [ ] missing
 - [x] Selfies per zip — "Images per zip" setting (0 = auto), layered on top of the 750 MB byte cap
 - [ ] Max messages (BETA, 0 = uncap) — missing in `rework`
 - [x] Image type (WEBP / PNG) — present as HD/SD
-- [ ] Separate download buttons — missing; may instead make the select's first option just "Download"
+- [x] Separate download buttons — dropped; superseded by the split-button select (first option = default "Download")
 - [x] Include selfies on chat — toggle (embedded vs text-only)
 - [x] Enable folderization
 - [ ] Show Stats — daily usage counts / user info, missing

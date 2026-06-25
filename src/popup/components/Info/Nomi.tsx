@@ -177,20 +177,6 @@ export const NomiInfo = ({
                         </div>
                     )}
                 </div>
-
-                {/* <button
-                    onClick={onDownloadChat}
-                    disabled={downloadStatus.inProgress}
-                >
-                    Chat
-                </button>
-                <button>Mind Map</button>
-                <button
-                    onClick={onDownloadAlbum}
-                    disabled={downloadStatus.inProgress}
-                >
-                    Album
-                </button> */}
             </div>
         </>
     );
