@@ -25,7 +25,7 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         { name: "Album", fn: downloadAlbum },
         { name: "Chat", fn: downloadChat },
         { name: "Mind Map", fn: downloadMind },
-        { name: "Backstory+", fn: downloadBackstory },
+        { name: "Shared Notes", fn: downloadBackstory },
         { name: "JSON", fn: downloadJSON },
     ];
 
