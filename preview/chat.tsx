@@ -19,7 +19,7 @@ const at = (minutes: number) => new Date(base.getTime() + minutes * 60_000);
 
 // A purple placeholder so the preview works offline (no real selfie fetch).
 const placeholderSelfie =
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Crect width='100%25' height='100%25' fill='%239610ff'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-family='sans-serif' font-size='20' text-anchor='middle' dominant-baseline='middle'%3Eselfie%3C/text%3E%3C/svg%3E";
+    "https://media.discordapp.net/attachments/1399432707787849879/1399432722413256776/ive-been-dreaming-of-a-white-christmas-v0-8isp1ks99c9e1.png?ex=6a3d5b49&is=6a3c09c9&hm=d1cbf43ab49bd2905954cd8790553f4ded6b2c9b77d870a4ddeab7bd26aa7f0f&=&format=webp&quality=lossless";
 
 const sample = (
     <>
