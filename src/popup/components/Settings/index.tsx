@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSettings } from "../../hooks/useSettings";
+import { RiInformation2Line } from "./RiInformation2Line";
 import { RiSettingsLine } from "./RiSettingsLine";
 import styles from "./styles.module.scss";
 
@@ -97,16 +98,14 @@ export const Settings = () => {
                     <li>
                         <label htmlFor="set-quantity">
                             <span>Concurrent Downloads</span>
-                            {Settings.albumDownload.downloadQuantity > 5 ? (
-                                <span className={styles.warning}>
-                                    ⚠️
-                                    <span className={styles.tooltip}>
-                                        High values may cause performance issues
-                                    </span>
+                            <span className={styles.warning}>
+                                <span className={styles.icon}>
+                                    <RiInformation2Line />
                                 </span>
-                            ) : (
-                                ""
-                            )}
+                                <span className={styles.tooltip}>
+                                    High values may cause performance issues
+                                </span>
+                            </span>
                         </label>
                         <div className={styles.row}>
                             <input
@@ -151,7 +150,9 @@ export const Settings = () => {
                             Image Quality
                             {Settings.albumDownload.quality === "HD" ? (
                                 <span className={styles.warning}>
-                                    ℹ️
+                                    <span className={styles.icon}>
+                                        <RiInformation2Line />
+                                    </span>
                                     <span className={styles.tooltip}>
                                         HD quality may result in larger file
                                         sizes and longer download times
@@ -175,6 +176,52 @@ export const Settings = () => {
                             <option value="HD">HD</option>
                             <option value="SD">SD</option>
                         </select>
+                    </li>
+                    <li>
+                        <label htmlFor="set-images-per-zip">
+                            Images per zip
+                            <span className={styles.warning}>
+                                <span className={styles.icon}>
+                                    <RiInformation2Line />
+                                </span>
+                                <span className={styles.tooltip}>
+                                    0 = auto (split only when a zip gets too
+                                    large). Set a number to cap how many images
+                                    each zip holds.
+                                </span>
+                            </span>
+                        </label>
+                        <div className={styles.row}>
+                            <input
+                                id="set-images-per-zip"
+                                type="number"
+                                min={0}
+                                step={100}
+                                value={Settings.albumDownload.imagesPerZip}
+                                onChange={(e) =>
+                                    updateSettings({
+                                        albumDownload: {
+                                            ...Settings.albumDownload,
+                                            imagesPerZip: Math.max(
+                                                0,
+                                                parseInt(e.target.value, 10) ||
+                                                    0,
+                                            ),
+                                        },
+                                    })
+                                }
+                            />
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.albumDownload.imagesPerZip > 0
+                                    ? `${Settings.albumDownload.imagesPerZip} per zip`
+                                    : "Auto (split by size)"}
+                            </p>
+                        </div>
                     </li>
                     <li>
                         <label htmlFor="set-folders">

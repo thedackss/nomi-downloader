@@ -133,7 +133,7 @@
                     display: flex;
                     flex-flow: row nowrap;
                     justify-content: flex-start;
-                    align-items: center;
+                    align-items: flex-end;
 
                     .warning {
                         display: inline-flex;
@@ -141,6 +141,21 @@
                         margin-left: 0.5rem;
                         cursor: help;
                         position: relative;
+
+                        .icon {
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 1.4rem;
+                            height: 1.4rem;
+
+                            svg {
+                                width: 100%;
+                                height: 100%;
+                                color: var(--warning);
+                                pointer-events: none;
+                            }
+                        }
 
                         .tooltip {
                             visibility: hidden;
