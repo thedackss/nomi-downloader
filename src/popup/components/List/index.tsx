@@ -8,12 +8,16 @@ export const List = () => {
     const { Nomis } = useNomi();
 
     return (
-        <ul className={styles.nomiList}>
-            <LoadingSpin
-                visible={Nomis.list.group === null || Nomis.list.nomi === null}
-            />
-            <GroupList />
-            <NomiList />
-        </ul>
+        <div className={styles.listWrap}>
+            <ul className={styles.nomiList}>
+                <LoadingSpin
+                    visible={
+                        Nomis.list.group === null || Nomis.list.nomi === null
+                    }
+                />
+                <GroupList />
+                <NomiList />
+            </ul>
+        </div>
     );
 };

@@ -1,3 +1,40 @@
+// Soft fade at the top/bottom scroll edges so rows dissolve into the
+// background instead of hard-clipping mid-icon. Painted as overlays (not a
+// mask) so an expanded Nomi card gets a gentle edge rather than a see-through
+// cut, and it works the same whether scrolling rows or a card.
+.listWrap {
+    --fade: 1.5rem;
+
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    // Contain the overlay z-indexes so they sit above the list's own layers
+    // (selected-card video is z-index 4) without leaking past the popup.
+    isolation: isolate;
+
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: var(--fade);
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    &::before {
+        top: 0;
+        background: linear-gradient(to bottom, var(--background), transparent);
+    }
+
+    &::after {
+        bottom: 0;
+        background: linear-gradient(to top, var(--background), transparent);
+    }
+}
+
 .nomiList {
     position: relative;
     width: 100%;
@@ -5,23 +42,6 @@
     overflow-y: scroll;
     list-style: none;
     padding-right: 2.5%;
-
-    // Fade items into the background at the top/bottom edges so they dissolve
-    // instead of hard-clipping mid-icon while scrolling.
-    --fade: 1.5rem;
-
-    mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        #000 var(--fade),
-        #000 calc(100% - var(--fade)),
-        transparent 100%
-    );
-
-    // No edge fade while a Nomi is expanded — it would clip the card image.
-    &:has(.selected) {
-        mask-image: none;
-    }
 
     li {
         margin-bottom: 1rem;
