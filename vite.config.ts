@@ -90,12 +90,17 @@ export default defineConfig({
         },
     },
     server: {
+        // Bind IPv4 explicitly. The default host (localhost) resolves to IPv6
+        // ::1 on some systems, but Chrome maps localhost to 127.0.0.1, so the
+        // extension's HMR client can't reach an IPv6-only dev server.
+        host: "127.0.0.1",
         port: 5173,
         strictPort: true,
         hmr: {
+            host: "127.0.0.1",
             port: 5173,
         },
-        origin: "http://localhost:5173",
+        origin: "http://127.0.0.1:5173",
         cors: {
             origin: "*",
             methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
