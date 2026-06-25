@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getNomiMedia } from "../../../utils/nomiMedia";
+import { getNomiMedia } from "../../../nomi/media";
 import { useNomi } from "../../hooks/useNomi";
 import { useSettings } from "../../hooks/useSettings";
 import { getIconShape, getIconSize } from "./iconClasses";

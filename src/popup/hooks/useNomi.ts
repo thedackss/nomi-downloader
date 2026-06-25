@@ -2,12 +2,12 @@ import { useCallback, useContext } from "react";
 import type {
     ApiGroupChatsResponse,
     GroupChat,
-} from "../../interfaces/nomi/api.groupChats";
-import type { ApiGroupChatsIdResponse } from "../../interfaces/nomi/api.groupChats.id";
-import type { ApiNomisResponse, Nomi } from "../../interfaces/nomi/api.nomis";
-import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
+} from "../../nomi/types/api.groupChats";
+import type { ApiGroupChatsIdResponse } from "../../nomi/types/api.groupChats.id";
+import type { ApiNomisResponse, Nomi } from "../../nomi/types/api.nomis";
+import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
 import { Log } from "../../utils/log";
-import { api } from "../../utils/nomiApi";
+import { api } from "../../nomi/http";
 import { NomisContext } from "../context/nomis";
 import type { Nomis } from "../context/nomis/interfaces";
 import { useTab } from "./useTab";

@@ -1,10 +1,10 @@
 import type {
     Message,
     SelfieRequest,
-} from "../../interfaces/nomi/api.nomis.id.chat";
+} from "../../nomi/types/api.nomis.id.chat";
 import { Log } from "../../utils/log";
-import { api } from "../../utils/nomiApi";
-import type { NomiApiClient } from "./api";
+import { api } from "../../nomi/http";
+import type { NomiApiClient } from "../../nomi/api";
 import { ChatTemplate } from "./chatTemplate";
 import { chunkBySize } from "./chunk";
 import {
@@ -16,8 +16,8 @@ import {
     SELFIE_BYTES,
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
-import { NomiError } from "./errors";
-import type { DownloadChatProps } from "./interfaces/downloadChat";
+import { NomiError } from "../../nomi/errors";
+import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
 import type { OffscreenClient } from "./offscreenClient";
 
 const SELFIE_EXTENSION = "webp";

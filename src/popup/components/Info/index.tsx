@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { getNomiImageUrl } from "../../../utils/nomiMedia";
+import { getNomiImageUrl } from "../../../nomi/media";
 import { useNomi } from "../../hooks/useNomi";
 import { useSettings } from "../../hooks/useSettings";
 import { LoadingSpin } from "../LoadingSpin";

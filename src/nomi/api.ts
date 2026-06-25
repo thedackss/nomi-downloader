@@ -1,20 +1,20 @@
-import type { ApiMindMapsGraphResponse } from "../../interfaces/nomi/api.mindMaps.nomis.id.graph";
+import type { ApiMindMapsGraphResponse } from "./types/api.mindMaps.nomis.id.graph";
 import type {
     ApiMindMapsTermsResponse,
     MemoryTermItem,
-} from "../../interfaces/nomi/api.mindMaps.nomis.id.memoryTerms";
-import type { ApiNomisIdResponse } from "../../interfaces/nomi/api.nomis.id";
+} from "./types/api.mindMaps.nomis.id.memoryTerms";
+import type { ApiNomisIdResponse } from "./types/api.nomis.id";
 import type {
     ApiNomisMessagesResponse,
     Message,
     SelfieRequest,
-} from "../../interfaces/nomi/api.nomis.id.chat";
+} from "./types/api.nomis.id.chat";
 import type {
     APINomisIDMediasResponse,
     Media,
-} from "../../interfaces/nomi/api.nomis.id.medias";
-import { Log } from "../../utils/log";
-import { api } from "../../utils/nomiApi";
+} from "./types/api.nomis.id.medias";
+import { Log } from "../utils/log";
+import { api } from "./http";
 import { NomiError } from "./errors";
 import type { NomiExistsProps } from "./interfaces/exists";
 import type { GetMediasProps } from "./interfaces/getMedias";

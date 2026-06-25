@@ -1,6 +1,6 @@
 import type { Dispatch } from "react";
-import type { GroupChat } from "../../../interfaces/nomi/api.groupChats";
-import type { Nomi } from "../../../interfaces/nomi/api.nomis";
+import type { GroupChat } from "../../../nomi/types/api.groupChats";
+import type { Nomi } from "../../../nomi/types/api.nomis";
 
 export interface Nomis {
     selected: {

@@ -1,9 +1,9 @@
 import { AlbumDownloader } from "./albumDownloader";
-import { NomiApiClient } from "./api";
+import { NomiApiClient } from "../../nomi/api";
 import { ChatDownloader } from "./chatDownloader";
-import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
-import type { DownloadChatProps } from "./interfaces/downloadChat";
-import type { NomiExistsProps } from "./interfaces/exists";
+import type { DownloadAlbumProps } from "../../nomi/interfaces/downloadAlbum";
+import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
+import type { NomiExistsProps } from "../../nomi/interfaces/exists";
 import { OffscreenClient } from "./offscreenClient";
 
 /**

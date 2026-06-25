@@ -1,7 +1,7 @@
-import type { Media } from "../../interfaces/nomi/api.nomis.id.medias";
+import type { Media } from "../../nomi/types/api.nomis.id.medias";
 import { Log } from "../../utils/log";
-import { api } from "../../utils/nomiApi";
-import type { NomiApiClient } from "./api";
+import { api } from "../../nomi/http";
+import type { NomiApiClient } from "../../nomi/api";
 import { chunkBySize } from "./chunk";
 import {
     ALBUM_CHUNK_MAX_BYTES,
@@ -14,8 +14,8 @@ import {
     SD_IMAGE_BYTES,
     VIDEO_BYTES,
 } from "./constants";
-import { NomiError } from "./errors";
-import type { DownloadAlbumProps } from "./interfaces/downloadAlbum";
+import { NomiError } from "../../nomi/errors";
+import type { DownloadAlbumProps } from "../../nomi/interfaces/downloadAlbum";
 import type { OffscreenClient } from "./offscreenClient";
 
 type MediaType = "Photo" | "Video" | "Art" | "PhotoEdit";

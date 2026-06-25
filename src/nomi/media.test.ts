@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getNomiImageUrl, getNomiMedia } from "./nomiMedia";
+import { getNomiImageUrl, getNomiMedia } from "./media";
 
 const API = "https://beta.nomi.ai/api";
 
