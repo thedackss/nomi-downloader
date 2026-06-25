@@ -90,7 +90,7 @@ function ChatDocument({ name, avatar, children }: ChatDocumentProps) {
                     name="viewport"
                     content="width=device-width, initial-scale=1.0"
                 />
-                <title>{name} — Nomi chat</title>
+                <title>{`${name} — Nomi chat`}</title>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: inlining the compiled SCSS so the export is self-contained */}
                 <style dangerouslySetInnerHTML={{ __html: css }} />
             </head>

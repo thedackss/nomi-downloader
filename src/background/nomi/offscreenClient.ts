@@ -24,16 +24,37 @@ export interface OffscreenResponse {
 export class OffscreenClient {
     async setupDocument(): Promise<void> {
         if (typeof chrome === "undefined" || !chrome.offscreen) return;
-        if (await chrome.offscreen.hasDocument()) return;
+        if (!(await chrome.offscreen.hasDocument())) {
+            await chrome.offscreen.createDocument({
+                url: OFFSCREEN_DOCUMENT_PATH,
+                reasons: [
+                    chrome.offscreen.Reason.BLOBS,
+                    chrome.offscreen.Reason.WORKERS,
+                ],
+                justification: "To generate ZIP files for download",
+            });
+        }
 
-        await chrome.offscreen.createDocument({
-            url: OFFSCREEN_DOCUMENT_PATH,
-            reasons: [
-                chrome.offscreen.Reason.BLOBS,
-                chrome.offscreen.Reason.WORKERS,
-            ],
-            justification: "To generate ZIP files for download",
-        });
+        // createDocument() resolves before the document's script registers its
+        // onMessage listener, so the first message can be lost to a race (the
+        // render returns no response). Ping keep-alive until the listener
+        // answers before handing back control.
+        await this.waitUntilReady();
+    }
+
+    private async waitUntilReady(): Promise<void> {
+        for (let i = 0; i < 40; i++) {
+            try {
+                const res = await chrome.runtime.sendMessage({
+                    target: "offscreen",
+                    type: "keep-alive",
+                });
+                if (res === true) return;
+            } catch {
+                // Listener not up yet; retry after a short delay.
+            }
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        }
     }
 
     async call(
