@@ -1,4 +1,5 @@
 import { useCallback, useContext } from "react";
+import { api } from "../../nomi/http";
 import type {
     ApiGroupChatsResponse,
     GroupChat,
@@ -7,7 +8,6 @@ import type { ApiGroupChatsIdResponse } from "../../nomi/types/api.groupChats.id
 import type { ApiNomisResponse, Nomi } from "../../nomi/types/api.nomis";
 import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
 import { Log } from "../../utils/log";
-import { api } from "../../nomi/http";
 import { NomisContext } from "../context/nomis";
 import type { Nomis } from "../context/nomis/interfaces";
 import { useTab } from "./useTab";

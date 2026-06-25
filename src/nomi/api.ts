@@ -1,3 +1,8 @@
+import { Log } from "../utils/log";
+import { NomiError } from "./errors";
+import { api } from "./http";
+import type { NomiExistsProps } from "./interfaces/exists";
+import type { GetMediasProps } from "./interfaces/getMedias";
 import type { ApiMindMapsGraphResponse } from "./types/api.mindMaps.nomis.id.graph";
 import type {
     ApiMindMapsTermsResponse,
@@ -13,11 +18,6 @@ import type {
     APINomisIDMediasResponse,
     Media,
 } from "./types/api.nomis.id.medias";
-import { Log } from "../utils/log";
-import { api } from "./http";
-import { NomiError } from "./errors";
-import type { NomiExistsProps } from "./interfaces/exists";
-import type { GetMediasProps } from "./interfaces/getMedias";
 
 /** Read-only access to the nomi.ai API for a single Nomi. */
 export class NomiApiClient {
