@@ -15,6 +15,8 @@ export interface Settings {
     chatDownload: {
         /** Keep only the last N messages; 0 = unlimited. */
         maxMessages: number;
+        /** Embed selfie images in the exported chat HTML. */
+        includeSelfies: boolean;
     };
     layout: "auto" | "mobile" | "desktop";
 }

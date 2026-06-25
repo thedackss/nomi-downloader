@@ -12,7 +12,7 @@ Legend: [x] done · [~] partial · [ ] missing
 - [ ] Max messages (BETA, 0 = uncap) — missing in `rework`
 - [x] Image type (WEBP / PNG) — present as HD/SD
 - [ ] Separate download buttons — missing; may instead make the select's first option just "Download"
-- [~] Include selfies on chat — works but hardcoded `true`, no toggle
+- [x] Include selfies on chat — toggle (embedded vs text-only)
 - [x] Enable folderization
 - [ ] Show Stats — daily usage counts / user info, missing
 - [ ] Debug mode — missing
@@ -20,7 +20,7 @@ Legend: [x] done · [~] partial · [ ] missing
 ## Single Nomi Download
 
 - [x] Album download (HD or SD)
-- [~] Chat download as HTML — only "with images"; need the with/without option
+- [x] Chat download as HTML — with/without images via the Include selfies toggle
 - [x] Mind map download as HTML *(new)*
 - [ ] Shared Notes as HTML *(new)* — `DOWNLOAD_BACKSTORY` is a stub
 - [~] JSON *(new)* — only `/nomis/{id}` data; should include all Nomi info (decide JSON vs markdown)

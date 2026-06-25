@@ -15,6 +15,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
         },
         chatDownload: {
             maxMessages: 0,
+            includeSelfies: true,
         },
         layout: "auto",
     };

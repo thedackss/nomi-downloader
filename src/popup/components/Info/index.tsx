@@ -100,6 +100,7 @@ export const Info = () => {
     const handleDownloadChat = () =>
         startDownload("DOWNLOAD_CHAT", "Starting chat download...", {
             maxMessages: Settings.chatDownload.maxMessages,
+            includeSelfies: Settings.chatDownload.includeSelfies,
         });
 
     const handleDownloadMind = () =>

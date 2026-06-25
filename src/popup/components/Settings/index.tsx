@@ -307,6 +307,42 @@ export const Settings = () => {
                             </p>
                         </div>
                     </li>
+                    <li>
+                        <label htmlFor="set-include-selfies">
+                            Include selfies
+                        </label>
+                        <div className={styles.row}>
+                            <label className={styles.switch}>
+                                <input
+                                    id="set-include-selfies"
+                                    type="checkbox"
+                                    checked={
+                                        Settings.chatDownload.includeSelfies
+                                    }
+                                    onChange={(e) =>
+                                        updateSettings({
+                                            chatDownload: {
+                                                ...Settings.chatDownload,
+                                                includeSelfies:
+                                                    e.target.checked,
+                                            },
+                                        })
+                                    }
+                                />
+                                <span className={styles.slider}></span>
+                            </label>
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.chatDownload.includeSelfies
+                                    ? "Embedded in chat"
+                                    : "Text only"}
+                            </p>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
