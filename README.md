@@ -66,14 +66,21 @@ npm install
 
 ```
 src/
+├── nomi/             Shared, context-agnostic nomi domain (no chrome.*)
+│   ├── api.ts        NomiApiClient (pure HTTP data layer)
+│   ├── http.ts       axios instance
+│   ├── media.ts      getNomiMedia / getNomiImageUrl (media URLs)
+│   ├── errors.ts     NomiError
+│   ├── interfaces/   download/get prop shapes
+│   └── types/        typed nomi.ai API responses (shared.ts = common shapes)
 ├── popup/            React UI shown in the toolbar popup
 │   ├── components/   List, Info, Settings, Header, LoadingSpin
 │   ├── context/      nomis + settings React contexts
 │   └── hooks/        useNomi, useSettings, useTab
 ├── background/       MV3 service worker
 │   ├── index.ts      message router; maps popup actions → download workflows
-│   └── nomi/         Nomi facade + focused modules:
-│       ├── api.ts            NomiApiClient (HTTP data layer)
+│   └── nomi/         chrome.*-specific orchestration:
+│       ├── index.ts            Nomi facade (composes the pieces below)
 │       ├── offscreenClient.ts  zip/blob bridge to the offscreen document
 │       ├── albumDownloader.ts  album workflow
 │       ├── chatDownloader.ts   chat workflow
@@ -81,9 +88,11 @@ src/
 │       └── constants.ts        chunk sizes, timeouts, pacing
 ├── offscreen/        Offscreen document (runs JSZip / Blob APIs MV3 can't)
 ├── content/          Content script injected on nomi.ai
-├── interfaces/nomi/  Typed nomi.ai API responses (shared.ts holds common shapes)
-└── utils/            axios instance, logging, zip, deepMerge, media URLs
+└── utils/            logging, zip, deepMerge, mind-map HTML
 ```
+
+Dependency direction: both `popup/` and `background/` depend on the shared
+`src/nomi/` layer; nothing depends on `background/` except itself.
 
 Flow: the **popup** sends a message to the **background** worker, which drives a
 **downloader** (data fetched via `NomiApiClient`, zipped/encoded via the **offscreen**
