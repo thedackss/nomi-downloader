@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import css from "./sharednotes.scss?inline";
-import type { SharedNote, SharedNotesRenderPayload } from "./types";
+import type { AnchorLook, SharedNote, SharedNotesRenderPayload } from "./types";
 
 /*
  * The exported Shared Notes HTML, authored as a component so the design can be
@@ -37,9 +37,66 @@ function Note({ note }: { note: SharedNote }) {
     );
 }
 
+function AnchorsNote({
+    title,
+    anchors,
+}: {
+    title: string;
+    anchors: AnchorLook[];
+}) {
+    return (
+        <details className="note">
+            <summary className="note-head">
+                <span className="heading">
+                    <h2>{title}</h2>
+                    <p>{anchors.length} saved anchor look(s).</p>
+                </span>
+                <span className="chevron">▾</span>
+            </summary>
+            <div className="note-body">
+                <div className="anchors">
+                    {anchors.map((anchor, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: static export, anchor order never changes
+                        <div className="anchor" key={i}>
+                            {anchor.image ? (
+                                <img
+                                    className="anchor-img"
+                                    src={anchor.image}
+                                    alt={`Anchor ${i + 1}`}
+                                />
+                            ) : (
+                                <div className="anchor-img placeholder">
+                                    No preview
+                                </div>
+                            )}
+                            <div className="anchor-meta">
+                                <div className="row">
+                                    <span className="label">Fidelity</span>
+                                    <span className="value">
+                                        {Math.round(anchor.fidelity * 100)}%
+                                    </span>
+                                </div>
+                                {anchor.appearanceTraits ? (
+                                    <div className="traits">
+                                        <span className="label">
+                                            Appearance Traits
+                                        </span>
+                                        <p>{anchor.appearanceTraits}</p>
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </details>
+    );
+}
+
 function SharedNotesDocument(payload: SharedNotesRenderPayload) {
-    const { name, avatar, generatedAt, notes } = payload;
+    const { name, avatar, generatedAt, notes, anchors, imageNotes } = payload;
     const generated = formatDate(generatedAt);
+    const hasImageSettings = anchors.length > 0 || imageNotes.length > 0;
 
     return (
         <html lang="en">
@@ -69,9 +126,29 @@ function SharedNotesDocument(payload: SharedNotesRenderPayload) {
                 </header>
 
                 <main>
-                    {notes.map((note) => (
-                        <Note key={note.title} note={note} />
-                    ))}
+                    {notes.length > 0 && (
+                        <section>
+                            <h2 className="group-title">Shared Notes</h2>
+                            {notes.map((note) => (
+                                <Note key={note.title} note={note} />
+                            ))}
+                        </section>
+                    )}
+
+                    {hasImageSettings && (
+                        <section>
+                            <h2 className="group-title">Image Settings</h2>
+                            {anchors.length > 0 && (
+                                <AnchorsNote
+                                    title={`${name}'s Anchors`}
+                                    anchors={anchors}
+                                />
+                            )}
+                            {imageNotes.map((note) => (
+                                <Note key={note.title} note={note} />
+                            ))}
+                        </section>
+                    )}
                 </main>
             </body>
         </html>

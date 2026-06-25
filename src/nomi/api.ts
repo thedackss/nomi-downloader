@@ -11,6 +11,7 @@ import type {
     MemoryTermItem,
 } from "./types/api.mindMaps.nomis.id.memoryTerms";
 import type { ApiNomisIdResponse } from "./types/api.nomis.id";
+import type { ApiAnchorLooksResponse } from "./types/api.nomis.id.anchorLooks";
 import type {
     ApiNomisMessagesResponse,
     Message,
@@ -61,6 +62,19 @@ export class NomiApiClient {
             return data;
         } catch (error) {
             Log("Failed to get shared notes", error);
+            return null;
+        }
+    }
+
+    public async getAnchorLooks({ nomiId }: NomiExistsProps) {
+        try {
+            Log(`Getting anchor looks for Nomi with ID: ${nomiId}`);
+            const { data } = await api.get<ApiAnchorLooksResponse>(
+                `nomis/${nomiId}/anchor-looks`,
+            );
+            return data;
+        } catch (error) {
+            Log("Failed to get anchor looks", error);
             return null;
         }
     }

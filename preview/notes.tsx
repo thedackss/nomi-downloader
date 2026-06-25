@@ -9,7 +9,17 @@
  * exercise edge cases.
  */
 import { renderSharedNotesDocument } from "../src/background/nomi/sharednotes/SharedNotesDocument";
-import type { SharedNote } from "../src/background/nomi/sharednotes/types";
+import type {
+    AnchorLook,
+    SharedNote,
+} from "../src/background/nomi/sharednotes/types";
+
+// A 1x1 purple pixel so the preview works offline (no real anchor fetch).
+const px =
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#3b2a55"/><circle cx="100" cy="80" r="40" fill="#a855f7"/></svg>',
+    );
 
 const notes: SharedNote[] = [
     {
@@ -59,11 +69,37 @@ const notes: SharedNote[] = [
     },
 ];
 
+const anchors: AnchorLook[] = [
+    { image: px, fidelity: 1, appearanceTraits: "Auburn hair, green eyes." },
+    {
+        image: px,
+        fidelity: 0.4,
+        appearanceTraits: "Trendy modern look, soft lighting.",
+    },
+];
+
+const imageNotes: SharedNote[] = [
+    {
+        title: "Appearance Tendencies (global)",
+        content: "Prefers natural light and candid framing.",
+    },
+    {
+        title: "Yuki's Appearance V4",
+        content: "Petite, auburn hair tied up, clay-dusted apron.",
+    },
+    {
+        title: "Yuki's Appearance V3",
+        content: "Auburn hair, green eyes, freckles.",
+    },
+];
+
 const frame = document.getElementById("preview") as HTMLIFrameElement | null;
 if (frame) {
     frame.srcdoc = renderSharedNotesDocument({
         name: "Yuki",
         generatedAt: new Date().toISOString(),
         notes,
+        anchors,
+        imageNotes,
     });
 }

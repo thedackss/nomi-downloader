@@ -5,13 +5,19 @@ import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
 import type { NomiExistsProps } from "../../nomi/interfaces/exists";
 import { getNomiImageUrl } from "../../nomi/media";
 import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
+import type { ApiAnchorLooksResponse } from "../../nomi/types/api.nomis.id.anchorLooks";
 import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
 import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
-import { buildSharedNotesPayload } from "./sharednotes/builder";
+import {
+    buildAnchorRefs,
+    buildImageNotes,
+    buildSharedNotes,
+} from "./sharednotes/builder";
+import type { AnchorLook, SharedNotesRenderPayload } from "./sharednotes/types";
 
 /**
  * Facade over the Nomi data API, offscreen/zip bridge, and the album/chat
@@ -83,15 +89,30 @@ export class Nomi {
         if (!data) return false;
 
         const nomi = await this.api.get({ nomiId });
-        const payload = buildSharedNotesPayload(
-            nomi.name,
-            data,
-            new Date().toISOString(),
-        );
-        if (payload.notes.length === 0) return false;
+        const notes = buildSharedNotes(nomi.name, data);
+        const imageNotes = buildImageNotes(nomi.name, data);
 
         await this.offscreen.setupDocument();
-        payload.avatar = await this.fetchAvatar(nomi);
+
+        const looks = await this.api.getAnchorLooks({ nomiId });
+        const anchors = await this.fetchAnchors(nomiId, looks);
+
+        if (
+            notes.length === 0 &&
+            imageNotes.length === 0 &&
+            anchors.length === 0
+        ) {
+            return false;
+        }
+
+        const payload: SharedNotesRenderPayload = {
+            name: nomi.name,
+            avatar: await this.fetchAvatar(nomi),
+            generatedAt: new Date().toISOString(),
+            notes,
+            anchors,
+            imageNotes,
+        };
         const html = await this.offscreen.renderSharedNotes(payload);
 
         const { url, isBlob } = await this.toDownloadUrl(html);
@@ -138,20 +159,39 @@ export class Nomi {
         return { url: `data:text/html;base64,${base64}`, isBlob: false };
     }
 
-    /** Fetch a Nomi's avatar as a data URI; undefined if it can't be fetched. */
-    private async fetchAvatar(
-        nomi: ApiNomisIdResponse,
-    ): Promise<string | undefined> {
+    /** Fetch an image URL as a webp data URI; undefined if it can't be fetched. */
+    private async fetchImageDataUri(url: string): Promise<string | undefined> {
         try {
-            const { data } = await api.get(getNomiImageUrl(nomi), {
-                responseType: "blob",
-            });
+            const { data } = await api.get(url, { responseType: "blob" });
             const base64 = await this.offscreen.blobToBase64(data);
             return `data:image/webp;base64,${base64}`;
         } catch (err) {
-            Log("Failed to fetch Nomi avatar for mind map", err);
+            Log("Failed to fetch image", url, err);
             return undefined;
         }
+    }
+
+    /** Fetch a Nomi's avatar as a data URI; undefined if it can't be fetched. */
+    private fetchAvatar(nomi: ApiNomisIdResponse): Promise<string | undefined> {
+        return this.fetchImageDataUri(getNomiImageUrl(nomi));
+    }
+
+    /** Resolve anchor looks into renderable items with embedded preview images. */
+    private async fetchAnchors(
+        nomiId: number,
+        looks: ApiAnchorLooksResponse | null,
+    ): Promise<AnchorLook[]> {
+        if (!looks) return [];
+        const refs = buildAnchorRefs(nomiId, looks);
+        return Promise.all(
+            refs.map(async (ref) => ({
+                fidelity: ref.fidelity,
+                appearanceTraits: ref.appearanceTraits,
+                image: ref.imageUrl
+                    ? await this.fetchImageDataUri(ref.imageUrl)
+                    : undefined,
+            })),
+        );
     }
 
     downloadAlbum(props: DownloadAlbumProps) {

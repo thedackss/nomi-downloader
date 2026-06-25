@@ -1,20 +1,23 @@
-// Maps the raw GET /nomis/:id/shared-notes response into the normalized
-// SharedNote[] the renderer consumes. Pure data transform, intentionally
-// React-free so it can run in the service worker.
+// Maps the raw GET /nomis/:id/shared-notes and /anchor-looks responses into the
+// normalized data the renderer consumes. Pure data transforms, intentionally
+// React-free so they can run in the service worker (image fetching for anchors
+// happens in the facade, which has the offscreen bridge).
 
+import type { ApiAnchorLooksResponse } from "../../../nomi/types/api.nomis.id.anchorLooks";
 import type { ApiSharedNotesResponse } from "../../../nomi/types/api.nomis.id.sharedNotes";
-import type { SharedNote, SharedNotesRenderPayload } from "./types";
+import type { SharedNote } from "./types";
 
-/**
- * The Shared Notes sections, in the order the nomi.ai UI shows them. Each entry
- * pairs an API field with its display title and the (static UI) helper copy.
- * `{name}` in a title is replaced with the Nomi's name.
- */
-const SECTIONS: Array<{
+interface Section {
     field: keyof ApiSharedNotesResponse;
     title: string;
-    description: string;
-}> = [
+    description?: string;
+}
+
+/**
+ * The "Shared Notes" text sections, in the order the nomi.ai UI shows them.
+ * `{name}` in a title is replaced with the Nomi's name.
+ */
+const SECTIONS: Section[] = [
     {
         field: "backstory",
         title: "Backstory",
@@ -40,8 +43,8 @@ const SECTIONS: Array<{
             "Describe your appearance to help your Nomi understand what you look like.",
     },
     {
-        field: "nomiAppearance",
-        title: "{name}'s Appearance",
+        field: "nomiChatAppearance",
+        title: "{name}'s Chat Appearance",
         description:
             "This shared note helps your Nomi understand what they look like in conversations.",
     },
@@ -70,13 +73,23 @@ const SECTIONS: Array<{
     },
 ];
 
-/** Normalize the raw response into the notes that actually have content. */
-export function buildSharedNotes(
+/** Text sections shown under "Image Settings" (besides the anchor gallery). */
+const IMAGE_SECTIONS: Section[] = [
+    {
+        field: "selfieTendencies",
+        title: "Appearance Tendencies (global)",
+    },
+    { field: "v4NomiAppearance", title: "{name}'s Appearance V4" },
+    { field: "nomiAppearance", title: "{name}'s Appearance V3" },
+];
+
+function collect(
     name: string,
     data: ApiSharedNotesResponse,
+    sections: Section[],
 ): SharedNote[] {
     const notes: SharedNote[] = [];
-    for (const section of SECTIONS) {
+    for (const section of sections) {
         const content = (data[section.field] ?? "").toString().trim();
         if (!content) continue;
         notes.push({
@@ -88,11 +101,44 @@ export function buildSharedNotes(
     return notes;
 }
 
-export function buildSharedNotesPayload(
+/** "Shared Notes" text sections that have content. */
+export function buildSharedNotes(
     name: string,
     data: ApiSharedNotesResponse,
-    generatedAt: string,
-    avatar?: string,
-): SharedNotesRenderPayload {
-    return { name, avatar, generatedAt, notes: buildSharedNotes(name, data) };
+): SharedNote[] {
+    return collect(name, data, SECTIONS);
+}
+
+/** "Image Settings" text sections (tendencies, V4/V3 appearance) with content. */
+export function buildImageNotes(
+    name: string,
+    data: ApiSharedNotesResponse,
+): SharedNote[] {
+    return collect(name, data, IMAGE_SECTIONS);
+}
+
+/** Normalized anchor look with the preview image URL still to be fetched. */
+export interface AnchorLookRef {
+    fidelity: number;
+    appearanceTraits: string;
+    /** Relative API path to the preview image, if available. */
+    imageUrl?: string;
+}
+
+/** Map raw anchor looks to refs (image URL resolved, not yet fetched). */
+export function buildAnchorRefs(
+    nomiId: number,
+    data: ApiAnchorLooksResponse,
+): AnchorLookRef[] {
+    return (data.nomiAnchorLooks ?? []).map((look) => {
+        const hash = look.userAnchorLook?.previewHash;
+        const imageUrl = hash
+            ? `nomis/${nomiId}/anchor-looks/${look.uuid}/previews/${hash}.webp`
+            : undefined;
+        return {
+            fidelity: look.fidelity,
+            appearanceTraits: (look.appearanceTraits ?? "").trim(),
+            imageUrl,
+        };
+    });
 }

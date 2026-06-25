@@ -89,6 +89,85 @@ body {
         padding: 26px 22px 60px;
     }
 
+    .group-title {
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 22px 4px 12px;
+    }
+
+    section:first-child .group-title {
+        margin-top: 0;
+    }
+
+    .anchors {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+
+        .anchor {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+
+            .anchor-img {
+                width: 100%;
+                aspect-ratio: 1;
+                object-fit: cover;
+                display: block;
+
+                &.placeholder {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--muted);
+                    font-size: 0.85rem;
+                    background: rgb(255 255 255 / 3%);
+                }
+            }
+
+            .anchor-meta {
+                padding: 12px 14px;
+
+                .row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                }
+
+                .label {
+                    font-size: 0.72rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: var(--muted);
+                }
+
+                .value {
+                    font-weight: 650;
+                }
+
+                .traits {
+                    margin-top: 10px;
+
+                    p {
+                        margin-top: 4px;
+                        font-size: 0.88rem;
+                        line-height: 1.55;
+                        white-space: pre-wrap;
+                        overflow-wrap: anywhere;
+                        color: rgb(232 234 240 / 92%);
+                    }
+                }
+            }
+        }
+    }
+
     .note {
         background: var(--surface);
         border: 1px solid var(--border);

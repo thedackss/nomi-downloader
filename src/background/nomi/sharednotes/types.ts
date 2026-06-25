@@ -15,6 +15,16 @@ export interface SharedNote {
     content: string;
 }
 
+/** One of the Nomi's saved anchor looks (image settings). */
+export interface AnchorLook {
+    /** Preview image as a data URI; omitted if it couldn't be fetched. */
+    image?: string;
+    /** 0–1 fidelity weight. */
+    fidelity: number;
+    /** Appearance traits text; may be empty. */
+    appearanceTraits: string;
+}
+
 export interface SharedNotesRenderPayload {
     /** Nomi name, shown in the header and document title. */
     name: string;
@@ -22,6 +32,10 @@ export interface SharedNotesRenderPayload {
     avatar?: string;
     /** ISO timestamp of when the export was generated. */
     generatedAt: string;
-    /** Notes with content (empty ones are dropped before rendering). */
+    /** "Shared Notes" text sections (empty ones dropped before rendering). */
     notes: SharedNote[];
+    /** The Nomi's anchor looks, shown under "Image Settings". */
+    anchors: AnchorLook[];
+    /** Remaining "Image Settings" text sections (tendencies, V4/V3 appearance). */
+    imageNotes: SharedNote[];
 }

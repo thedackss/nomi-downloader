@@ -13,7 +13,14 @@ export interface ApiSharedNotesResponse {
     nicknames: string | null;
     desires: string | null;
     userAppearance: string | null;
+    /** Nomi appearance used in chat. */
+    nomiChatAppearance: string | null;
+    /** Legacy nomi appearance (V3). */
     nomiAppearance: string | null;
+    /** Nomi appearance (V4). */
+    v4NomiAppearance: string | null;
+    /** Global appearance tendencies for selfies. */
+    selfieTendencies: string | null;
     communicationStyle: string | null;
     updated: string;
 }
