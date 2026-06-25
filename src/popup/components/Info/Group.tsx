@@ -1,11 +1,8 @@
 import type { GroupChat } from "../../../nomi/types/api.groupChats";
-import type { DownloadStatus } from "./interfaces";
 import styles from "./styles.module.scss";
 
 interface GroupInfoProps {
     group: GroupChat;
-    downloadStatus: DownloadStatus;
-    onDownloadChat: () => void;
 }
 
 export const GroupInfo = ({ group }: GroupInfoProps) => {

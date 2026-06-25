@@ -1,38 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import { NomiApiClient } from "../../../nomi/api";
 import type { Nomi } from "../../../nomi/types/api.nomis";
+import { useBackground } from "../../hooks/useBackground";
 import { LoadingSpin } from "../LoadingSpin";
-import type { DownloadStatus } from "./interfaces";
 import styles from "./styles.module.scss";
 
 interface NomiInfoProps {
     nomi: Nomi;
-    downloadStatus: DownloadStatus;
-    onDownloadAll: () => void;
-    onDownloadAlbum: () => void;
-    onDownloadChat: () => void;
-    onDownloadMind: () => void;
-    onDownloadBackstory: () => void;
-    onDownloadJSON: () => void;
 }
 
-export const NomiInfo = ({
-    nomi,
-    downloadStatus,
-    onDownloadAll,
-    onDownloadAlbum,
-    onDownloadChat,
-    onDownloadMind,
-    onDownloadBackstory,
-    onDownloadJSON,
-}: NomiInfoProps) => {
+export const NomiInfo = ({ nomi }: NomiInfoProps) => {
+    const {
+        downloadStatus,
+        downloadAll,
+        downloadAlbum,
+        downloadChat,
+        downloadMind,
+        downloadBackstory,
+        downloadJSON,
+    } = useBackground();
+
     const downloadOptions = [
-        { name: "All", fn: onDownloadAll },
-        { name: "Album", fn: onDownloadAlbum },
-        { name: "Chat", fn: onDownloadChat },
-        { name: "Mind Map", fn: onDownloadMind },
-        { name: "Backstory+", fn: onDownloadBackstory },
-        { name: "JSON", fn: onDownloadJSON },
+        { name: "All", fn: downloadAll },
+        { name: "Album", fn: downloadAlbum },
+        { name: "Chat", fn: downloadChat },
+        { name: "Mind Map", fn: downloadMind },
+        { name: "Backstory+", fn: downloadBackstory },
+        { name: "JSON", fn: downloadJSON },
     ];
 
     const [mindMapActive, setMindMapActive] = useState(false);
