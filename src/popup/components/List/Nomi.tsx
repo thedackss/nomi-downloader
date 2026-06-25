@@ -29,7 +29,11 @@ export const NomiList = () => {
         <>
             {Nomis.list.nomi.map((nomi) => {
                 const media = getNomiMedia(nomi);
-                const img = media.videoPrev || media.selfie || media.default;
+                const img =
+                    media.videoPrev ||
+                    media.edit ||
+                    media.selfie ||
+                    media.default;
 
                 const isSelected = Nomis.selected?.nomi?.id === nomi.id;
 

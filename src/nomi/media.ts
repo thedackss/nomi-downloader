@@ -4,17 +4,19 @@ interface NomiMediaSource {
     id: number;
     pictureImageId: string;
     pictureSelfieImageId?: string | null;
+    imageEditRequestUuid?: string | null;
     videoRequestUuid?: string | null;
 }
 
 export interface NomiMedia {
     default: string;
     selfie?: string;
+    edit?: string;
     video?: string;
     videoPrev?: string;
 }
 
-/** Build the set of media URLs (image, selfie, video, preview) for a Nomi. */
+/** Build the set of media URLs (image, selfie, edit, video, preview) for a Nomi. */
 export function getNomiMedia(nomi: NomiMediaSource): NomiMedia {
     const base = `${API}/nomis/${nomi.id}`;
 
@@ -22,6 +24,9 @@ export function getNomiMedia(nomi: NomiMediaSource): NomiMedia {
         default: `${base}/images/${nomi.pictureImageId}.webp`,
         selfie: nomi.pictureSelfieImageId
             ? `${base}/selfies/${nomi.pictureSelfieImageId}.webp`
+            : undefined,
+        edit: nomi.imageEditRequestUuid
+            ? `${API}/image-edit-requests/${nomi.imageEditRequestUuid}/edited-image.webp`
             : undefined,
         video: nomi.videoRequestUuid
             ? `${API}/video-requests/${nomi.videoRequestUuid}.mp4`
@@ -32,8 +37,8 @@ export function getNomiMedia(nomi: NomiMediaSource): NomiMedia {
     };
 }
 
-/** Still image for a Nomi, preferring the selfie over the default picture. */
+/** Still image for a Nomi, preferring a custom edit, then a selfie, then the base picture. */
 export function getNomiImageUrl(nomi: NomiMediaSource): string {
     const media = getNomiMedia(nomi);
-    return media.selfie ?? media.default;
+    return media.edit ?? media.selfie ?? media.default;
 }

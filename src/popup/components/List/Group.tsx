@@ -39,7 +39,12 @@ export const GroupList = () => {
                     .filter((nomi) => !nomi.removed)
                     .map((nomi) => {
                         const media = getNomiMedia(nomi);
-                        return media.videoPrev || media.selfie || media.default;
+                        return (
+                            media.videoPrev ||
+                            media.edit ||
+                            media.selfie ||
+                            media.default
+                        );
                     });
 
                 return (
