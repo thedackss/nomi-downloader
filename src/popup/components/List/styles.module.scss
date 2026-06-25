@@ -6,8 +6,14 @@
     --fade: 1.5rem;
 
     position: relative;
+    display: flex;
+    flex-flow: column nowrap;
     width: 100%;
     height: 100%;
+
+    // Shrink to the grid cell so the inner list stays bounded and scrolls
+    // (without this the wrapper grows to fit all content — no scroll).
+    min-height: 0;
 
     // Contain the overlay z-indexes so they sit above the list's own layers
     // (selected-card video is z-index 4) without leaking past the popup.
@@ -37,8 +43,9 @@
 
 .nomiList {
     position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
     width: 100%;
-    height: 100%;
     overflow-y: scroll;
     list-style: none;
     padding-right: 2.5%;
