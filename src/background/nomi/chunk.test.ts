@@ -26,4 +26,20 @@ describe("chunkBySize", () => {
     it("returns an empty array for no items", () => {
         expect(chunkBySize([], size, 10)).toEqual([]);
     });
+
+    it("caps a chunk by count when maxCountPerChunk is set", () => {
+        // Bytes alone would keep all 5 in one chunk (size 1 each, cap 100),
+        // but the count cap of 2 forces 2 / 2 / 1.
+        expect(chunkBySize([1, 1, 1, 1, 1], size, 100, 2)).toEqual([
+            [1, 1],
+            [1, 1],
+            [1],
+        ]);
+    });
+
+    it("closes on whichever limit hits first (bytes or count)", () => {
+        // Count cap is 5, but the byte cap of 10 closes after two 6s... no:
+        // 6 alone fills past nothing; 6+6>10 so byte cap splits first.
+        expect(chunkBySize([6, 6, 6], size, 10, 5)).toEqual([[6], [6], [6]]);
+    });
 });

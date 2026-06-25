@@ -9,6 +9,8 @@ export interface Settings {
         quality: "HD" | "SD";
         folderization: boolean;
         downloadQuantity: number;
+        /** Max images per zip; 0 = auto (size-based chunking only). */
+        imagesPerZip: number;
     };
     layout: "auto" | "mobile" | "desktop";
 }

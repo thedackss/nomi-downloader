@@ -33,6 +33,7 @@ export class AlbumDownloader {
         quality = "HD",
         folderization = false,
         downloadQuantity = DEFAULT_DOWNLOAD_QUANTITY,
+        imagesPerZip = 0,
     }: DownloadAlbumProps) {
         const update = (message: string) => onProgress?.(message);
 
@@ -56,10 +57,15 @@ export class AlbumDownloader {
                 });
             }
 
+            // The byte budget is always enforced; an optional user-set
+            // "images per zip" (0 = auto) caps the count on top of it.
+            const maxCount =
+                imagesPerZip > 0 ? imagesPerZip : Number.POSITIVE_INFINITY;
             const chunks = chunkBySize(
                 medias,
                 (media) => this.estimateSize(media, quality),
                 ALBUM_CHUNK_MAX_BYTES,
+                maxCount,
             );
             const downloads: { url: string; filename: string }[] = [];
 

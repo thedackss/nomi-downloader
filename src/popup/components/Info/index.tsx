@@ -94,6 +94,7 @@ export const Info = () => {
             downloadQuantity: Settings.albumDownload.downloadQuantity,
             folderization: Settings.albumDownload.folderization,
             quality: Settings.albumDownload.quality,
+            imagesPerZip: Settings.albumDownload.imagesPerZip,
         });
 
     const handleDownloadChat = () =>

@@ -78,8 +78,12 @@ function main() {
 
         switch (message.type) {
             case "DOWNLOAD_ALBUM": {
-                const { downloadQuantity, folderization, quality } =
-                    message.data;
+                const {
+                    downloadQuantity,
+                    folderization,
+                    quality,
+                    imagesPerZip,
+                } = message.data;
                 runDownload(
                     nomiId,
                     {
@@ -93,6 +97,7 @@ function main() {
                             downloadQuantity,
                             folderization,
                             quality,
+                            imagesPerZip,
                             onProgress,
                         }),
                 );

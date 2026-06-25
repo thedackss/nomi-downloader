@@ -11,6 +11,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             quality: "SD",
             folderization: true,
             downloadQuantity: 2,
+            imagesPerZip: 0,
         },
         layout: "auto",
     };
