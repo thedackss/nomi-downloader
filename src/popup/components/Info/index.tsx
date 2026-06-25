@@ -4,6 +4,7 @@ import { getNomiImageUrl } from "../../../nomi/media";
 import { useNomi } from "../../hooks/useNomi";
 import { useSettings } from "../../hooks/useSettings";
 import { LoadingSpin } from "../LoadingSpin";
+import { Stats } from "../Stats";
 import { GroupInfo } from "./Group";
 import type { DownloadStatus } from "./interfaces";
 import { NomiInfo } from "./Nomi";
@@ -151,9 +152,12 @@ export const Info = () => {
                     );
                 } else {
                     return (
-                        <span className={styles.noNomiSelected}>
-                            No Nomi selected
-                        </span>
+                        <div className={styles.emptyState}>
+                            <Stats />
+                            <span className={styles.noNomiSelected}>
+                                No Nomi selected
+                            </span>
+                        </div>
                     );
                 }
             })()}

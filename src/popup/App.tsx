@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Header } from "./components/Header";
 import { Info } from "./components/Info";
 import { List } from "./components/List";
-import { Stats } from "./components/Stats";
 import { useNomi } from "./hooks/useNomi";
 import { useSettings } from "./hooks/useSettings";
 import "./app.styles.scss";
@@ -31,7 +30,6 @@ function App() {
     return (
         <div className={isMobile ? "mobile" : "desktop"}>
             <Header />
-            <Stats />
             <div className="main-container">
                 {isMobile ? (
                     hasSelection ? (
