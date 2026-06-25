@@ -77,28 +77,44 @@ describe("buildAnchorRefs", () => {
                 fidelity: 0.4,
                 appearanceTraits: "  Trendy  ",
                 type: "User",
-                userAnchorLook: { uuid: "u1", previewHash: "hash1" },
+                platformAnchorLook: null,
+                userAnchorLook: {
+                    uuid: "u1",
+                    previewHash: "hash1",
+                    generationProcess: "Lago",
+                    style: "photorealistic",
+                },
             },
             {
+                // A built-in default: preview lives in platformAnchorLook.
                 uuid: "anchor-2",
                 nomiId: 42,
-                fidelity: 1,
+                fidelity: 1.2,
                 appearanceTraits: null,
-                type: "User",
+                type: "Platform",
+                platformAnchorLook: {
+                    uuid: "p1",
+                    previewHash: "hash2",
+                    generationProcess: "Riva",
+                    style: "nomi anime",
+                },
                 userAnchorLook: null,
             },
         ],
     };
 
-    it("builds the preview image URL and trims traits", () => {
+    it("builds preview URLs from user and platform looks, with labels", () => {
         const refs = buildAnchorRefs(42, looks);
         expect(refs[0].imageUrl).toBe(
             "nomis/42/anchor-looks/anchor-1/previews/hash1.webp",
         );
         expect(refs[0].appearanceTraits).toBe("Trendy");
-        // No previewHash -> no image URL.
-        expect(refs[1].imageUrl).toBeUndefined();
-        expect(refs[1].appearanceTraits).toBe("");
+        expect(refs[0].label).toBe("LAGO - Realistic");
+        // Platform default still resolves an image URL (from platformAnchorLook).
+        expect(refs[1].imageUrl).toBe(
+            "nomis/42/anchor-looks/anchor-2/previews/hash2.webp",
+        );
+        expect(refs[1].label).toBe("RIVA - Anime");
     });
 });
 
@@ -150,6 +166,7 @@ describe("renderSharedNotesDocument", () => {
                 {
                     image: "data:image/webp;base64,BBBB",
                     fidelity: 0.4,
+                    label: "LAGO - Realistic",
                     appearanceTraits: "Trendy modern look.",
                 },
             ],

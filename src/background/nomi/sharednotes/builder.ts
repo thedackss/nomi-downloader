@@ -121,8 +121,23 @@ export function buildImageNotes(
 export interface AnchorLookRef {
     fidelity: number;
     appearanceTraits: string;
+    /** Engine + style label, e.g. "RIVA - Realistic"; empty if unknown. */
+    label: string;
     /** Relative API path to the preview image, if available. */
     imageUrl?: string;
+}
+
+const STYLE_LABELS: Record<string, string> = {
+    photorealistic: "Realistic",
+    "nomi anime": "Anime",
+    anime: "Anime",
+};
+
+function anchorLabel(process?: string | null, style?: string | null): string {
+    const parts: string[] = [];
+    if (process) parts.push(process.toUpperCase());
+    if (style) parts.push(STYLE_LABELS[style.toLowerCase()] ?? style);
+    return parts.join(" - ");
 }
 
 /** Map raw anchor looks to refs (image URL resolved, not yet fetched). */
@@ -131,13 +146,17 @@ export function buildAnchorRefs(
     data: ApiAnchorLooksResponse,
 ): AnchorLookRef[] {
     return (data.nomiAnchorLooks ?? []).map((look) => {
-        const hash = look.userAnchorLook?.previewHash;
+        // Custom looks carry userAnchorLook; the built-in defaults (RIVA/LAGO)
+        // carry platformAnchorLook instead — both hold the preview hash.
+        const detail = look.userAnchorLook ?? look.platformAnchorLook;
+        const hash = detail?.previewHash;
         const imageUrl = hash
             ? `nomis/${nomiId}/anchor-looks/${look.uuid}/previews/${hash}.webp`
             : undefined;
         return {
             fidelity: look.fidelity,
             appearanceTraits: (look.appearanceTraits ?? "").trim(),
+            label: anchorLabel(detail?.generationProcess, detail?.style),
             imageUrl,
         };
     });

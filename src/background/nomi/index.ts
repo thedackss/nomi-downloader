@@ -187,6 +187,7 @@ export class Nomi {
             refs.map(async (ref) => ({
                 fidelity: ref.fidelity,
                 appearanceTraits: ref.appearanceTraits,
+                label: ref.label,
                 image: ref.imageUrl
                     ? await this.fetchImageDataUri(ref.imageUrl)
                     : undefined,

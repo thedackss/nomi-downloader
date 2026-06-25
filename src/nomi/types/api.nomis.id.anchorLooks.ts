@@ -10,15 +10,23 @@ export interface ApiAnchorLooksResponse {
 export interface AnchorLookItem {
     uuid: string;
     nomiId: number;
-    /** 0–1 fidelity weight. */
+    /** Fidelity weight (can exceed 1). */
     fidelity: number;
     appearanceTraits: string | null;
+    /** "User" for custom looks, "Platform" for the built-in defaults. */
     type: string;
-    userAnchorLook: UserAnchorLook | null;
+    /** Present on the built-in (default) anchors. */
+    platformAnchorLook: AnchorLookDetail | null;
+    /** Present on custom anchors. */
+    userAnchorLook: AnchorLookDetail | null;
 }
 
-interface UserAnchorLook {
+interface AnchorLookDetail {
     uuid: string;
     /** Hash used to build the preview image URL. */
     previewHash: string | null;
+    /** Generation engine, e.g. "Riva" or "Lago". */
+    generationProcess: string | null;
+    /** Render style, e.g. "photorealistic" or "nomi anime". */
+    style: string | null;
 }

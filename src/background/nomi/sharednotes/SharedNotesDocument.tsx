@@ -70,6 +70,11 @@ function AnchorsNote({
                                 </div>
                             )}
                             <div className="anchor-meta">
+                                {anchor.label ? (
+                                    <div className="anchor-name">
+                                        {anchor.label}
+                                    </div>
+                                ) : null}
                                 <div className="row">
                                     <span className="label">Fidelity</span>
                                     <span className="value">

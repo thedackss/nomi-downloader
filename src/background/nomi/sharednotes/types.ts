@@ -19,10 +19,12 @@ export interface SharedNote {
 export interface AnchorLook {
     /** Preview image as a data URI; omitted if it couldn't be fetched. */
     image?: string;
-    /** 0–1 fidelity weight. */
+    /** Fidelity weight (can exceed 1). */
     fidelity: number;
     /** Appearance traits text; may be empty. */
     appearanceTraits: string;
+    /** Engine + style label, e.g. "RIVA - Realistic"; may be empty. */
+    label: string;
 }
 
 export interface SharedNotesRenderPayload {

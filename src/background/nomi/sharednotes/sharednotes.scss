@@ -134,6 +134,13 @@ body {
             .anchor-meta {
                 padding: 12px 14px;
 
+                .anchor-name {
+                    font-weight: 650;
+                    font-size: 0.92rem;
+                    margin-bottom: 10px;
+                    color: var(--accent);
+                }
+
                 .row {
                     display: flex;
                     align-items: center;

@@ -70,11 +70,22 @@ const notes: SharedNote[] = [
 ];
 
 const anchors: AnchorLook[] = [
-    { image: px, fidelity: 1, appearanceTraits: "Auburn hair, green eyes." },
     {
         image: px,
-        fidelity: 0.4,
+        fidelity: 1,
+        label: "RIVA - Realistic",
+        appearanceTraits: "Auburn hair, green eyes.",
+    },
+    {
+        // No image: exercises the "No preview" placeholder (e.g. a default).
+        fidelity: 1.2,
+        label: "LAGO - Realistic",
         appearanceTraits: "Trendy modern look, soft lighting.",
+    },
+    {
+        fidelity: 0.7,
+        label: "RIVA - Anime",
+        appearanceTraits: "",
     },
 ];
 
