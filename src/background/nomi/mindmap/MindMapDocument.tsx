@@ -143,20 +143,41 @@ const SCRIPT = `
     el.addEventListener('pointerdown', function (ev) {
       ev.preventDefault();
       s.pinned = true; el.classList.add('dragging'); el.setPointerCapture(ev.pointerId);
-      function move(e) { var r = view.getBoundingClientRect(); s.x = e.clientX - r.left; s.y = e.clientY - r.top; s.vx = 0; s.vy = 0; }
-      function up() { s.pinned = false; el.classList.remove('dragging'); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); }
+      var sx = ev.clientX, sy = ev.clientY, moved = false;
+      function move(e) {
+        if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 6) moved = true;
+        var r = view.getBoundingClientRect(); s.x = e.clientX - r.left; s.y = e.clientY - r.top; s.vx = 0; s.vy = 0;
+      }
+      function up() {
+        s.pinned = false; el.classList.remove('dragging');
+        el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up);
+        if (!moved) openTerm(s.n.uuid);
+      }
       el.addEventListener('pointermove', move); el.addEventListener('pointerup', up);
     });
   }
 
   var graphView = document.getElementById('graphView');
   var tableView = document.getElementById('tableView');
-  document.getElementById('viewToggle').addEventListener('click', function (e) {
-    var btn = e.target.closest('button'); if (!btn) return;
-    var isGraph = btn.dataset.view === 'graph';
+  var viewToggle = document.getElementById('viewToggle');
+
+  function setView(isGraph) {
     graphView.hidden = !isGraph; tableView.hidden = isGraph;
-    this.querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b === btn); });
+    viewToggle.querySelectorAll('button').forEach(function (b) {
+      b.classList.toggle('active', (b.dataset.view === 'graph') === isGraph);
+    });
     if (isGraph) { measure(); start(); } else { stop(); }
+  }
+
+  function openTerm(uuid) {
+    setView(false);
+    var el = tableView.querySelector('[data-uuid="' + uuid + '"]');
+    if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+
+  viewToggle.addEventListener('click', function (e) {
+    var btn = e.target.closest('button'); if (!btn) return;
+    setView(btn.dataset.view === 'graph');
   });
 
   var connected = {};
@@ -194,7 +215,7 @@ function formatDate(iso: string | null): string {
 
 function TermRow({ entry }: { entry: MindMapEntry }) {
     return (
-        <details className="term">
+        <details className="term" data-uuid={entry.uuid}>
             <summary className="term-head">
                 <span className="name">{entry.title}</span>
                 <span className="badge">{entry.memoryCount} memories</span>
