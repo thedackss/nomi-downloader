@@ -3,6 +3,8 @@ import { renderChatPayload } from "../background/nomi/chat/ChatDocument";
 import type { ChatRenderPayload } from "../background/nomi/chat/types";
 import { renderMindMapPayload } from "../background/nomi/mindmap/MindMapDocument";
 import type { MindMapRenderPayload } from "../background/nomi/mindmap/types";
+import { renderSharedNotesPayload } from "../background/nomi/sharednotes/SharedNotesDocument";
+import type { SharedNotesRenderPayload } from "../background/nomi/sharednotes/types";
 import { zipService } from "../utils/zipService";
 
 // Define message types
@@ -15,6 +17,7 @@ type OffscreenMessage = { target: string } & (
     | { type: "revoke-blob-url"; data: { url: string } }
     | { type: "render-chat"; data: ChatRenderPayload }
     | { type: "render-mindmap"; data: MindMapRenderPayload }
+    | { type: "render-notes"; data: SharedNotesRenderPayload }
     | { type: "keep-alive"; data?: undefined }
 );
 
@@ -54,6 +57,9 @@ function handleMessages(
         case "render-mindmap":
             handleRenderMindMap(message.data, sendResponse);
             break;
+        case "render-notes":
+            handleRenderSharedNotes(message.data, sendResponse);
+            break;
         case "keep-alive":
             sendResponse(true);
             break;
@@ -82,6 +88,21 @@ function handleRenderMindMap(
 ) {
     try {
         const html = renderMindMapPayload(data);
+        sendResponse({ success: true, html });
+    } catch (err) {
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
+    }
+}
+
+function handleRenderSharedNotes(
+    data: SharedNotesRenderPayload,
+    sendResponse: SendResponse,
+) {
+    try {
+        const html = renderSharedNotesPayload(data);
         sendResponse({ success: true, html });
     } catch (err) {
         sendResponse({

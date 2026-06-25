@@ -1,0 +1,158 @@
+// Styles for the exported Shared Notes HTML. Plain (non-module) class names,
+// kept in sync with SharedNotesDocument.tsx. The export is a whole standalone
+// document, so these apply globally inside it.
+// Live-edit with: npm run preview:notes
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    --bg: #0d0e12;
+    --surface: #181b22;
+    --surface-2: #1f232c;
+    --border: rgb(255 255 255 / 8%);
+    --text: #e8eaf0;
+    --muted: #888d9b;
+    --accent: #a855f7;
+
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family:
+        -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue",
+        arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizelegibility;
+
+    &::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(
+            1100px 520px at 50% -8%,
+            rgb(168 85 247 / 14%),
+            transparent 62%
+        );
+    }
+
+    .notes-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 22px;
+        background: rgb(13 14 18 / 68%);
+        backdrop-filter: blur(18px) saturate(140%);
+        border-bottom: 1px solid var(--border);
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow:
+                0 0 0 2px rgb(168 85 247 / 55%),
+                0 6px 18px rgb(168 85 247 / 25%);
+        }
+
+        .title {
+            display: flex;
+            flex-direction: column;
+
+            h1 {
+                font-size: 1.2rem;
+                font-weight: 650;
+                letter-spacing: -0.01em;
+            }
+
+            .generated {
+                font-size: 0.72rem;
+                color: var(--muted);
+            }
+        }
+    }
+
+    main {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 26px 22px 60px;
+    }
+
+    .note {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        margin-bottom: 12px;
+        overflow: hidden;
+
+        .note-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px 20px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.15s ease;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            &:hover {
+                background: var(--surface-2);
+            }
+
+            .heading {
+                flex: 1 1 auto;
+                min-width: 0;
+
+                h2 {
+                    font-size: 1.1rem;
+                    font-weight: 650;
+                    letter-spacing: -0.01em;
+                }
+
+                p {
+                    margin-top: 4px;
+                    font-size: 0.84rem;
+                    color: var(--muted);
+                }
+            }
+
+            .chevron {
+                margin-top: 4px;
+                color: var(--muted);
+                flex-shrink: 0;
+                transition: transform 0.2s ease;
+            }
+        }
+
+        &[open] .note-head .chevron {
+            transform: rotate(180deg);
+        }
+
+        .note-body {
+            padding: 4px 20px 20px;
+            border-top: 1px solid var(--border);
+
+            .content {
+                margin-top: 14px;
+                font-size: 0.95rem;
+                line-height: 1.7;
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+                color: rgb(232 234 240 / 92%);
+            }
+        }
+    }
+}

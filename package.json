@@ -16,7 +16,8 @@
         "test:e2e": "npm run build && xvfb-run -a playwright test",
         "preview": "vite preview",
         "preview:chat": "vite --config vite.preview.config.ts",
-        "preview:mindmap": "vite --config vite.preview.mindmap.config.ts"
+        "preview:mindmap": "vite --config vite.preview.mindmap.config.ts",
+        "preview:notes": "vite --config vite.preview.notes.config.ts"
     },
     "dependencies": {
         "axios": "^1.13.4",

@@ -1,6 +1,7 @@
 import type { ChatRenderPayload } from "./chat/types";
 import { OFFSCREEN_DOCUMENT_PATH } from "./constants";
 import type { MindMapRenderPayload } from "./mindmap/types";
+import type { SharedNotesRenderPayload } from "./sharednotes/types";
 
 export interface OffscreenPayload {
     id?: string;
@@ -138,6 +139,32 @@ export class OffscreenClient {
             "./mindmap/MindMapDocument"
         );
         return renderMindMapPayload(payload);
+    }
+
+    /**
+     * Render the Shared Notes HTML in the offscreen document (which has a DOM),
+     * so react-dom/server never loads in the service worker. Falls back to an
+     * in-process render where there is no offscreen API (tests / Firefox page).
+     */
+    async renderSharedNotes(
+        payload: SharedNotesRenderPayload,
+    ): Promise<string> {
+        if (typeof chrome !== "undefined" && chrome.offscreen) {
+            const res = await chrome.runtime.sendMessage({
+                target: "offscreen",
+                type: "render-notes",
+                data: payload,
+            });
+            if (!res?.success || typeof res.html !== "string") {
+                throw new Error(res?.error || "Failed to render shared notes");
+            }
+            return res.html;
+        }
+
+        const { renderSharedNotesPayload } = await import(
+            "./sharednotes/SharedNotesDocument"
+        );
+        return renderSharedNotesPayload(payload);
     }
 
     blobToBase64(blob: Blob): Promise<string> {
