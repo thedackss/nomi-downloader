@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import css from "./chat.scss?inline";
+import type { ChatRenderPayload } from "./types";
 
 /*
  * The exported chat HTML, authored as a component so the design can be
@@ -111,4 +112,31 @@ function ChatDocument({ name, avatar, children }: ChatDocumentProps) {
 /** Render the full standalone chat HTML document to a string. */
 export function renderChatDocument(props: ChatDocumentProps): string {
     return `<!DOCTYPE html>${renderToStaticMarkup(<ChatDocument {...props} />)}`;
+}
+
+/**
+ * Render a serializable payload (built in the worker) to the chat HTML string.
+ * This is the entry point used by the offscreen document.
+ */
+export function renderChatPayload(payload: ChatRenderPayload): string {
+    const children: ReactNode[] = payload.items.map((item, i) => {
+        if (item.kind === "message") {
+            return createElement(ChatMessage, {
+                key: i,
+                isNomi: item.isNomi,
+                text: item.text,
+                date: new Date(item.sent),
+            });
+        }
+        if (item.kind === "selfie") {
+            return createElement(ChatSelfie, { key: i, src: item.src });
+        }
+        return createElement(ChatImageFailed, { key: i });
+    });
+
+    return renderChatDocument({
+        name: payload.name,
+        avatar: payload.avatar,
+        children,
+    });
 }

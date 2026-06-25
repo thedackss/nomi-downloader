@@ -1,6 +1,10 @@
 import { createElement } from "react";
 import { describe, expect, it } from "vitest";
-import { ChatMessage, renderChatDocument } from "./ChatDocument";
+import {
+    ChatMessage,
+    renderChatDocument,
+    renderChatPayload,
+} from "./ChatDocument";
 import css from "./chat.scss?inline";
 
 describe("chat styling", () => {
@@ -51,5 +55,30 @@ describe("renderChatDocument", () => {
         });
         expect(evil).not.toContain("<script>alert(1)</script>");
         expect(evil).toContain("&lt;script&gt;");
+    });
+});
+
+describe("renderChatPayload", () => {
+    it("renders a serializable payload (the offscreen entry point)", () => {
+        const html = renderChatPayload({
+            name: "Veronica",
+            avatar: "data:image/webp;base64,AAAA",
+            items: [
+                {
+                    kind: "message",
+                    isNomi: false,
+                    text: "hi",
+                    sent: "2026-02-19T14:00:00",
+                },
+                { kind: "selfie", src: "data:image/webp;base64,BBBB" },
+                { kind: "failed" },
+            ],
+        });
+
+        expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
+        expect(html).toContain("Veronica");
+        expect(html).toContain("hi");
+        expect(html).toContain('class="selfie"');
+        expect(html).toContain("Image unavailable");
     });
 });

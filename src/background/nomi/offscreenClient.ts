@@ -1,3 +1,4 @@
+import type { ChatRenderPayload } from "./chat/types";
 import { OFFSCREEN_DOCUMENT_PATH } from "./constants";
 
 export interface OffscreenPayload {
@@ -69,6 +70,28 @@ export class OffscreenClient {
             default:
                 throw new Error(`Unknown offscreen type: ${type}`);
         }
+    }
+
+    /**
+     * Render the chat HTML in the offscreen document (which has a DOM), so
+     * react-dom/server never loads in the service worker. Falls back to an
+     * in-process render where there is no offscreen API (tests / Firefox page).
+     */
+    async renderChat(payload: ChatRenderPayload): Promise<string> {
+        if (typeof chrome !== "undefined" && chrome.offscreen) {
+            const res = await chrome.runtime.sendMessage({
+                target: "offscreen",
+                type: "render-chat",
+                data: payload,
+            });
+            if (!res?.success || typeof res.html !== "string") {
+                throw new Error(res?.error || "Failed to render chat");
+            }
+            return res.html;
+        }
+
+        const { renderChatPayload } = await import("./chat/ChatDocument");
+        return renderChatPayload(payload);
     }
 
     blobToBase64(blob: Blob): Promise<string> {

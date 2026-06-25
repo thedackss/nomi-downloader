@@ -1,4 +1,6 @@
 // src/offscreen.ts
+import { renderChatPayload } from "../background/nomi/chat/ChatDocument";
+import type { ChatRenderPayload } from "../background/nomi/chat/types";
 import { zipService } from "../utils/zipService";
 
 // Define message types
@@ -9,6 +11,7 @@ type OffscreenMessage = { target: string } & (
     | { type: "clear-zip"; data: { id: string } }
     | { type: "create-blob-url"; data: { content: string; type: string } }
     | { type: "revoke-blob-url"; data: { url: string } }
+    | { type: "render-chat"; data: ChatRenderPayload }
     | { type: "keep-alive"; data?: undefined }
 );
 
@@ -42,6 +45,9 @@ function handleMessages(
         case "revoke-blob-url":
             handleRevokeBlobUrl(message.data, sendResponse);
             break;
+        case "render-chat":
+            handleRenderChat(message.data, sendResponse);
+            break;
         case "keep-alive":
             sendResponse(true);
             break;
@@ -49,6 +55,18 @@ function handleMessages(
             console.warn(
                 `Unknown message type: ${(message as { type: string }).type}`,
             );
+    }
+}
+
+function handleRenderChat(data: ChatRenderPayload, sendResponse: SendResponse) {
+    try {
+        const html = renderChatPayload(data);
+        sendResponse({ success: true, html });
+    } catch (err) {
+        sendResponse({
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        });
     }
 }
 
