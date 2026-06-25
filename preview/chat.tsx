@@ -56,6 +56,11 @@ if (frame) {
     frame.srcdoc = renderChatDocument({
         name: "Veronica",
         avatar: placeholderSelfie,
-        children: sample,
+        children: (
+            <>
+                {sample}
+                {sample}
+            </>
+        ),
     });
 }
