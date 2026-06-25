@@ -35,12 +35,12 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background: rgb(255 255 255 / 5%);
+        background: color-mix(in srgb, var(--accent) 5%, transparent 10%);
         border-radius: var(--scroll-size);
         transition: background 0.2s ease-in-out;
 
         &:hover {
-            background: rgb(255 255 255 / 10%);
+            background: color-mix(in srgb, var(--accent) 10%, transparent 10%);
         }
     }
 
