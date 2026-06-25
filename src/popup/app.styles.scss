@@ -1,10 +1,20 @@
 @import "https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap";
 
 :root {
-    --primary: rgb(150 16 255);
-    --background: rgb(24 26 32);
-    --background-secondary: rgb(36 38 43);
-    --text: rgb(255 255 255);
+    // Modern palette (shared with the chat export design).
+    --accent: #a855f7;
+    --accent-deep: #7c3aed;
+    --gradient: linear-gradient(135deg, #a855f7, #7c3aed);
+    --surface: #181b22;
+    --surface-2: #1f232c;
+    --border: rgb(255 255 255 / 8%);
+    --muted: #888d9b;
+
+    // Aliases kept so existing component styles inherit the new theme.
+    --primary: var(--accent);
+    --background: #0d0e12;
+    --background-secondary: var(--surface);
+    --text: #e8eaf0;
     --scroll-size: 8px;
 }
 
@@ -50,11 +60,17 @@ html {
     // overflow (only the right padding) instead of growing a scrollbar.
     width: var(--width);
     height: var(--height);
-    outline: outset 2px var(--primary);
+    outline: 1px solid rgb(from var(--accent) r g b / 35%);
     overflow-x: hidden;
 
     body {
-        background-color: var(--background);
+        background:
+            radial-gradient(
+                700px 340px at 50% -6%,
+                rgb(168 85 247 / 12%),
+                transparent 60%
+            ),
+            var(--background);
         color: var(--text);
 
         // Fixed 800 to size the popup, but cap at the viewport so a slightly
