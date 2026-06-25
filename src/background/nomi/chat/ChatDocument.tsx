@@ -39,29 +39,37 @@ interface ChatMessageProps {
     date: Date;
 }
 
-/** A chat message: the bubble plus its timestamp line. */
+/** A chat message: a bubble with its timestamp grouped in a row. */
 export function ChatMessage({ isNomi, text, date }: ChatMessageProps) {
     const who = isNomi ? "nomi" : "user";
     const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
     return (
-        <>
-            <li className={`msg ${who}`}>{text}</li>
-            <li className={`detail ${who}`}>
-                {date.toDateString()} {time}
-            </li>
-        </>
+        <li className={`row ${who}`}>
+            <div className="bubble">{text}</div>
+            <span className="time">
+                {date.toDateString()} · {time}
+            </span>
+        </li>
     );
 }
 
-/** A selfie image bubble. `src` may be a data URI or a URL. */
+/** A selfie image, rendered as a media row. `src` may be a data URI or URL. */
 export function ChatSelfie({ src }: { src: string }) {
-    return <img src={src} alt="selfie" />;
+    return (
+        <li className="row nomi">
+            <img className="selfie" src={src} alt="selfie" />
+        </li>
+    );
 }
 
 /** Placeholder shown when a selfie image could not be fetched. */
 export function ChatImageFailed() {
-    return <li className="msg result">[Image Download Failed]</li>;
+    return (
+        <li className="row nomi">
+            <div className="bubble failed">Image unavailable</div>
+        </li>
+    );
 }
 
 interface ChatDocumentProps {

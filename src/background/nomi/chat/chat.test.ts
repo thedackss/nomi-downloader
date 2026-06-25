@@ -5,9 +5,9 @@ import css from "./chat.scss?inline";
 
 describe("chat styling", () => {
     it("inlines the chat CSS with the classes the markup uses", () => {
-        expect(css).toContain(".msg");
+        expect(css).toContain(".row");
+        expect(css).toContain(".bubble");
         expect(css).toContain(".nomi");
-        expect(css).toContain(".detail");
     });
 });
 
@@ -34,9 +34,10 @@ describe("renderChatDocument", () => {
         expect(html).toContain('src="data:image/webp;base64,AAAA"');
     });
 
-    it("renders the message text with its bubble class", () => {
+    it("renders the message text inside a nomi row bubble", () => {
         expect(html).toContain("hello there");
-        expect(html).toContain('class="msg nomi"');
+        expect(html).toContain('class="row nomi"');
+        expect(html).toContain('class="bubble"');
     });
 
     it("escapes message text (no raw HTML injection)", () => {
