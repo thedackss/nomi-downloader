@@ -193,30 +193,27 @@
                 bottom: calc(100% + 8px);
                 right: 0;
                 min-width: 140px;
+                padding: 4px;
                 background: var(--surface);
                 border: 1px solid var(--border);
                 border-radius: 12px;
                 box-shadow: 0 10px 28px rgb(0 0 0 / 45%);
-                overflow: hidden;
                 z-index: 10;
 
-                .option {
-                    display: block;
-
-                    // Hover target for the disabled option's native tooltip; the
-                    // button below sets pointer-events: none so it falls through.
-                    &[data-disabled] {
-                        cursor: not-allowed;
-                    }
+                // Hover target for the disabled option's tooltip; the button
+                // below sets pointer-events: none so the hover falls through.
+                .optionDisabled {
+                    cursor: not-allowed;
                 }
 
                 button {
                     display: block;
                     width: 100%;
-                    padding: 0.6rem 1rem;
+                    padding: 0.55rem 0.9rem;
                     text-align: left;
                     background: transparent;
                     border: none;
+                    border-radius: 8px;
                     font-size: 0.9rem;
                     font-weight: 500;
                     color: var(--text);
@@ -235,9 +232,6 @@
                     &:disabled {
                         filter: brightness(0.75);
                         cursor: not-allowed;
-
-                        // Let the wrapping .option receive the hover so its
-                        // native title tooltip shows (a disabled button won't).
                         pointer-events: none;
                     }
                 }

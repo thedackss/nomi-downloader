@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSettings } from "../../hooks/useSettings";
+import { Tooltip } from "../Tooltip";
 import { RiInformation2Line } from "./RiInformation2Line";
 import { RiSettingsLine } from "./RiSettingsLine";
 import styles from "./styles.module.scss";
@@ -126,14 +127,13 @@ export const Settings = () => {
                     <li>
                         <label htmlFor="set-quantity">
                             <span>Concurrent Downloads</span>
-                            <span className={styles.warning}>
+                            <Tooltip
+                                className={styles.warning}
+                                text="High values may cause performance issues">
                                 <span className={styles.icon}>
                                     <RiInformation2Line />
                                 </span>
-                                <span className={styles.tooltip}>
-                                    High values may cause performance issues
-                                </span>
-                            </span>
+                            </Tooltip>
                         </label>
                         <div className={styles.row}>
                             <input
@@ -177,15 +177,13 @@ export const Settings = () => {
                         <label htmlFor="set-quality">
                             Image Quality
                             {Settings.albumDownload.quality === "HD" ? (
-                                <span className={styles.warning}>
+                                <Tooltip
+                                    className={styles.warning}
+                                    text="HD quality may result in larger file sizes and longer download times">
                                     <span className={styles.icon}>
                                         <RiInformation2Line />
                                     </span>
-                                    <span className={styles.tooltip}>
-                                        HD quality may result in larger file
-                                        sizes and longer download times
-                                    </span>
-                                </span>
+                                </Tooltip>
                             ) : (
                                 ""
                             )}
@@ -208,16 +206,13 @@ export const Settings = () => {
                     <li>
                         <label htmlFor="set-images-per-zip">
                             Images per zip
-                            <span className={styles.warning}>
+                            <Tooltip
+                                className={styles.warning}
+                                text="0 = auto (split only when a zip gets too large). Set a number to cap how many images each zip holds.">
                                 <span className={styles.icon}>
                                     <RiInformation2Line />
                                 </span>
-                                <span className={styles.tooltip}>
-                                    0 = auto (split only when a zip gets too
-                                    large). Set a number to cap how many images
-                                    each zip holds.
-                                </span>
-                            </span>
+                            </Tooltip>
                         </label>
                         <div className={styles.row}>
                             <input
@@ -292,16 +287,13 @@ export const Settings = () => {
                     <li>
                         <label htmlFor="set-max-messages">
                             Max messages
-                            <span className={styles.warning}>
+                            <Tooltip
+                                className={styles.warning}
+                                text="0 = unlimited. Set a number to export only the most recent N. Counts timeline items, so a few selfie blocks may be included.">
                                 <span className={styles.icon}>
                                     <RiInformation2Line />
                                 </span>
-                                <span className={styles.tooltip}>
-                                    0 = unlimited. Set a number to export only
-                                    the most recent N. Counts timeline items, so
-                                    a few selfie blocks may be included.
-                                </span>
-                            </span>
+                            </Tooltip>
                         </label>
                         <div className={styles.row}>
                             <input
@@ -377,15 +369,13 @@ export const Settings = () => {
                     <li>
                         <label htmlFor="set-debug">
                             Debug mode
-                            <span className={styles.warning}>
+                            <Tooltip
+                                className={styles.warning}
+                                text="Log verbose details to the console. Useful when reporting an issue.">
                                 <span className={styles.icon}>
                                     <RiInformation2Line />
                                 </span>
-                                <span className={styles.tooltip}>
-                                    Log verbose details to the console. Useful
-                                    when reporting an issue.
-                                </span>
-                            </span>
+                            </Tooltip>
                         </label>
                         <div className={styles.row}>
                             <label className={styles.switch}>

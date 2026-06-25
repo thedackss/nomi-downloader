@@ -3,6 +3,7 @@ import { NomiApiClient } from "../../../nomi/api";
 import type { Nomi } from "../../../nomi/types/api.nomis";
 import { useBackground } from "../../hooks/useBackground";
 import { LoadingSpin } from "../LoadingSpin";
+import { Tooltip } from "../Tooltip";
 import styles from "./styles.module.scss";
 
 interface NomiInfoProps {
@@ -166,18 +167,18 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                                     mindMapActive === false &&
                                     option.name === "Mind Map";
                                 return (
-                                    <span
+                                    <Tooltip
                                         key={option.name}
-                                        className={styles.option}
-                                        data-disabled={
-                                            noMindMap ? "" : undefined
-                                        }
-                                        // A native title on the (hoverable) span,
-                                        // not the button: a disabled button won't
-                                        // surface a tooltip in Chrome.
-                                        title={
+                                        block
+                                        position="left"
+                                        text={
                                             noMindMap
                                                 ? "This Nomi has no mind map"
+                                                : undefined
+                                        }
+                                        className={
+                                            noMindMap
+                                                ? styles.optionDisabled
                                                 : undefined
                                         }>
                                         <button
@@ -197,7 +198,7 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                                             }>
                                             {option.name}
                                         </button>
-                                    </span>
+                                    </Tooltip>
                                 );
                             })}
                         </div>
