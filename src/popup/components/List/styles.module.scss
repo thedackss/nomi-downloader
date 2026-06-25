@@ -18,6 +18,11 @@
         transparent 100%
     );
 
+    // No edge fade while a Nomi is expanded — it would clip the card image.
+    &:has(.selected) {
+        mask-image: none;
+    }
+
     li {
         margin-bottom: 1rem;
         display: flex;
