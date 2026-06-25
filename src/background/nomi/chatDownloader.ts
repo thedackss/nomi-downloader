@@ -1,3 +1,4 @@
+import { createElement, type ReactNode } from "react";
 import type { NomiApiClient } from "../../nomi/api";
 import { NomiError } from "../../nomi/errors";
 import { api } from "../../nomi/http";
@@ -8,11 +9,11 @@ import type {
 } from "../../nomi/types/api.nomis.id.chat";
 import { Log } from "../../utils/log";
 import {
-    buildChatDocument,
-    CHAT_IMAGE_FAILED,
-    renderChatMessage,
-    renderChatSelfie,
-} from "./chatHtml";
+    ChatImageFailed,
+    ChatMessage as ChatMessageView,
+    ChatSelfie,
+    renderChatDocument,
+} from "./chat/ChatDocument";
 import { chunkBySize } from "./chunk";
 import {
     BLOB_URL_REVOKE_DELAY_MS,
@@ -77,7 +78,7 @@ export class ChatDownloader {
 
             for (let j = 0; j < chunks.length; j++) {
                 const chunk = chunks[j];
-                let messageList = "";
+                const nodes: ReactNode[] = [];
 
                 for (let i = 0; i < chunk.length; i++) {
                     const element = chunk[i];
@@ -99,18 +100,21 @@ export class ChatDownloader {
                         const isNomi =
                             message.type === "Nomi" ||
                             message.type === "NomiStarter";
-                        messageList += renderChatMessage(
-                            isNomi,
-                            message.text,
-                            new Date(message.sent),
+                        nodes.push(
+                            createElement(ChatMessageView, {
+                                key: `m-${i}`,
+                                isNomi,
+                                text: message.text,
+                                date: new Date(message.sent),
+                            }),
                         );
                     } else if (includeSelfies) {
                         const request = element as SelfieRequest;
-                        messageList += await this.renderSelfies(request);
+                        nodes.push(...(await this.renderSelfies(request, i)));
                     }
                 }
 
-                const chatHtml = buildChatDocument(messageList);
+                const chatHtml = renderChatDocument(nodes);
 
                 // Prefer an offscreen Blob URL (safer for big strings); fall
                 // back to a base64 data URI if offscreen is unavailable.
@@ -164,25 +168,33 @@ export class ChatDownloader {
         return includeSelfies ? item.selfies.length * SELFIE_BYTES : 0;
     }
 
-    private async renderSelfies(request: SelfieRequest): Promise<string> {
-        let html = "";
-        for (const selfie of request.selfies) {
+    private async renderSelfies(
+        request: SelfieRequest,
+        index: number,
+    ): Promise<ReactNode[]> {
+        const nodes: ReactNode[] = [];
+        for (let s = 0; s < request.selfies.length; s++) {
+            const selfie = request.selfies[s];
             const url = `/selfie-requests/${request.id}/images/${selfie.id}.${SELFIE_EXTENSION}`;
+            const key = `s-${index}-${s}`;
             try {
                 const { data } = await api.get(url, {
                     responseType: "blob",
                     timeout: SELFIE_DOWNLOAD_TIMEOUT_MS,
                 });
                 const base64 = await this.offscreen.blobToBase64(data);
-                html += renderChatSelfie(
-                    `data:image/${SELFIE_EXTENSION};base64,${base64}`,
+                nodes.push(
+                    createElement(ChatSelfie, {
+                        key,
+                        src: `data:image/${SELFIE_EXTENSION};base64,${base64}`,
+                    }),
                 );
             } catch (err) {
                 Log(`Failed to fetch selfie ${selfie.id}`, err);
-                html += CHAT_IMAGE_FAILED;
+                nodes.push(createElement(ChatImageFailed, { key }));
             }
         }
-        return html;
+        return nodes;
     }
 
     private async toDownloadUrl(

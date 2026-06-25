@@ -5,5 +5,8 @@ export default defineConfig({
     test: {
         environment: "node",
         include: ["src/**/*.test.ts"],
+        // Process real CSS (modules + ?inline) so the chat export's inlined
+        // styles are exercised instead of stubbed.
+        css: true,
     },
 });
