@@ -1,0 +1,401 @@
+// Styles for the exported mind map HTML. Plain (non-module) class names, kept
+// in sync with MindMapDocument.tsx. The export is a whole standalone document,
+// so these apply globally inside it.
+// Live-edit with: npm run preview:mindmap
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    --bg: #0d0e12;
+    --surface: #181b22;
+    --surface-2: #1f232c;
+    --border: rgb(255 255 255 / 8%);
+    --text: #e8eaf0;
+    --muted: #888d9b;
+    --accent: #a855f7;
+    --lore: #38bdf8;
+    --topic: #34d399;
+    --goal: #a855f7;
+
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family:
+        -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue",
+        arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizelegibility;
+    display: flex;
+    flex-direction: column;
+
+    &::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(
+            1100px 520px at 50% -8%,
+            rgb(168 85 247 / 14%),
+            transparent 62%
+        );
+    }
+
+    .mindmap-header {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 16px 22px;
+        background: rgb(13 14 18 / 68%);
+        backdrop-filter: blur(18px) saturate(140%);
+        border-bottom: 1px solid var(--border);
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow:
+                0 0 0 2px rgb(168 85 247 / 55%),
+                0 6px 18px rgb(168 85 247 / 25%);
+        }
+
+        .title {
+            display: flex;
+            flex-direction: column;
+            margin-right: auto;
+
+            h1 {
+                font-size: 1.2rem;
+                font-weight: 650;
+                letter-spacing: -0.01em;
+            }
+
+            .generated {
+                font-size: 0.72rem;
+                color: var(--muted);
+            }
+        }
+
+        // Segmented pill toggles (Table/Graph, Active/All).
+        .toggle {
+            display: inline-flex;
+            padding: 3px;
+            gap: 2px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+
+            button {
+                appearance: none;
+                cursor: pointer;
+                border: 0;
+                background: transparent;
+                color: var(--muted);
+                font-size: 0.82rem;
+                font-weight: 600;
+                font-family: inherit;
+                padding: 6px 14px;
+                border-radius: 999px;
+                transition:
+                    background 0.15s ease,
+                    color 0.15s ease;
+
+                &:hover {
+                    color: var(--text);
+                }
+
+                &.active {
+                    background: var(--accent);
+                    color: #fff;
+                    box-shadow: 0 4px 14px rgb(168 85 247 / 35%);
+                }
+            }
+        }
+    }
+
+    main {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    // ---- Graph view ----
+    .graph-view {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        touch-action: none;
+
+        &[hidden] {
+            display: none;
+        }
+
+        .edges {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+
+            line {
+                stroke: rgb(168 85 247 / 22%);
+                stroke-width: 1;
+            }
+        }
+
+        .node {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 50%;
+            cursor: grab;
+            user-select: none;
+            padding: 6px;
+            color: var(--lore);
+            background: radial-gradient(
+                circle at 50% 38%,
+                color-mix(in srgb, currentColor 22%, #0d1117),
+                #0d1117 78%
+            );
+            border: 1.5px solid
+                color-mix(in srgb, currentcolor 60%, transparent);
+            box-shadow:
+                0 0 18px color-mix(in srgb, currentcolor 18%, transparent),
+                inset 0 0 22px color-mix(in srgb, currentcolor 14%, transparent);
+            transition:
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+            will-change: transform;
+
+            span {
+                font-size: 0.78rem;
+                font-weight: 600;
+                color: var(--text);
+                line-height: 1.15;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                pointer-events: none;
+            }
+
+            &:hover {
+                border-color: currentcolor;
+                box-shadow:
+                    0 0 26px color-mix(in srgb, currentcolor 38%, transparent),
+                    inset 0 0 24px
+                        color-mix(in srgb, currentcolor 20%, transparent);
+            }
+
+            &.dragging {
+                cursor: grabbing;
+                z-index: 5;
+            }
+        }
+
+        .empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+        }
+    }
+
+    // ---- Table view ----
+    .table-view {
+        position: absolute;
+        inset: 0;
+        overflow-y: auto;
+        padding: 26px 22px 60px;
+
+        &[hidden] {
+            display: none;
+        }
+
+        .sheet {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+
+            .card {
+                padding: 16px 18px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+
+                .dot {
+                    display: inline-block;
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    margin-right: 8px;
+                    vertical-align: middle;
+                }
+
+                h3 {
+                    display: inline;
+                    font-size: 1rem;
+                }
+
+                p {
+                    margin-top: 6px;
+                    font-size: 0.82rem;
+                    color: var(--muted);
+                }
+            }
+        }
+
+        .group {
+            margin-bottom: 30px;
+
+            > h2 {
+                font-size: 0.82rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--muted);
+                margin-bottom: 10px;
+            }
+
+            .term {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                margin-bottom: 8px;
+                overflow: hidden;
+
+                .term-head {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 14px 16px;
+                    cursor: pointer;
+                    list-style: none;
+                    transition: background 0.15s ease;
+
+                    &::-webkit-details-marker {
+                        display: none;
+                    }
+
+                    &:hover {
+                        background: var(--surface-2);
+                    }
+
+                    .name {
+                        font-weight: 600;
+                        flex: 1 1 auto;
+                        min-width: 0;
+                    }
+
+                    .badge {
+                        font-size: 0.72rem;
+                        color: var(--muted);
+                        padding: 3px 10px;
+                        border: 1px solid var(--border);
+                        border-radius: 999px;
+                        white-space: nowrap;
+                    }
+
+                    .chevron {
+                        color: var(--muted);
+                        transition: transform 0.2s ease;
+                    }
+                }
+
+                &[open] .term-head .chevron {
+                    transform: rotate(180deg);
+                }
+
+                .term-body {
+                    padding: 4px 16px 18px;
+                    border-top: 1px solid var(--border);
+
+                    .relations {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        margin: 14px 0;
+
+                        .rel {
+                            font-size: 0.78rem;
+                            padding: 5px 11px;
+                            background: var(--surface-2);
+                            border: 1px solid var(--border);
+                            border-radius: 999px;
+
+                            b {
+                                color: var(--accent);
+                                font-weight: 600;
+                            }
+
+                            span {
+                                color: var(--muted);
+                            }
+                        }
+                    }
+
+                    .dossier {
+                        font-size: 0.92rem;
+                        line-height: 1.7;
+                        color: rgb(232 234 240 / 90%);
+
+                        strong {
+                            color: var(--accent);
+                        }
+                    }
+
+                    .meta {
+                        margin-top: 14px;
+                        font-size: 0.74rem;
+                        color: var(--muted);
+                        display: flex;
+                        gap: 16px;
+                        flex-wrap: wrap;
+                    }
+                }
+            }
+        }
+
+        &::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgb(255 255 255 / 10%);
+            border-radius: 5px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+
+            &:hover {
+                background: rgb(255 255 255 / 18%);
+                background-clip: padding-box;
+            }
+        }
+    }
+}

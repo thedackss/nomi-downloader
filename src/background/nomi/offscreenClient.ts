@@ -1,5 +1,6 @@
 import type { ChatRenderPayload } from "./chat/types";
 import { OFFSCREEN_DOCUMENT_PATH } from "./constants";
+import type { MindMapRenderPayload } from "./mindmap/types";
 
 export interface OffscreenPayload {
     id?: string;
@@ -92,6 +93,30 @@ export class OffscreenClient {
 
         const { renderChatPayload } = await import("./chat/ChatDocument");
         return renderChatPayload(payload);
+    }
+
+    /**
+     * Render the mind map HTML in the offscreen document (which has a DOM), so
+     * react-dom/server never loads in the service worker. Falls back to an
+     * in-process render where there is no offscreen API (tests / Firefox page).
+     */
+    async renderMindMap(payload: MindMapRenderPayload): Promise<string> {
+        if (typeof chrome !== "undefined" && chrome.offscreen) {
+            const res = await chrome.runtime.sendMessage({
+                target: "offscreen",
+                type: "render-mindmap",
+                data: payload,
+            });
+            if (!res?.success || typeof res.html !== "string") {
+                throw new Error(res?.error || "Failed to render mind map");
+            }
+            return res.html;
+        }
+
+        const { renderMindMapPayload } = await import(
+            "./mindmap/MindMapDocument"
+        );
+        return renderMindMapPayload(payload);
     }
 
     blobToBase64(blob: Blob): Promise<string> {

@@ -1,6 +1,5 @@
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
 import { Log, setDebugLogging } from "../utils/log";
-import { generateMindMapHtml } from "../utils/mindMapHtml";
 import { Nomi } from "./nomi/index";
 
 const nomi = new Nomi();
@@ -67,10 +66,9 @@ async function runDownload(
 
 /** Build and save a Nomi's mind map as HTML. Returns false if none exists. */
 async function downloadMindMap(nomiId: number): Promise<boolean> {
-    const data = await nomi.getMindInfo({ nomiId });
-    if (!data) return false;
+    const htmlContent = await nomi.renderMindMap({ nomiId });
+    if (!htmlContent) return false;
 
-    const htmlContent = generateMindMapHtml(data);
     const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
 
     await chrome.downloads.download({
