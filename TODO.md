@@ -9,19 +9,22 @@ Legend: [x] done · [~] partial · [ ] missing
 ## Configuration
 
 - [x] Selfies per zip — "Images per zip" setting (0 = auto), layered on top of the 750 MB byte cap
-- [ ] Max messages (BETA, 0 = uncap) — missing in `rework`
+- [x] Max messages (0 = uncap) — keep only the last N; BETA flag dropped (deterministic)
 - [x] Image type (WEBP / PNG) — present as HD/SD
 - [x] Separate download buttons — dropped; superseded by the split-button select (first option = default "Download")
 - [x] Include selfies on chat — toggle (embedded vs text-only)
 - [x] Enable folderization
-- [x] Show Stats — daily-usage panel under the header (sent / received / selfies today)
+- [x] Show Stats — daily-usage card in the empty "No Nomi selected" state (sent / received / selfies today)
 - [x] Debug mode — toggle that enables verbose console logging at runtime
+
+**Configuration section complete.**
 
 ## Single Nomi Download
 
 - [x] Album download (HD or SD)
 - [x] Chat download as HTML — with/without images via the Include selfies toggle
 - [x] Mind map download as HTML *(new)*
+- [x] Download All *(new)* — default split-button action; runs album → chat → mind → JSON in sequence
 - [ ] Shared Notes as HTML *(new)* — `DOWNLOAD_BACKSTORY` is a stub
 - [~] JSON *(new)* — only `/nomis/{id}` data; should include all Nomi info (decide JSON vs markdown)
 

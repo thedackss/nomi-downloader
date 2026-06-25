@@ -7,7 +7,12 @@ import type {
     SelfieRequest,
 } from "../../nomi/types/api.nomis.id.chat";
 import { Log } from "../../utils/log";
-import { ChatTemplate } from "./chatTemplate";
+import {
+    buildChatDocument,
+    CHAT_IMAGE_FAILED,
+    renderChatMessage,
+    renderChatSelfie,
+} from "./chatHtml";
 import { chunkBySize } from "./chunk";
 import {
     BLOB_URL_REVOKE_DELAY_MS,
@@ -94,7 +99,7 @@ export class ChatDownloader {
                         const isNomi =
                             message.type === "Nomi" ||
                             message.type === "NomiStarter";
-                        messageList += this.msgTemplate(
+                        messageList += renderChatMessage(
                             isNomi,
                             message.text,
                             new Date(message.sent),
@@ -105,10 +110,7 @@ export class ChatDownloader {
                     }
                 }
 
-                const chatHtml = ChatTemplate.replace(
-                    "{messages}",
-                    messageList,
-                );
+                const chatHtml = buildChatDocument(messageList);
 
                 // Prefer an offscreen Blob URL (safer for big strings); fall
                 // back to a base64 data URI if offscreen is unavailable.
@@ -162,16 +164,6 @@ export class ChatDownloader {
         return includeSelfies ? item.selfies.length * SELFIE_BYTES : 0;
     }
 
-    private msgTemplate(isNomi: boolean, msg: string, date: Date): string {
-        const className = isNomi ? "nomi" : "user";
-        const day = date.toDateString();
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
-        const time = `${hours}:${minutes}`;
-
-        return `<li class='msg ${className}'>${msg}</li><li class='detail ${className}'>${day} ${time}</li>`;
-    }
-
     private async renderSelfies(request: SelfieRequest): Promise<string> {
         let html = "";
         for (const selfie of request.selfies) {
@@ -182,10 +174,12 @@ export class ChatDownloader {
                     timeout: SELFIE_DOWNLOAD_TIMEOUT_MS,
                 });
                 const base64 = await this.offscreen.blobToBase64(data);
-                html += `<img onclick="openImage(this.src)" src='data:image/${SELFIE_EXTENSION};base64,${base64}' />`;
+                html += renderChatSelfie(
+                    `data:image/${SELFIE_EXTENSION};base64,${base64}`,
+                );
             } catch (err) {
                 Log(`Failed to fetch selfie ${selfie.id}`, err);
-                html += `<li class='msg result'>[Image Download Failed]</li>`;
+                html += CHAT_IMAGE_FAILED;
             }
         }
         return html;
