@@ -6,6 +6,18 @@
     list-style: none;
     padding-right: 2.5%;
 
+    // Fade items into the background at the top/bottom edges so they dissolve
+    // instead of hard-clipping mid-icon while scrolling.
+    --fade: 1.5rem;
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+    );
+
     li {
         margin-bottom: 1rem;
         display: flex;
