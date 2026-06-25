@@ -200,6 +200,16 @@
                 overflow: hidden;
                 z-index: 10;
 
+                .option {
+                    display: block;
+
+                    // Hover target for the disabled option's native tooltip; the
+                    // button below sets pointer-events: none so it falls through.
+                    &[data-disabled] {
+                        cursor: not-allowed;
+                    }
+                }
+
                 button {
                     display: block;
                     width: 100%;
@@ -225,6 +235,10 @@
                     &:disabled {
                         filter: brightness(0.75);
                         cursor: not-allowed;
+
+                        // Let the wrapping .option receive the hover so its
+                        // native title tooltip shows (a disabled button won't).
+                        pointer-events: none;
                     }
                 }
             }

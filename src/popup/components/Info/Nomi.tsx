@@ -126,6 +126,12 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                         type="button"
                         className={styles.splitMain}
                         onClick={selected.fn}
+                        title={
+                            mindMapActive === false &&
+                            selected.name === "Mind Map"
+                                ? "This Nomi has no mind map"
+                                : undefined
+                        }
                         disabled={
                             downloadStatus.inProgress ||
                             (mindMapActive === false &&
@@ -155,27 +161,45 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                     </button>
                     {dropdownOpen && (
                         <div className={styles.splitDropdown}>
-                            {downloadOptions.map((option) => (
-                                <button
-                                    type="button"
-                                    key={option.name}
-                                    className={
-                                        selected.name === option.name
-                                            ? styles.active
-                                            : undefined
-                                    }
-                                    onClick={() => {
-                                        setSelected(option);
-                                        setDropdownOpen(false);
-                                    }}
-                                    disabled={
-                                        downloadStatus.inProgress ||
-                                        (mindMapActive === false &&
-                                            option.name === "Mind Map")
-                                    }>
-                                    {option.name}
-                                </button>
-                            ))}
+                            {downloadOptions.map((option) => {
+                                const noMindMap =
+                                    mindMapActive === false &&
+                                    option.name === "Mind Map";
+                                return (
+                                    <span
+                                        key={option.name}
+                                        className={styles.option}
+                                        data-disabled={
+                                            noMindMap ? "" : undefined
+                                        }
+                                        // A native title on the (hoverable) span,
+                                        // not the button: a disabled button won't
+                                        // surface a tooltip in Chrome.
+                                        title={
+                                            noMindMap
+                                                ? "This Nomi has no mind map"
+                                                : undefined
+                                        }>
+                                        <button
+                                            type="button"
+                                            className={
+                                                selected.name === option.name
+                                                    ? styles.active
+                                                    : undefined
+                                            }
+                                            onClick={() => {
+                                                setSelected(option);
+                                                setDropdownOpen(false);
+                                            }}
+                                            disabled={
+                                                downloadStatus.inProgress ||
+                                                noMindMap
+                                            }>
+                                            {option.name}
+                                        </button>
+                                    </span>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
