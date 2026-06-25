@@ -159,12 +159,14 @@ function main() {
                 runDownload(
                     nomiId,
                     {
-                        start: "Preparing backstory...",
-                        // Not implemented yet — report honestly, don't fake success.
-                        done: "Backstory export isn't available yet",
-                        error: "Backstory export isn't available yet",
+                        start: "Preparing shared notes...",
+                        done: "Shared notes downloaded!",
+                        error: "Error downloading shared notes",
                     },
-                    async () => {},
+                    async () => {
+                        const ok = await nomi.downloadSharedNotes({ nomiId });
+                        if (!ok) throw new Error("No shared notes found");
+                    },
                 );
                 break;
             }

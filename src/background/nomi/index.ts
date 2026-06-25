@@ -11,6 +11,7 @@ import { ChatDownloader } from "./chatDownloader";
 import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
+import { buildSharedNotesPayload } from "./sharednotes/builder";
 
 /**
  * Facade over the Nomi data API, offscreen/zip bridge, and the album/chat
@@ -59,6 +60,47 @@ export class Nomi {
         await chrome.downloads.download({
             url,
             filename: `${nameSafe}_MindMap_${stamp}.html`,
+            saveAs: true,
+        });
+
+        if (isBlob) {
+            // Delay revoke so the download has time to start.
+            setTimeout(() => {
+                this.offscreen.call("revoke-blob-url", { url });
+            }, BLOB_URL_REVOKE_DELAY_MS);
+        }
+
+        return true;
+    }
+
+    /**
+     * Build and save a Nomi's Shared Notes as a standalone HTML file. Returns
+     * false when the Nomi has no filled-in notes. Renders in the offscreen
+     * document and saves via a Blob URL, like downloadMindMap.
+     */
+    async downloadSharedNotes({ nomiId }: NomiExistsProps): Promise<boolean> {
+        const data = await this.api.getSharedNotes({ nomiId });
+        if (!data) return false;
+
+        const nomi = await this.api.get({ nomiId });
+        const payload = buildSharedNotesPayload(
+            nomi.name,
+            data,
+            new Date().toISOString(),
+        );
+        if (payload.notes.length === 0) return false;
+
+        await this.offscreen.setupDocument();
+        payload.avatar = await this.fetchAvatar(nomi);
+        const html = await this.offscreen.renderSharedNotes(payload);
+
+        const { url, isBlob } = await this.toDownloadUrl(html);
+        const nameSafe = nomi.name.replace(/ /g, "-");
+        const stamp = new Date().toISOString().slice(0, 10);
+
+        await chrome.downloads.download({
+            url,
+            filename: `${nameSafe}_SharedNotes_${stamp}.html`,
             saveAs: true,
         });
 

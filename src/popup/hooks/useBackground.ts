@@ -105,7 +105,7 @@ export function useBackground() {
         downloadBackstory: () =>
             startDownload(
                 "DOWNLOAD_BACKSTORY",
-                "Starting backstory download...",
+                "Starting shared notes download...",
             ),
         downloadJSON: () =>
             startDownload("DOWNLOAD_JSON", "Starting JSON download..."),

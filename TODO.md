@@ -23,15 +23,15 @@ Legend: [x] done · [~] partial · [ ] missing
 
 - [x] Album download (HD or SD)
 - [x] Chat download as HTML — with/without images via the Include selfies toggle
-- [x] Mind map download as HTML *(new)*
-- [x] Download All *(new)* — default split-button action; runs album → chat → mind → JSON in sequence
-- [ ] Shared Notes as HTML *(new)* — `DOWNLOAD_BACKSTORY` is a stub
-- [~] JSON *(new)* — only `/nomis/{id}` data; should include all Nomi info (decide JSON vs markdown)
+- [x] Mind map download as HTML _(new)_
+- [x] Download All _(new)_ — default split-button action; runs album → chat → mind → JSON in sequence
+- [x] Shared Notes as HTML _(new)_ — accordion export via offscreen render
+- [ ] JSON _(new)_ — only `/nomis/{id}` data; should include all Nomi info (decide JSON vs markdown)
 
 ## Group Download
 
 - [ ] Chat download as HTML (with/without images) — `main` has it; `rework` button is a no-op
-- [ ] Chat info download *(new)*
+- [ ] Chat info download _(new)_
 
 ## New features — user requests (after parity with `main`)
 

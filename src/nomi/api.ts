@@ -20,6 +20,7 @@ import type {
     APINomisIDMediasResponse,
     Media,
 } from "./types/api.nomis.id.medias";
+import type { ApiSharedNotesResponse } from "./types/api.nomis.id.sharedNotes";
 
 /** Read-only access to the nomi.ai API for a single Nomi. */
 export class NomiApiClient {
@@ -48,6 +49,19 @@ export class NomiApiClient {
             throw new NomiError({
                 message: `Failed to get Nomi with ID ${nomiId}`,
             });
+        }
+    }
+
+    public async getSharedNotes({ nomiId }: NomiExistsProps) {
+        try {
+            Log(`Getting shared notes for Nomi with ID: ${nomiId}`);
+            const { data } = await api.get<ApiSharedNotesResponse>(
+                `nomis/${nomiId}/shared-notes`,
+            );
+            return data;
+        } catch (error) {
+            Log("Failed to get shared notes", error);
+            return null;
         }
     }
 
