@@ -65,6 +65,35 @@ async function runDownload(
     }
 }
 
+/** Build and save a Nomi's mind map as HTML. Returns false if none exists. */
+async function downloadMindMap(nomiId: number): Promise<boolean> {
+    const data = await nomi.getMindInfo({ nomiId });
+    if (!data) return false;
+
+    const htmlContent = generateMindMapHtml(data);
+    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+
+    await chrome.downloads.download({
+        url: dataUrl,
+        filename: `mind-map-${nomiId}-${Date.now()}.html`,
+        saveAs: true,
+    });
+    return true;
+}
+
+/** Save a Nomi's raw info as a JSON file. */
+async function downloadNomiJson(nomiId: number): Promise<void> {
+    const data = await nomi.get({ nomiId });
+    const json = JSON.stringify(data, null, 2);
+    const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
+
+    await chrome.downloads.download({
+        url: dataUrl,
+        filename: `nomi-${nomiId}-${Date.now()}.json`,
+        saveAs: true,
+    });
+}
+
 function main() {
     Log("Extension initialized");
 
@@ -132,17 +161,8 @@ function main() {
                         error: "Error downloading mind",
                     },
                     async () => {
-                        const data = await nomi.getMindInfo({ nomiId });
-                        if (!data) throw new Error("No mind map data found");
-
-                        const htmlContent = generateMindMapHtml(data);
-                        const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
-
-                        await chrome.downloads.download({
-                            url: dataUrl,
-                            filename: `mind-map-${nomiId}-${Date.now()}.html`,
-                            saveAs: true,
-                        });
+                        const ok = await downloadMindMap(nomiId);
+                        if (!ok) throw new Error("No mind map data found");
                     },
                 );
                 break;
@@ -168,16 +188,60 @@ function main() {
                         done: "JSON downloaded!",
                         error: "Error downloading JSON",
                     },
-                    async () => {
-                        const data = await nomi.get({ nomiId });
-                        const json = JSON.stringify(data, null, 2);
-                        const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
-
-                        await chrome.downloads.download({
-                            url: dataUrl,
-                            filename: `nomi-${nomiId}-${Date.now()}.json`,
-                            saveAs: true,
+                    () => downloadNomiJson(nomiId),
+                );
+                break;
+            }
+            case "DOWNLOAD_ALL": {
+                const {
+                    downloadQuantity,
+                    folderization,
+                    quality,
+                    imagesPerZip,
+                    maxMessages,
+                    includeSelfies,
+                } = message.data;
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting download...",
+                        done: "All downloads complete!",
+                        error: "Error during download",
+                    },
+                    async (onProgress) => {
+                        // Best-effort: each step reports its own progress; album
+                        // and chat swallow their own errors, mind/json are wrapped.
+                        onProgress("Downloading album...");
+                        await nomi.downloadAlbum({
+                            nomiId,
+                            downloadQuantity,
+                            folderization,
+                            quality,
+                            imagesPerZip,
+                            onProgress,
                         });
+
+                        onProgress("Downloading chat...");
+                        await nomi.downloadChat({
+                            nomiId,
+                            includeSelfies: includeSelfies ?? true,
+                            maxMessages,
+                            onProgress,
+                        });
+
+                        try {
+                            onProgress("Downloading mind map...");
+                            await downloadMindMap(nomiId);
+                        } catch (err) {
+                            Log("Mind map step failed", err);
+                        }
+
+                        try {
+                            onProgress("Downloading JSON...");
+                            await downloadNomiJson(nomiId);
+                        } catch (err) {
+                            Log("JSON step failed", err);
+                        }
                     },
                 );
                 break;

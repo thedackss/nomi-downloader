@@ -8,6 +8,7 @@ import styles from "./styles.module.scss";
 interface NomiInfoProps {
     nomi: Nomi;
     downloadStatus: DownloadStatus;
+    onDownloadAll: () => void;
     onDownloadAlbum: () => void;
     onDownloadChat: () => void;
     onDownloadMind: () => void;
@@ -18,6 +19,7 @@ interface NomiInfoProps {
 export const NomiInfo = ({
     nomi,
     downloadStatus,
+    onDownloadAll,
     onDownloadAlbum,
     onDownloadChat,
     onDownloadMind,
@@ -25,6 +27,7 @@ export const NomiInfo = ({
     onDownloadJSON,
 }: NomiInfoProps) => {
     const downloadOptions = [
+        { name: "All", fn: onDownloadAll },
         { name: "Album", fn: onDownloadAlbum },
         { name: "Chat", fn: onDownloadChat },
         { name: "Mind Map", fn: onDownloadMind },

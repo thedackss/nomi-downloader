@@ -112,6 +112,16 @@ export const Info = () => {
     const handleDownloadJSON = () =>
         startDownload("DOWNLOAD_JSON", "Starting JSON download...");
 
+    const handleDownloadAll = () =>
+        startDownload("DOWNLOAD_ALL", "Starting download...", {
+            downloadQuantity: Settings.albumDownload.downloadQuantity,
+            folderization: Settings.albumDownload.folderization,
+            quality: Settings.albumDownload.quality,
+            imagesPerZip: Settings.albumDownload.imagesPerZip,
+            maxMessages: Settings.chatDownload.maxMessages,
+            includeSelfies: Settings.chatDownload.includeSelfies,
+        });
+
     return (
         <div
             className={styles.nomiInfo}
@@ -123,6 +133,7 @@ export const Info = () => {
                         <NomiInfo
                             nomi={Nomi}
                             downloadStatus={downloadStatus}
+                            onDownloadAll={handleDownloadAll}
                             onDownloadAlbum={handleDownloadAlbum}
                             onDownloadChat={handleDownloadChat}
                             onDownloadMind={handleDownloadMind}
