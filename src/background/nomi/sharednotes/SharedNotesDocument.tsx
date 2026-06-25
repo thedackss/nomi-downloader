@@ -37,6 +37,27 @@ function Note({ note }: { note: SharedNote }) {
     );
 }
 
+/** Inline label/value row for short anchor fields. */
+function AnchorRow({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="row">
+            <span className="label">{label}</span>
+            <span className="value">{value}</span>
+        </div>
+    );
+}
+
+/** Label + paragraph for longer anchor text; renders nothing when empty. */
+function AnchorBlock({ label, value }: { label: string; value: string }) {
+    if (!value) return null;
+    return (
+        <div className="block">
+            <span className="label">{label}</span>
+            <p>{value}</p>
+        </div>
+    );
+}
+
 function AnchorsNote({
     title,
     anchors,
@@ -70,25 +91,34 @@ function AnchorsNote({
                                 </div>
                             )}
                             <div className="anchor-meta">
-                                {anchor.label ? (
-                                    <div className="anchor-name">
-                                        {anchor.label}
-                                    </div>
+                                {anchor.anchorType ? (
+                                    <AnchorRow
+                                        label="Anchor Type"
+                                        value={anchor.anchorType}
+                                    />
                                 ) : null}
-                                <div className="row">
-                                    <span className="label">Fidelity</span>
-                                    <span className="value">
-                                        {Math.round(anchor.fidelity * 100)}%
-                                    </span>
-                                </div>
-                                {anchor.appearanceTraits ? (
-                                    <div className="traits">
-                                        <span className="label">
-                                            Appearance Traits
-                                        </span>
-                                        <p>{anchor.appearanceTraits}</p>
-                                    </div>
+                                {anchor.style ? (
+                                    <AnchorRow
+                                        label="Style"
+                                        value={anchor.style}
+                                    />
                                 ) : null}
+                                <AnchorRow
+                                    label="Fidelity"
+                                    value={`${Math.round(anchor.fidelity * 100)}%`}
+                                />
+                                <AnchorBlock
+                                    label="Appearance Traits"
+                                    value={anchor.appearanceTraits}
+                                />
+                                <AnchorBlock
+                                    label="Additional Appearance Traits"
+                                    value={anchor.additionalTraits}
+                                />
+                                <AnchorBlock
+                                    label="Sticky Aesthetic"
+                                    value={anchor.stickyAesthetic}
+                                />
                             </div>
                         </div>
                     ))}

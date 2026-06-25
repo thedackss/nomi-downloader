@@ -120,24 +120,13 @@ export function buildImageNotes(
 /** Normalized anchor look with the preview image URL still to be fetched. */
 export interface AnchorLookRef {
     fidelity: number;
+    anchorType: string;
+    style: string;
     appearanceTraits: string;
-    /** Engine + style label, e.g. "RIVA - Realistic"; empty if unknown. */
-    label: string;
+    additionalTraits: string;
+    stickyAesthetic: string;
     /** Relative API path to the preview image, if available. */
     imageUrl?: string;
-}
-
-const STYLE_LABELS: Record<string, string> = {
-    photorealistic: "Realistic",
-    "nomi anime": "Anime",
-    anime: "Anime",
-};
-
-function anchorLabel(process?: string | null, style?: string | null): string {
-    const parts: string[] = [];
-    if (process) parts.push(process.toUpperCase());
-    if (style) parts.push(STYLE_LABELS[style.toLowerCase()] ?? style);
-    return parts.join(" - ");
 }
 
 /** Map raw anchor looks to refs (image URL resolved, not yet fetched). */
@@ -147,7 +136,7 @@ export function buildAnchorRefs(
 ): AnchorLookRef[] {
     return (data.nomiAnchorLooks ?? []).map((look) => {
         // Custom looks carry userAnchorLook; the built-in defaults (RIVA/LAGO)
-        // carry platformAnchorLook instead — both hold the preview hash.
+        // carry platformAnchorLook instead — both hold the preview + details.
         const detail = look.userAnchorLook ?? look.platformAnchorLook;
         const hash = detail?.previewHash;
         const imageUrl = hash
@@ -155,8 +144,11 @@ export function buildAnchorRefs(
             : undefined;
         return {
             fidelity: look.fidelity,
+            anchorType: (detail?.generationProcess ?? "").trim(),
+            style: (detail?.style ?? "").trim(),
             appearanceTraits: (look.appearanceTraits ?? "").trim(),
-            label: anchorLabel(detail?.generationProcess, detail?.style),
+            additionalTraits: (detail?.appearancePrompts ?? "").trim(),
+            stickyAesthetic: (detail?.aestheticPrompts ?? "").trim(),
             imageUrl,
         };
     });

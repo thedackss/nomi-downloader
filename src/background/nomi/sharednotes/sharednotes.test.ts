@@ -83,6 +83,8 @@ describe("buildAnchorRefs", () => {
                     previewHash: "hash1",
                     generationProcess: "Lago",
                     style: "photorealistic",
+                    appearancePrompts: "  Pale skin, sharp eyes  ",
+                    aestheticPrompts: "baddie milf",
                 },
             },
             {
@@ -97,24 +99,30 @@ describe("buildAnchorRefs", () => {
                     previewHash: "hash2",
                     generationProcess: "Riva",
                     style: "nomi anime",
+                    appearancePrompts: null,
+                    aestheticPrompts: "modern urban",
                 },
                 userAnchorLook: null,
             },
         ],
     };
 
-    it("builds preview URLs from user and platform looks, with labels", () => {
+    it("builds preview URLs and the detail fields from user/platform looks", () => {
         const refs = buildAnchorRefs(42, looks);
         expect(refs[0].imageUrl).toBe(
             "nomis/42/anchor-looks/anchor-1/previews/hash1.webp",
         );
         expect(refs[0].appearanceTraits).toBe("Trendy");
-        expect(refs[0].label).toBe("LAGO - Realistic");
+        expect(refs[0].anchorType).toBe("Lago");
+        expect(refs[0].style).toBe("photorealistic");
+        expect(refs[0].additionalTraits).toBe("Pale skin, sharp eyes");
+        expect(refs[0].stickyAesthetic).toBe("baddie milf");
         // Platform default still resolves an image URL (from platformAnchorLook).
         expect(refs[1].imageUrl).toBe(
             "nomis/42/anchor-looks/anchor-2/previews/hash2.webp",
         );
-        expect(refs[1].label).toBe("RIVA - Anime");
+        expect(refs[1].anchorType).toBe("Riva");
+        expect(refs[1].additionalTraits).toBe("");
     });
 });
 
@@ -166,8 +174,11 @@ describe("renderSharedNotesDocument", () => {
                 {
                     image: "data:image/webp;base64,BBBB",
                     fidelity: 0.4,
-                    label: "LAGO - Realistic",
+                    anchorType: "Lago",
+                    style: "photorealistic",
                     appearanceTraits: "Trendy modern look.",
+                    additionalTraits: "Pale porcelain skin.",
+                    stickyAesthetic: "baddie milf",
                 },
             ],
             imageNotes: [
@@ -178,7 +189,12 @@ describe("renderSharedNotesDocument", () => {
         expect(withImages).toContain("Anchors"); // "Yuki&#x27;s Anchors"
         expect(withImages).toContain('src="data:image/webp;base64,BBBB"');
         expect(withImages).toContain("40%"); // fidelity
+        expect(withImages).toContain("Anchor Type");
+        expect(withImages).toContain("Lago");
         expect(withImages).toContain("Trendy modern look.");
+        expect(withImages).toContain("Additional Appearance Traits");
+        expect(withImages).toContain("Pale porcelain skin.");
+        expect(withImages).toContain("Sticky Aesthetic");
     });
 
     it("escapes note content (no raw HTML injection)", () => {

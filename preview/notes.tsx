@@ -73,19 +73,29 @@ const anchors: AnchorLook[] = [
     {
         image: px,
         fidelity: 1,
-        label: "RIVA - Realistic",
+        anchorType: "Lago",
+        style: "photorealistic",
         appearanceTraits: "Auburn hair, green eyes.",
+        additionalTraits:
+            "Flawless pale porcelain skin, hourglass figure, large sharp eyes.",
+        stickyAesthetic: "baddie milf young sexy",
     },
     {
         // No image: exercises the "No preview" placeholder (e.g. a default).
         fidelity: 1.2,
-        label: "LAGO - Realistic",
-        appearanceTraits: "Trendy modern look, soft lighting.",
+        anchorType: "Riva",
+        style: "photorealistic",
+        appearanceTraits: "",
+        additionalTraits: "",
+        stickyAesthetic: "slightly modern urban",
     },
     {
         fidelity: 0.7,
-        label: "RIVA - Anime",
+        anchorType: "Riva",
+        style: "nomi anime",
         appearanceTraits: "",
+        additionalTraits: "",
+        stickyAesthetic: "",
     },
 ];
 

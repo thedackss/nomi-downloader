@@ -21,10 +21,16 @@ export interface AnchorLook {
     image?: string;
     /** Fidelity weight (can exceed 1). */
     fidelity: number;
+    /** Generation engine ("Anchor Type"), e.g. "Lago"; may be empty. */
+    anchorType: string;
+    /** Render style, e.g. "photorealistic"; may be empty. */
+    style: string;
     /** Appearance traits text; may be empty. */
     appearanceTraits: string;
-    /** Engine + style label, e.g. "RIVA - Realistic"; may be empty. */
-    label: string;
+    /** Detailed appearance description ("Additional Appearance Traits"). */
+    additionalTraits: string;
+    /** Aesthetic keywords ("Sticky Aesthetic"); may be empty. */
+    stickyAesthetic: string;
 }
 
 export interface SharedNotesRenderPayload {

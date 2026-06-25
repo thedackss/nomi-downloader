@@ -186,8 +186,11 @@ export class Nomi {
         return Promise.all(
             refs.map(async (ref) => ({
                 fidelity: ref.fidelity,
+                anchorType: ref.anchorType,
+                style: ref.style,
                 appearanceTraits: ref.appearanceTraits,
-                label: ref.label,
+                additionalTraits: ref.additionalTraits,
+                stickyAesthetic: ref.stickyAesthetic,
                 image: ref.imageUrl
                     ? await this.fetchImageDataUri(ref.imageUrl)
                     : undefined,

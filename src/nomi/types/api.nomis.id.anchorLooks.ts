@@ -25,8 +25,12 @@ interface AnchorLookDetail {
     uuid: string;
     /** Hash used to build the preview image URL. */
     previewHash: string | null;
-    /** Generation engine, e.g. "Riva" or "Lago". */
+    /** Generation engine ("Anchor Type" in the UI), e.g. "Riva" or "Lago". */
     generationProcess: string | null;
     /** Render style, e.g. "photorealistic" or "nomi anime". */
     style: string | null;
+    /** Detailed appearance description ("Additional Appearance Traits"). */
+    appearancePrompts: string | null;
+    /** Aesthetic keywords ("Sticky Aesthetic"). */
+    aestheticPrompts: string | null;
 }
