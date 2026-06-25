@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { deepMerge } from "../../utils/deepMerge";
-import { Log } from "../../utils/log";
+import { Log, setDebugLogging } from "../../utils/log";
 import { SettingsContext } from "../context/settings";
 import type { Settings } from "../context/settings/interfaces";
 
@@ -34,6 +34,7 @@ export const useSettings = () => {
                 );
 
                 setSettings(mergedConfig);
+                setDebugLogging(mergedConfig.debug);
 
                 // Update local storage with the merged config (including new defaults)
                 localStorage.setItem("config", JSON.stringify(mergedConfig));
@@ -53,6 +54,7 @@ export const useSettings = () => {
     const updateSettings = (newSettings: Partial<Settings>) => {
         const mergedSettings = deepMerge(Settings, newSettings);
         setSettings(mergedSettings);
+        setDebugLogging(mergedSettings.debug);
         localStorage.setItem("config", JSON.stringify(mergedSettings));
     };
 

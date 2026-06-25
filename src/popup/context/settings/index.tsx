@@ -18,6 +18,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             includeSelfies: true,
         },
         layout: "auto",
+        debug: false,
     };
 
     const [Settings, setSettings] = useState<Settings>(Default);

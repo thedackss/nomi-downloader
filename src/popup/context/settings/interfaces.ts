@@ -19,6 +19,8 @@ export interface Settings {
         includeSelfies: boolean;
     };
     layout: "auto" | "mobile" | "desktop";
+    /** Verbose logging in the console for troubleshooting. */
+    debug: boolean;
 }
 
 export type SettingsContextType = {

@@ -1,5 +1,5 @@
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
-import { Log } from "../utils/log";
+import { Log, setDebugLogging } from "../utils/log";
 import { generateMindMapHtml } from "../utils/mindMapHtml";
 import { Nomi } from "./nomi/index";
 
@@ -75,6 +75,7 @@ function main() {
         }
 
         const { nomiId } = message.data;
+        setDebugLogging(message.data.debug ?? false);
 
         switch (message.type) {
             case "DOWNLOAD_ALBUM": {

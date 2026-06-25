@@ -15,7 +15,7 @@ Legend: [x] done · [~] partial · [ ] missing
 - [x] Include selfies on chat — toggle (embedded vs text-only)
 - [x] Enable folderization
 - [ ] Show Stats — daily usage counts / user info, missing
-- [ ] Debug mode — missing
+- [x] Debug mode — toggle that enables verbose console logging at runtime
 
 ## Single Nomi Download
 

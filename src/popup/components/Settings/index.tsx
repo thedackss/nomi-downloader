@@ -343,6 +343,46 @@ export const Settings = () => {
                             </p>
                         </div>
                     </li>
+                    <li>
+                        <h3>Advanced</h3>
+                    </li>
+                    <li>
+                        <label htmlFor="set-debug">
+                            Debug mode
+                            <span className={styles.warning}>
+                                <span className={styles.icon}>
+                                    <RiInformation2Line />
+                                </span>
+                                <span className={styles.tooltip}>
+                                    Log verbose details to the console. Useful
+                                    when reporting an issue.
+                                </span>
+                            </span>
+                        </label>
+                        <div className={styles.row}>
+                            <label className={styles.switch}>
+                                <input
+                                    id="set-debug"
+                                    type="checkbox"
+                                    checked={Settings.debug}
+                                    onChange={(e) =>
+                                        updateSettings({
+                                            debug: e.target.checked,
+                                        })
+                                    }
+                                />
+                                <span className={styles.slider}></span>
+                            </label>
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.debug ? "Enabled" : "Disabled"}
+                            </p>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>

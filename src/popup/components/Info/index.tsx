@@ -78,7 +78,7 @@ export const Info = () => {
         if (!Nomi) return;
         chrome.runtime.sendMessage({
             type,
-            data: { nomiId: Nomi.id, ...extraData },
+            data: { nomiId: Nomi.id, debug: Settings.debug, ...extraData },
         });
         // Optimistic update; the background broadcasts real progress
         setDownloadStatus({
