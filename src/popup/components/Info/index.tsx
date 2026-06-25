@@ -98,7 +98,9 @@ export const Info = () => {
         });
 
     const handleDownloadChat = () =>
-        startDownload("DOWNLOAD_CHAT", "Starting chat download...");
+        startDownload("DOWNLOAD_CHAT", "Starting chat download...", {
+            maxMessages: Settings.chatDownload.maxMessages,
+        });
 
     const handleDownloadMind = () =>
         startDownload("DOWNLOAD_MIND", "Starting mind download...");

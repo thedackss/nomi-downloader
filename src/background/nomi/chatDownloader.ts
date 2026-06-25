@@ -29,20 +29,28 @@ export class ChatDownloader {
         private readonly offscreen: OffscreenClient,
     ) {}
 
-    async run({ nomiId, includeSelfies, onProgress }: DownloadChatProps) {
+    async run({
+        nomiId,
+        includeSelfies,
+        maxMessages = 0,
+        onProgress,
+    }: DownloadChatProps) {
         const update = (message: string) => onProgress?.(message);
 
         try {
             Log(`Downloading chat for Nomi ID: ${nomiId}`);
             const nomi = await this.nomiApi.get({ nomiId });
-            const messages = await this.nomiApi.getMessages({ nomiId });
+            const all = await this.nomiApi.getMessages({ nomiId });
 
-            if (!messages || messages.length === 0) {
+            if (!all || all.length === 0) {
                 throw new NomiError({
                     id: nomiId,
                     message: `No messages found for Nomi with ID ${nomiId}`,
                 });
             }
+
+            // Keep only the last N items when a cap is set (0 = unlimited).
+            const messages = maxMessages > 0 ? all.slice(-maxMessages) : all;
 
             const stringDate = new Date().toDateString().replace(/ /g, "-");
 

@@ -13,6 +13,9 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             downloadQuantity: 2,
             imagesPerZip: 0,
         },
+        chatDownload: {
+            maxMessages: 0,
+        },
         layout: "auto",
     };
 

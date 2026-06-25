@@ -258,6 +258,55 @@ export const Settings = () => {
                             </p>
                         </div>
                     </li>
+                    <li>
+                        <h3>Chat</h3>
+                    </li>
+                    <li>
+                        <label htmlFor="set-max-messages">
+                            Max messages
+                            <span className={styles.warning}>
+                                <span className={styles.icon}>
+                                    <RiInformation2Line />
+                                </span>
+                                <span className={styles.tooltip}>
+                                    0 = unlimited. Set a number to export only
+                                    the most recent N. Counts timeline items, so
+                                    a few selfie blocks may be included.
+                                </span>
+                            </span>
+                        </label>
+                        <div className={styles.row}>
+                            <input
+                                id="set-max-messages"
+                                type="number"
+                                min={0}
+                                step={50}
+                                value={Settings.chatDownload.maxMessages}
+                                onChange={(e) =>
+                                    updateSettings({
+                                        chatDownload: {
+                                            ...Settings.chatDownload,
+                                            maxMessages: Math.max(
+                                                0,
+                                                parseInt(e.target.value, 10) ||
+                                                    0,
+                                            ),
+                                        },
+                                    })
+                                }
+                            />
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.chatDownload.maxMessages > 0
+                                    ? `Last ${Settings.chatDownload.maxMessages} messages`
+                                    : "All messages"}
+                            </p>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>

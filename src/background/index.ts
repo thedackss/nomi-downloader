@@ -104,6 +104,7 @@ function main() {
                 break;
             }
             case "DOWNLOAD_CHAT": {
+                const { maxMessages } = message.data;
                 runDownload(
                     nomiId,
                     {
@@ -115,6 +116,7 @@ function main() {
                         nomi.downloadChat({
                             nomiId,
                             includeSelfies: true,
+                            maxMessages,
                             onProgress,
                         }),
                 );

@@ -12,6 +12,10 @@ export interface Settings {
         /** Max images per zip; 0 = auto (size-based chunking only). */
         imagesPerZip: number;
     };
+    chatDownload: {
+        /** Keep only the last N messages; 0 = unlimited. */
+        maxMessages: number;
+    };
     layout: "auto" | "mobile" | "desktop";
 }
 

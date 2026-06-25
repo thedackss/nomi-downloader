@@ -135,6 +135,17 @@
                     justify-content: flex-start;
                     align-items: flex-end;
 
+                    .beta {
+                        margin-left: 0.5rem;
+                        padding: 0.05rem 0.35rem;
+                        border-radius: 4px;
+                        font-size: 0.6rem;
+                        font-weight: 700;
+                        letter-spacing: 0.05em;
+                        color: var(--primary);
+                        background: rgb(from var(--primary) r g b / 12%);
+                    }
+
                     .warning {
                         display: inline-flex;
                         align-items: center;
