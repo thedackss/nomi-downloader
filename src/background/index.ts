@@ -65,18 +65,8 @@ async function runDownload(
 }
 
 /** Build and save a Nomi's mind map as HTML. Returns false if none exists. */
-async function downloadMindMap(nomiId: number): Promise<boolean> {
-    const htmlContent = await nomi.renderMindMap({ nomiId });
-    if (!htmlContent) return false;
-
-    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
-
-    await chrome.downloads.download({
-        url: dataUrl,
-        filename: `mind-map-${nomiId}-${Date.now()}.html`,
-        saveAs: true,
-    });
-    return true;
+function downloadMindMap(nomiId: number): Promise<boolean> {
+    return nomi.downloadMindMap({ nomiId });
 }
 
 /** Save a Nomi's raw info as a JSON file. */

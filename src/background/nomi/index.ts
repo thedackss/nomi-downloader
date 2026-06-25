@@ -8,6 +8,7 @@ import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
 import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
+import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
 
@@ -28,13 +29,15 @@ export class Nomi {
     }
 
     /**
-     * Build the standalone mind map HTML for a Nomi. Returns null when the Nomi
-     * has no mind map yet. Renders in the offscreen document so react-dom/server
-     * never loads in the service worker.
+     * Build and save a Nomi's mind map as a standalone HTML file. Returns false
+     * when the Nomi has no mind map yet. Renders in the offscreen document so
+     * react-dom/server never loads in the service worker, and saves via an
+     * offscreen Blob URL (the rendered HTML inlines CSS + the avatar and is too
+     * big for a reliable data: URL).
      */
-    async renderMindMap({ nomiId }: NomiExistsProps): Promise<string | null> {
+    async downloadMindMap({ nomiId }: NomiExistsProps): Promise<boolean> {
         const data = await this.api.getMindInfo({ nomiId });
-        if (!data) return null;
+        if (!data) return false;
 
         await this.offscreen.setupDocument();
 
@@ -47,7 +50,50 @@ export class Nomi {
             new Date().toISOString(),
             avatar,
         );
-        return this.offscreen.renderMindMap(payload);
+        const html = await this.offscreen.renderMindMap(payload);
+
+        const { url, isBlob } = await this.toDownloadUrl(html);
+        const nameSafe = nomi.name.replace(/ /g, "-");
+        const stamp = new Date().toISOString().slice(0, 10);
+
+        await chrome.downloads.download({
+            url,
+            filename: `${nameSafe}_MindMap_${stamp}.html`,
+            saveAs: true,
+        });
+
+        if (isBlob) {
+            // Delay revoke so the download has time to start.
+            setTimeout(() => {
+                this.offscreen.call("revoke-blob-url", { url });
+            }, BLOB_URL_REVOKE_DELAY_MS);
+        }
+
+        return true;
+    }
+
+    /**
+     * Turn rendered HTML into a download URL. Prefers an offscreen Blob URL
+     * (safe for large strings); falls back to a base64 data URI when offscreen
+     * is unavailable (tests / Firefox page).
+     */
+    private async toDownloadUrl(
+        html: string,
+    ): Promise<{ url: string; isBlob: boolean }> {
+        try {
+            const res = await this.offscreen.call("create-blob-url", {
+                content: html,
+                type: "text/html",
+            });
+            if (res?.success && res.url) {
+                return { url: res.url, isBlob: true };
+            }
+        } catch {
+            // fall through to data URI
+        }
+
+        const base64 = btoa(unescape(encodeURIComponent(html)));
+        return { url: `data:text/html;base64,${base64}`, isBlob: false };
     }
 
     /** Fetch a Nomi's avatar as a data URI; undefined if it can't be fetched. */
