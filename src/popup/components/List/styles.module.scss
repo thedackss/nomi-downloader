@@ -1,54 +1,22 @@
-// Soft fade at the top/bottom scroll edges so rows dissolve into the
-// background instead of hard-clipping mid-icon. Painted as overlays (not a
-// mask) so an expanded Nomi card gets a gentle edge rather than a see-through
-// cut, and it works the same whether scrolling rows or a card.
-.listWrap {
-    --fade: 1.5rem;
-
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    width: 100%;
-    height: 100%;
-
-    // Shrink to the grid cell so the inner list stays bounded and scrolls
-    // (without this the wrapper grows to fit all content — no scroll).
-    min-height: 0;
-
-    // Contain the overlay z-indexes so they sit above the list's own layers
-    // (selected-card video is z-index 4) without leaking past the popup.
-    isolation: isolate;
-
-    &::before,
-    &::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: var(--fade);
-        pointer-events: none;
-        z-index: 5;
-    }
-
-    &::before {
-        top: 0;
-        background: linear-gradient(to bottom, var(--background), transparent);
-    }
-
-    &::after {
-        bottom: 0;
-        background: linear-gradient(to top, var(--background), transparent);
-    }
-}
-
 .nomiList {
     position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
     width: 100%;
+    height: 100%;
     overflow-y: scroll;
     list-style: none;
     padding-right: 2.5%;
+
+    // Fade items into the background at the top/bottom edges so they dissolve
+    // instead of hard-clipping mid-icon while scrolling.
+    --fade: 1.5rem;
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+    );
 
     li {
         margin-bottom: 1rem;
@@ -150,20 +118,26 @@
 
         &.selected {
             flex-direction: column-reverse;
-            background-color: var(--surface);
-            border-color: var(--border);
+            justify-content: center;
+            align-items: center;
+            // background-color: var(--surface);
+            border-color: transparent;
             border-radius: 1rem;
-            box-shadow:
-                0 10px 28px rgb(0 0 0 / 35%),
-                0 0 0 1px rgb(from var(--accent) r g b / 20%);
+            // box-shadow:
+            //     0 10px 28px rgb(0 0 0 / 35%),
+            //     0 0 0 1px rgb(from var(--accent) r g b / 20%);
             height: 100%;
             padding: 1rem;
             cursor: default;
 
-            &:hover .icon:not(.group) {
-                .img,
-                video {
-                    transform: scale(1);
+            &:hover {
+                border-color: transparent;
+
+                .icon:not(.group) {
+                    .img,
+                    video {
+                        transform: scale(1);
+                    }
                 }
             }
 
@@ -201,8 +175,16 @@
         }
 
         &:hover {
-            background-color: rgb(255 255 255 / 6%);
-            border-color: var(--border);
+            background-color: color-mix(
+                in srgb,
+                var(--accent) 1%,
+                transparent 90%
+            );
+            border-color: color-mix(
+                in srgb,
+                var(--accent) 20%,
+                transparent 80%
+            );
             border-radius: 1rem;
 
             .icon .img,
