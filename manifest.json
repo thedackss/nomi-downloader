@@ -21,7 +21,7 @@
 
     "web_accessible_resources": [
         {
-            "resources": ["src/offscreen/index.html", "src/offscreen/index.ts"],
+            "resources": ["src/offscreen/index.html"],
             "matches": ["<all_urls>"]
         }
     ],

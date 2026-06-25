@@ -82,6 +82,13 @@ export default defineConfig({
         // reloaded extension 404s on the old files. Stable names overwrite
         // in place, so a reload just picks up fresh content.
         rollupOptions: {
+            // Register the offscreen page as an HTML input so its script is
+            // compiled and bundled. Otherwise crxjs only copies it (and the raw
+            // index.ts) as a web-accessible resource, and Chrome refuses to run
+            // the uncompiled .ts module in a production build.
+            input: {
+                "src/offscreen/index": path.resolve("src/offscreen/index.html"),
+            },
             output: {
                 entryFileNames: "assets/[name].js",
                 chunkFileNames: "assets/[name].js",
