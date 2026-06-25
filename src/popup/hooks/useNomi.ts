@@ -13,8 +13,9 @@ import type { Nomis } from "../context/nomis/interfaces";
 import { useTab } from "./useTab";
 
 function isNomiURL(url: string): boolean {
-    const regex =
-        /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}(\/photo-album)?\/?$/;
+    // Matches https://beta.nomi.ai/nomis/{id} with any trailing path/query
+    // (e.g. /photo-album), so the Nomi page is detected regardless of suffix.
+    const regex = /^https:\/\/beta\.nomi\.ai\/nomis\/\d{6,}/;
     return regex.test(url);
 }
 
@@ -153,7 +154,7 @@ export const useNomi = () => {
         if (!tabUrl) return;
 
         if (isNomiURL(tabUrl)) {
-            const nomiId = tabUrl.split("/")[4];
+            const nomiId = tabUrl.match(/\/nomis\/(\d+)/)?.[1];
             const nomi = Nomis.list.nomi.find(
                 (n) => n.id.toString() === nomiId,
             );
