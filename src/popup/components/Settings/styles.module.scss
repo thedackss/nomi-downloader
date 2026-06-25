@@ -87,7 +87,7 @@
         padding: 1.5rem;
         width: 100%;
         max-height: calc(100% - 5rem);
-        overflow-y: auto;
+        overflow: hidden;
         opacity: 0;
         transform: translateY(100%);
         transition:
@@ -117,6 +117,20 @@
             padding: 0;
             margin: 0;
             width: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+
+            // Fade options into the panel at the scroll edges (matches the list).
+            --fade: 1.25rem;
+
+            mask-image: linear-gradient(
+                to bottom,
+                transparent 0,
+                #000 var(--fade),
+                #000 calc(100% - var(--fade)),
+                transparent 100%
+            );
 
             li {
                 display: flex;
