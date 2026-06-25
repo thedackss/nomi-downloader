@@ -18,6 +18,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             includeSelfies: true,
         },
         layout: "auto",
+        showStats: false,
         debug: false,
     };
 

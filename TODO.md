@@ -14,7 +14,7 @@ Legend: [x] done · [~] partial · [ ] missing
 - [x] Separate download buttons — dropped; superseded by the split-button select (first option = default "Download")
 - [x] Include selfies on chat — toggle (embedded vs text-only)
 - [x] Enable folderization
-- [ ] Show Stats — daily usage counts / user info, missing
+- [x] Show Stats — daily-usage panel under the header (sent / received / selfies today)
 - [x] Debug mode — toggle that enables verbose console logging at runtime
 
 ## Single Nomi Download

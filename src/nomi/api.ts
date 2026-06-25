@@ -3,6 +3,8 @@ import { NomiError } from "./errors";
 import { api } from "./http";
 import type { NomiExistsProps } from "./interfaces/exists";
 import type { GetMediasProps } from "./interfaces/getMedias";
+import type { ApiMeResponse } from "./types/api.me";
+import type { ApiDailyUsageResponse } from "./types/api.me.dailyUsage";
 import type { ApiMindMapsGraphResponse } from "./types/api.mindMaps.nomis.id.graph";
 import type {
     ApiMindMapsTermsResponse,
@@ -46,6 +48,28 @@ export class NomiApiClient {
             throw new NomiError({
                 message: `Failed to get Nomi with ID ${nomiId}`,
             });
+        }
+    }
+
+    public async getUserInfo() {
+        try {
+            Log("Getting user info");
+            const { data } = await api.get<ApiMeResponse>("me");
+            return data;
+        } catch {
+            throw new NomiError({ message: "Failed to get user info" });
+        }
+    }
+
+    public async getDailyUsage() {
+        try {
+            Log("Getting daily usage counts");
+            const { data } = await api.get<ApiDailyUsageResponse>(
+                "me/daily-usage-counts",
+            );
+            return data.dailyUsageCounts;
+        } catch {
+            throw new NomiError({ message: "Failed to get daily usage" });
         }
     }
 

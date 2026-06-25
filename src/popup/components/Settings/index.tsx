@@ -93,6 +93,34 @@ export const Settings = () => {
                         </select>
                     </li>
                     <li>
+                        <label htmlFor="set-show-stats">Show stats</label>
+                        <div className={styles.row}>
+                            <label className={styles.switch}>
+                                <input
+                                    id="set-show-stats"
+                                    type="checkbox"
+                                    checked={Settings.showStats}
+                                    onChange={(e) =>
+                                        updateSettings({
+                                            showStats: e.target.checked,
+                                        })
+                                    }
+                                />
+                                <span className={styles.slider}></span>
+                            </label>
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.showStats
+                                    ? "Daily usage shown"
+                                    : "Hidden"}
+                            </p>
+                        </div>
+                    </li>
+                    <li>
                         <h3>Album</h3>
                     </li>
                     <li>

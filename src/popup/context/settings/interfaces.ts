@@ -19,6 +19,8 @@ export interface Settings {
         includeSelfies: boolean;
     };
     layout: "auto" | "mobile" | "desktop";
+    /** Show a daily-usage stats panel under the header. */
+    showStats: boolean;
     /** Verbose logging in the console for troubleshooting. */
     debug: boolean;
 }
