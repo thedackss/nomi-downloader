@@ -22,7 +22,7 @@ function formatDate(iso: string): string {
 
 function Note({ note }: { note: SharedNote }) {
     return (
-        <details className="note" open>
+        <details className="note">
             <summary className="note-head">
                 <span className="heading">
                     <h2>{note.title}</h2>
