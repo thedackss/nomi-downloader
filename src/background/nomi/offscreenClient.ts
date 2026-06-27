@@ -215,7 +215,9 @@ export class OffscreenClient {
         let openedTab = false;
 
         try {
-            await this.dispatchDownload(url, filename, saveAs);
+            const id = await this.dispatchDownload(url, filename, saveAs);
+            Log(`downloads.download accepted "${filename}" (id ${id})`);
+            this.watchDownload(id);
         } catch (err) {
             Log(
                 "downloads.download unavailable or stalled; opening a tab",
@@ -224,6 +226,7 @@ export class OffscreenClient {
             try {
                 await chrome.tabs.create({ url });
                 openedTab = true;
+                Log(`Opened "${filename}" in a tab as a fallback`);
             } catch (tabErr) {
                 Log("Failed to open the download in a tab", tabErr);
             }
@@ -243,18 +246,40 @@ export class OffscreenClient {
         url: string,
         filename: string,
         saveAs: boolean,
-    ): Promise<unknown> {
+    ): Promise<number | undefined> {
         if (typeof chrome === "undefined" || !chrome.downloads?.download) {
             return Promise.reject(new Error("downloads API unavailable"));
         }
         return Promise.race([
             chrome.downloads.download({ url, filename, saveAs }),
-            new Promise((_, reject) =>
+            new Promise<never>((_, reject) =>
                 setTimeout(
                     () => reject(new Error("download timed out")),
                     DOWNLOAD_DISPATCH_TIMEOUT_MS,
                 ),
             ),
         ]);
+    }
+
+    /**
+     * Log a download's terminal state. The dispatch can resolve with an id while
+     * the download still fails (e.g. interrupted on Firefox for Android), so
+     * surface that here to make such failures debuggable.
+     */
+    private watchDownload(id: number | undefined): void {
+        if (id == null || !chrome.downloads?.onChanged) return;
+        const onChanged = (delta: chrome.downloads.DownloadDelta) => {
+            if (delta.id !== id) return;
+            if (delta.error) {
+                Log(`Download ${id} interrupted: ${delta.error.current}`);
+            }
+            if (delta.state?.current === "complete") {
+                Log(`Download ${id} complete`);
+            }
+            if (delta.state?.current === "complete" || delta.error?.current) {
+                chrome.downloads.onChanged.removeListener(onChanged);
+            }
+        };
+        chrome.downloads.onChanged.addListener(onChanged);
     }
 }
