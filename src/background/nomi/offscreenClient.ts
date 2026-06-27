@@ -8,6 +8,13 @@ import {
 import type { MindMapRenderPayload } from "./mindmap/types";
 import type { SharedNotesRenderPayload } from "./sharednotes/types";
 
+/** Firefox for Android, where a background-page anchor click doesn't fire. */
+function isAndroid(): boolean {
+    return (
+        typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent)
+    );
+}
+
 export interface OffscreenPayload {
     id?: string;
     path?: string;
@@ -225,6 +232,19 @@ export class OffscreenClient {
         let openedTab = false;
         let note: string | undefined;
 
+        // Desktop Firefox runs the background as a DOM page; use an <a download>
+        // there so it honors the browser's "ask where to save" setting (the
+        // original method), instead of chrome.downloads silently auto-saving.
+        // Android's background page doesn't fire the click, so it falls through
+        // to the downloads API; Chrome's service worker has no document.
+        if (typeof document !== "undefined" && !isAndroid()) {
+            this.anchorDownload(url, filename);
+            Log(`Saved "${filename}" via anchor`);
+            report?.("Saved to your downloads");
+            this.scheduleRevoke(url, isBlob, false);
+            return { ok: true, openedTab: false };
+        }
+
         try {
             if (typeof chrome === "undefined" || !chrome.downloads?.download) {
                 throw new Error("downloads API unavailable");
@@ -251,6 +271,19 @@ export class OffscreenClient {
         this.scheduleRevoke(url, isBlob, openedTab);
 
         return { ok: !openedTab, openedTab, note };
+    }
+
+    /** Trigger a download through a DOM anchor so the filename is honored and
+     * the browser's save-location preference is respected. */
+    private anchorDownload(url: string, filename: string): void {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.rel = "noopener";
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
     }
 
     /** Revoke a blob URL after a delay (longer when a fallback tab uses it). */
