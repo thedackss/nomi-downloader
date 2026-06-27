@@ -117,5 +117,7 @@ export function useBackground() {
                 "Starting JSON download...",
                 jsonOptions,
             ),
+        downloadMarkdown: () =>
+            startDownload("DOWNLOAD_MARKDOWN", "Starting Markdown download..."),
     };
 }

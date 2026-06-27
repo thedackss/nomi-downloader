@@ -10,7 +10,8 @@ import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
 import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
-import { buildNomiJson } from "./json/builder";
+import { buildNomiJson, type NomiJsonInput } from "./json/builder";
+import { buildNomiMarkdown } from "./markdown/builder";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
 import {
@@ -145,6 +146,28 @@ export class Nomi {
         { nomiId }: NomiExistsProps,
         rawData = false,
     ): Promise<void> {
+        const input = await this.gatherNomiData(nomiId);
+        const json = buildNomiJson(input, rawData);
+        await this.saveExport(
+            input.nomi.name,
+            JSON.stringify(json, null, 2),
+            "application/json",
+            "json",
+        );
+    }
+
+    /**
+     * Build and save a Nomi's full data as a Markdown document (the same data
+     * as the JSON export, without raw responses).
+     */
+    async downloadMarkdown({ nomiId }: NomiExistsProps): Promise<void> {
+        const input = await this.gatherNomiData(nomiId);
+        const markdown = buildNomiMarkdown(input);
+        await this.saveExport(input.nomi.name, markdown, "text/markdown", "md");
+    }
+
+    /** Fetch every dataset the full export needs (chat is best-effort). */
+    private async gatherNomiData(nomiId: number): Promise<NomiJsonInput> {
         const [nomi, shared, anchors, mind] = await Promise.all([
             this.api.get({ nomiId }),
             this.api.getSharedNotes({ nomiId }),
@@ -156,26 +179,27 @@ export class Nomi {
         try {
             messages = await this.api.getMessages({ nomiId });
         } catch (err) {
-            Log("Failed to fetch messages for JSON export", err);
+            Log("Failed to fetch messages for export", err);
         }
 
-        const json = buildNomiJson(
-            { nomiId, nomi, shared, anchors, mind, messages },
-            rawData,
-        );
-        const text = JSON.stringify(json, null, 2);
+        return { nomiId, nomi, shared, anchors, mind, messages };
+    }
 
+    /** Save export text via a Blob URL (exports can be large). */
+    private async saveExport(
+        nomiName: string,
+        content: string,
+        type: string,
+        extension: string,
+    ): Promise<void> {
         await this.offscreen.setupDocument();
-        const { url, isBlob } = await this.toDownloadUrl(
-            text,
-            "application/json",
-        );
-        const nameSafe = nomi.name.replace(/ /g, "-");
+        const { url, isBlob } = await this.toDownloadUrl(content, type);
+        const nameSafe = nomiName.replace(/ /g, "-");
         const stamp = new Date().toISOString().slice(0, 10);
 
         await chrome.downloads.download({
             url,
-            filename: `${nameSafe}_Data_${stamp}.json`,
+            filename: `${nameSafe}_Data_${stamp}.${extension}`,
             saveAs: true,
         });
 

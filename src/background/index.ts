@@ -170,6 +170,18 @@ function main() {
                 );
                 break;
             }
+            case "DOWNLOAD_MARKDOWN": {
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting Markdown download...",
+                        done: "Markdown downloaded!",
+                        error: "Error downloading Markdown",
+                    },
+                    () => nomi.downloadMarkdown({ nomiId }),
+                );
+                break;
+            }
             case "DOWNLOAD_ALL": {
                 const {
                     downloadQuantity,

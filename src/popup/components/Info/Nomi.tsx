@@ -19,6 +19,7 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         downloadMind,
         downloadBackstory,
         downloadJSON,
+        downloadMarkdown,
     } = useBackground();
 
     const downloadOptions = [
@@ -28,6 +29,7 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         { name: "Mind Map", fn: downloadMind },
         { name: "Shared Notes", fn: downloadBackstory },
         { name: "JSON", fn: downloadJSON },
+        { name: "Markdown", fn: downloadMarkdown },
     ];
 
     const [mindMapActive, setMindMapActive] = useState(false);
