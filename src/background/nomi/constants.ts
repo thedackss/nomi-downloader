@@ -31,6 +31,8 @@ export const BLOB_URL_REVOKE_DELAY_MS = 60_000;
  * back to opening the file in a tab.
  */
 export const DOWNLOAD_DISPATCH_TIMEOUT_MS = 10_000;
+/** How long to wait for a download to reach complete/interrupted before giving up. */
+export const DOWNLOAD_TERMINAL_TIMEOUT_MS = 8_000;
 /** Keep a fallback tab's blob URL alive long enough for the user to save it. */
 export const FALLBACK_REVOKE_DELAY_MS = 120_000;
 

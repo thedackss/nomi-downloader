@@ -30,7 +30,7 @@ type ProgressFn = (message: string) => void;
 async function runDownload(
     id: number,
     messages: { start: string; done: string; error: string },
-    work: (onProgress: ProgressFn) => Promise<void>,
+    work: (onProgress: ProgressFn) => Promise<unknown>,
     type: "nomi" | "group" = "nomi",
 ) {
     if (downloadStatus.inProgress) {
@@ -57,8 +57,12 @@ async function runDownload(
     setNomiStatus(messages.start);
 
     try {
-        await work(setNomiStatus);
-        setIdleStatus(messages.done);
+        // Work may return a closing message (e.g. a fallback notice) to show
+        // instead of the generic "done" status.
+        const result = await work(setNomiStatus);
+        setIdleStatus(
+            typeof result === "string" && result ? result : messages.done,
+        );
     } catch (error) {
         Log(messages.error, error);
         setIdleStatus(messages.error);

@@ -215,10 +215,15 @@ export class AlbumDownloader {
                 );
             }
 
+            let saveNote: string | undefined;
             for (const download of downloads) {
-                await this.offscreen.download(download.url, download.filename, {
-                    isBlob: true,
-                });
+                const res = await this.offscreen.download(
+                    download.url,
+                    download.filename,
+                    { isBlob: true },
+                    update,
+                );
+                if (res.note) saveNote = res.note;
                 // Small delay to avoid browser hiccups starting many downloads
                 await new Promise((resolve) =>
                     setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
@@ -228,6 +233,7 @@ export class AlbumDownloader {
             await new Promise((resolve) =>
                 setTimeout(resolve, ALBUM_FINALIZE_DELAY_MS),
             );
+            return saveNote;
         } catch (error) {
             if (error instanceof NomiError) {
                 Log(`NomiError: ${error.message}`);

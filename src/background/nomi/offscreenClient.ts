@@ -3,6 +3,7 @@ import type { ChatRenderPayload } from "./chat/types";
 import {
     BLOB_URL_REVOKE_DELAY_MS,
     DOWNLOAD_DISPATCH_TIMEOUT_MS,
+    DOWNLOAD_TERMINAL_TIMEOUT_MS,
     FALLBACK_REVOKE_DELAY_MS,
     OFFSCREEN_DOCUMENT_PATH,
 } from "./constants";
@@ -21,6 +22,15 @@ export interface OffscreenResponse {
     success: boolean;
     url?: string;
     error?: string;
+}
+
+export interface DownloadResult {
+    /** The browser saved the file directly. */
+    ok: boolean;
+    /** The file was opened in a tab because it couldn't be saved directly. */
+    openedTab: boolean;
+    /** A closing status message worth surfacing (e.g. the fallback reason). */
+    note?: string;
 }
 
 /**
@@ -200,35 +210,44 @@ export class OffscreenClient {
     }
 
     /**
-     * Save a file via chrome.downloads, with a tab fallback. Firefox for Android
-     * stalls indefinitely on chrome.downloads.download for blob URLs, so the
-     * dispatch is raced against a timeout; on timeout/failure the URL is opened
-     * in a tab instead so the user can still save it. Blob URLs are revoked
-     * afterward (later when a fallback tab needs to keep using the URL).
+     * Save a file via chrome.downloads, confirming it actually completed and
+     * falling back to opening the file in a tab when it doesn't. Firefox for
+     * Android accepts the download but then interrupts blob-URL saves (and
+     * never routes console logs to logcat), so the outcome is reported through
+     * `report` to surface it in the popup. Blob URLs are revoked afterward
+     * (later when a fallback tab still needs the URL).
      */
     async download(
         url: string,
         filename: string,
         options: { isBlob?: boolean; saveAs?: boolean } = {},
-    ): Promise<void> {
+        report?: (message: string) => void,
+    ): Promise<DownloadResult> {
         const { isBlob = false, saveAs = false } = options;
         let openedTab = false;
+        let note: string | undefined;
 
-        try {
-            const id = await this.dispatchDownload(url, filename, saveAs);
-            Log(`downloads.download accepted "${filename}" (id ${id})`);
-            this.watchDownload(id);
-        } catch (err) {
+        const outcome = await this.trySave(url, filename, saveAs);
+
+        if (outcome.ok) {
+            Log(`Saved "${filename}"`);
+            report?.("Saved to your downloads");
+        } else {
             Log(
-                "downloads.download unavailable or stalled; opening a tab",
-                err,
+                `Save failed (${outcome.reason}); opening "${filename}" in a tab`,
+            );
+            report?.(
+                `Couldn't save automatically (${outcome.reason}); opening in a tab…`,
             );
             try {
                 await chrome.tabs.create({ url });
                 openedTab = true;
-                Log(`Opened "${filename}" in a tab as a fallback`);
+                note = `Opened in a tab (couldn't save directly: ${outcome.reason}) — save it from the browser menu`;
+                report?.(note);
             } catch (tabErr) {
                 Log("Failed to open the download in a tab", tabErr);
+                note = `Download failed: ${outcome.reason}`;
+                report?.(note);
             }
         }
 
@@ -240,46 +259,83 @@ export class OffscreenClient {
                 this.call("revoke-blob-url", { url }).catch(() => {});
             }, delay);
         }
+
+        return { ok: outcome.ok, openedTab, note };
     }
 
-    private dispatchDownload(
+    /** Dispatch a download and wait for its real terminal state. */
+    private async trySave(
         url: string,
         filename: string,
         saveAs: boolean,
-    ): Promise<number | undefined> {
+    ): Promise<{ ok: boolean; reason?: string }> {
         if (typeof chrome === "undefined" || !chrome.downloads?.download) {
-            return Promise.reject(new Error("downloads API unavailable"));
+            return { ok: false, reason: "downloads API unavailable" };
         }
-        return Promise.race([
-            chrome.downloads.download({ url, filename, saveAs }),
-            new Promise<never>((_, reject) =>
-                setTimeout(
-                    () => reject(new Error("download timed out")),
-                    DOWNLOAD_DISPATCH_TIMEOUT_MS,
+
+        let id: number | undefined;
+        try {
+            id = await Promise.race([
+                chrome.downloads.download({ url, filename, saveAs }),
+                new Promise<never>((_, reject) =>
+                    setTimeout(
+                        () => reject(new Error("dispatch timed out")),
+                        DOWNLOAD_DISPATCH_TIMEOUT_MS,
+                    ),
                 ),
-            ),
-        ]);
+            ]);
+        } catch (err) {
+            return {
+                ok: false,
+                reason: err instanceof Error ? err.message : "dispatch failed",
+            };
+        }
+
+        if (id == null) return { ok: false, reason: "no download id" };
+        return this.awaitTerminal(id);
     }
 
     /**
-     * Log a download's terminal state. The dispatch can resolve with an id while
-     * the download still fails (e.g. interrupted on Firefox for Android), so
-     * surface that here to make such failures debuggable.
+     * Resolve once download `id` reaches complete or interrupted. Also queries
+     * the current state so a download that finished before the listener
+     * attached isn't missed, and times out rather than hanging forever.
      */
-    private watchDownload(id: number | undefined): void {
-        if (id == null || !chrome.downloads?.onChanged) return;
-        const onChanged = (delta: chrome.downloads.DownloadDelta) => {
-            if (delta.id !== id) return;
-            if (delta.error) {
-                Log(`Download ${id} interrupted: ${delta.error.current}`);
-            }
-            if (delta.state?.current === "complete") {
-                Log(`Download ${id} complete`);
-            }
-            if (delta.state?.current === "complete" || delta.error?.current) {
+    private awaitTerminal(
+        id: number,
+    ): Promise<{ ok: boolean; reason?: string }> {
+        if (!chrome.downloads?.onChanged) return Promise.resolve({ ok: true });
+
+        return new Promise((resolve) => {
+            const finish = (result: { ok: boolean; reason?: string }) => {
+                clearTimeout(timer);
                 chrome.downloads.onChanged.removeListener(onChanged);
-            }
-        };
-        chrome.downloads.onChanged.addListener(onChanged);
+                resolve(result);
+            };
+
+            const onChanged = (delta: chrome.downloads.DownloadDelta) => {
+                if (delta.id !== id) return;
+                if (delta.error?.current) {
+                    finish({ ok: false, reason: delta.error.current });
+                } else if (delta.state?.current === "complete") {
+                    finish({ ok: true });
+                }
+            };
+
+            const timer = setTimeout(
+                () => finish({ ok: false, reason: "no completion signal" }),
+                DOWNLOAD_TERMINAL_TIMEOUT_MS,
+            );
+
+            chrome.downloads.onChanged.addListener(onChanged);
+
+            // Catch downloads that finished before the listener attached.
+            chrome.downloads.search({ id }).then((items) => {
+                const item = items?.[0];
+                if (item?.state === "complete") finish({ ok: true });
+                else if (item?.state === "interrupted") {
+                    finish({ ok: false, reason: item.error ?? "interrupted" });
+                }
+            });
+        });
     }
 }

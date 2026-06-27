@@ -87,6 +87,7 @@ export class GroupChatDownloader {
             let lastPercent = "0";
             let messagesCount = 0;
             let currentMessageIndex = 0;
+            let saveNote: string | undefined;
 
             for (let j = 0; j < chunks.length; j++) {
                 const chunk = chunks[j];
@@ -141,7 +142,13 @@ export class GroupChatDownloader {
                     fileName = `${nameSafe}_GroupChat(${start}-${end})_${stringDate}_Part${j + 1}.html`;
                 }
 
-                await this.offscreen.download(url, fileName, { isBlob });
+                const res = await this.offscreen.download(
+                    url,
+                    fileName,
+                    { isBlob },
+                    update,
+                );
+                if (res.note) saveNote = res.note;
 
                 await new Promise((resolve) =>
                     setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
@@ -151,6 +158,7 @@ export class GroupChatDownloader {
             }
 
             update(`Downloaded ${messages.length} messages`);
+            return saveNote;
         } catch (error) {
             if (error instanceof NomiError) {
                 Log(`NomiError: ${error.message}`);
