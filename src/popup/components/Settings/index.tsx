@@ -7,9 +7,41 @@ import styles from "./styles.module.scss";
 
 export const Settings = () => {
     const { Settings, updateSettings } = useSettings();
+    const dl = Settings.download;
 
     const [isOpen, setIsOpen] = useState(false);
     const toggleSettings = () => setIsOpen(!isOpen);
+
+    // A download-type section header: title + an enable switch (grayed while
+    // advanced mode is off, since the simple button ignores per-type choices).
+    type DownloadType =
+        | "album"
+        | "chat"
+        | "mindMap"
+        | "sharedNotes"
+        | "json"
+        | "markdown";
+    const typeHeader = (key: DownloadType, label: string) => (
+        <li className={styles.sectionHead}>
+            <h3>{label}</h3>
+            <label
+                className={styles.switch}
+                style={{ opacity: dl.advanced ? 1 : 0.4 }}>
+                <input
+                    type="checkbox"
+                    aria-label={`Enable ${label} download`}
+                    disabled={!dl.advanced}
+                    checked={dl[key]}
+                    onChange={(e) =>
+                        updateSettings({
+                            download: { ...dl, [key]: e.target.checked },
+                        })
+                    }
+                />
+                <span className={styles.slider}></span>
+            </label>
+        </li>
+    );
 
     return (
         <div className={styles.settings}>
@@ -122,7 +154,7 @@ export const Settings = () => {
                         </div>
                     </li>
                     <li>
-                        <h3>Download</h3>
+                        <h3>Downloads</h3>
                     </li>
                     <li>
                         <label htmlFor="set-advanced-download">
@@ -133,11 +165,11 @@ export const Settings = () => {
                                 <input
                                     id="set-advanced-download"
                                     type="checkbox"
-                                    checked={Settings.download.advanced}
+                                    checked={dl.advanced}
                                     onChange={(e) =>
                                         updateSettings({
                                             download: {
-                                                ...Settings.download,
+                                                ...dl,
                                                 advanced: e.target.checked,
                                             },
                                         })
@@ -151,52 +183,13 @@ export const Settings = () => {
                                     opacity: 0.7,
                                     fontSize: "0.8rem",
                                 }}>
-                                {Settings.download.advanced
-                                    ? "Pick download types"
+                                {dl.advanced
+                                    ? "Pick which types appear on the button"
                                     : "One button: album + chat + shared notes"}
                             </p>
                         </div>
                     </li>
-                    {(
-                        [
-                            ["album", "Enable album download"],
-                            ["chat", "Enable chat download"],
-                            ["mindMap", "Enable mind map download"],
-                            ["sharedNotes", "Enable shared notes download"],
-                            ["json", "Enable JSON download"],
-                            ["markdown", "Enable markdown download"],
-                        ] as const
-                    ).map(([key, label]) => (
-                        <li
-                            key={key}
-                            style={{
-                                opacity: Settings.download.advanced ? 1 : 0.4,
-                            }}>
-                            <label htmlFor={`set-dl-${key}`}>{label}</label>
-                            <div className={styles.row}>
-                                <label className={styles.switch}>
-                                    <input
-                                        id={`set-dl-${key}`}
-                                        type="checkbox"
-                                        disabled={!Settings.download.advanced}
-                                        checked={Settings.download[key]}
-                                        onChange={(e) =>
-                                            updateSettings({
-                                                download: {
-                                                    ...Settings.download,
-                                                    [key]: e.target.checked,
-                                                },
-                                            })
-                                        }
-                                    />
-                                    <span className={styles.slider}></span>
-                                </label>
-                            </div>
-                        </li>
-                    ))}
-                    <li>
-                        <h3>Album</h3>
-                    </li>
+                    {typeHeader("album", "Album")}
                     <li>
                         <label htmlFor="set-quantity">
                             <span>Concurrent Downloads</span>
@@ -354,9 +347,7 @@ export const Settings = () => {
                             </p>
                         </div>
                     </li>
-                    <li>
-                        <h3>Chat</h3>
-                    </li>
+                    {typeHeader("chat", "Chat")}
                     <li>
                         <label htmlFor="set-max-messages">
                             Max messages
@@ -436,9 +427,9 @@ export const Settings = () => {
                             </p>
                         </div>
                     </li>
-                    <li>
-                        <h3>JSON</h3>
-                    </li>
+                    {typeHeader("mindMap", "Mind Map")}
+                    {typeHeader("sharedNotes", "Shared Notes")}
+                    {typeHeader("json", "JSON")}
                     <li>
                         <label htmlFor="set-raw-data">
                             Enable raw data
@@ -479,6 +470,7 @@ export const Settings = () => {
                             </p>
                         </div>
                     </li>
+                    {typeHeader("markdown", "Markdown")}
                     <li>
                         <h3>Advanced</h3>
                     </li>
