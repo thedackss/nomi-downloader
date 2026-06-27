@@ -10,6 +10,7 @@ function App() {
     const { InitializeSettings, isMobile } = useSettings();
     const { fetchNomis, fetchGroups, checkSelectedNomi, Nomis } = useNomi();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: bootstrap settings and lists once on mount
     useEffect(() => {
         async function initialize() {
             InitializeSettings();

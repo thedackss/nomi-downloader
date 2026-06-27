@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { NomiApiClient } from "../../../nomi/api";
+import type { ApiMeResponse } from "../../../nomi/types/api.me";
 import type { DailyUsageCounts } from "../../../nomi/types/api.me.dailyUsage";
 import { Log } from "../../../utils/log";
+import { nomiApi } from "../../api";
 import { useSettings } from "../../hooks/useSettings";
 import styles from "./styles.module.scss";
 
@@ -41,10 +42,9 @@ export const Stats = () => {
         let cancelled = false;
         async function load() {
             try {
-                const api = new NomiApiClient();
                 const [me, usage] = await Promise.all([
-                    api.getUserInfo(),
-                    api.getDailyUsage(),
+                    nomiApi<ApiMeResponse>("getUserInfo"),
+                    nomiApi<DailyUsageCounts>("getDailyUsage"),
                 ]);
                 if (!cancelled) setData(summarize(me.profile.name, usage));
             } catch (error) {

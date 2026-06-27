@@ -39,6 +39,26 @@ export class Nomi {
         return this.api.get(props);
     }
 
+    getNomis() {
+        return this.api.getNomis();
+    }
+
+    getGroups() {
+        return this.api.getGroups();
+    }
+
+    getGroup(props: { groupId: number }) {
+        return this.api.getGroup(props);
+    }
+
+    getUserInfo() {
+        return this.api.getUserInfo();
+    }
+
+    getDailyUsage() {
+        return this.api.getDailyUsage();
+    }
+
     getMindInfo(props: NomiExistsProps) {
         return this.api.getMindInfo(props);
     }

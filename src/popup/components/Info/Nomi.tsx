@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { NomiApiClient } from "../../../nomi/api";
 import type { Nomi } from "../../../nomi/types/api.nomis";
+import { nomiApi } from "../../api";
 import { useBackground } from "../../hooks/useBackground";
 import { useSettings } from "../../hooks/useSettings";
 import { LoadingSpin } from "../LoadingSpin";
@@ -49,10 +49,14 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
     useEffect(() => {
         let cancelled = false;
         async function main() {
-            const api = new NomiApiClient();
-            const data = await api.getMindInfo({ nomiId: nomi.id });
-
-            if (!cancelled) setMindMapActive(!!data);
+            try {
+                const data = await nomiApi<unknown>("getMindInfo", {
+                    nomiId: nomi.id,
+                });
+                if (!cancelled) setMindMapActive(!!data);
+            } catch {
+                if (!cancelled) setMindMapActive(false);
+            }
         }
         main();
         return () => {
