@@ -235,7 +235,7 @@ export class NomiApiClient {
 
                 if (onProgress) {
                     onProgress(
-                        `[Scanning]: ${selfies.length} selfies found...`,
+                        `Scanning album — page ${i}/${totalPages}, ${selfies.length} items found…`,
                     );
                 }
             }

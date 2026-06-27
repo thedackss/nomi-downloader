@@ -106,8 +106,9 @@ export class AlbumDownloader {
                         folderization,
                     });
 
+                    const label = this.mediaLabel(type);
                     update(
-                        `${chunkMessage}Downloading media ${globalIndex + 1}/${medias.length}`,
+                        `${chunkMessage}Downloading ${label} ${globalIndex + 1}/${medias.length}…`,
                     );
 
                     try {
@@ -187,6 +188,9 @@ export class AlbumDownloader {
                     await Promise.all(promises);
                 }
 
+                update(
+                    `${chunkMessage}Packaging ${chunk.length} files into a zip…`,
+                );
                 const response = await this.offscreen.call("generate-zip", {
                     id: chunkId,
                 });
@@ -270,6 +274,20 @@ export class AlbumDownloader {
             return media.textPrompt?.trim() || null;
         }
         return null;
+    }
+
+    /** Friendly label for progress text, e.g. "photo", "edited photo". */
+    private mediaLabel(type: MediaType): string {
+        switch (type) {
+            case "Video":
+                return "video";
+            case "Art":
+                return "art";
+            case "PhotoEdit":
+                return "edited photo";
+            default:
+                return "photo";
+        }
     }
 
     private resolveType(media: Media): MediaType {

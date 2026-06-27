@@ -92,7 +92,11 @@ export class ChatDownloader {
                     ).toFixed(0);
 
                     if (percentage !== lastPercent) {
-                        update(`Downloading messages... ${percentage}%`);
+                        update(
+                            includeSelfies
+                                ? `Collecting messages & selfies… ${percentage}%`
+                                : `Collecting messages… ${percentage}%`,
+                        );
                     }
                     lastPercent = percentage;
                     messagesCount++;
@@ -114,6 +118,11 @@ export class ChatDownloader {
                     }
                 }
 
+                update(
+                    chunks.length > 1
+                        ? `Building chat file ${j + 1}/${chunks.length}…`
+                        : "Building chat file…",
+                );
                 const chatHtml = await this.offscreen.renderChat({
                     name: nomi.name,
                     avatar,

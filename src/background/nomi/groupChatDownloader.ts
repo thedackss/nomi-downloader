@@ -103,7 +103,11 @@ export class GroupChatDownloader {
                     ).toFixed(0);
 
                     if (percentage !== lastPercent) {
-                        update(`Downloading messages... ${percentage}%`);
+                        update(
+                            includeSelfies
+                                ? `Collecting messages & selfies… ${percentage}%`
+                                : `Collecting messages… ${percentage}%`,
+                        );
                     }
                     lastPercent = percentage;
                     messagesCount++;
@@ -125,6 +129,11 @@ export class GroupChatDownloader {
                     }
                 }
 
+                update(
+                    chunks.length > 1
+                        ? `Building chat file ${j + 1}/${chunks.length}…`
+                        : "Building chat file…",
+                );
                 const chatHtml = await this.offscreen.renderChat({
                     name,
                     // Show the info card on the first file only.

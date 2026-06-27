@@ -2,8 +2,6 @@ import { Log } from "../../utils/log";
 import type { ChatRenderPayload } from "./chat/types";
 import {
     BLOB_URL_REVOKE_DELAY_MS,
-    DOWNLOAD_DISPATCH_TIMEOUT_MS,
-    DOWNLOAD_TERMINAL_TIMEOUT_MS,
     FALLBACK_REVOKE_DELAY_MS,
     OFFSCREEN_DOCUMENT_PATH,
 } from "./constants";
@@ -210,11 +208,12 @@ export class OffscreenClient {
     }
 
     /**
-     * Save a file via chrome.downloads, confirming it actually completed and
-     * falling back to opening the file in a tab when it doesn't. The outcome is
-     * reported through `report` so it can surface in the popup (handy on Firefox
-     * for Android, which doesn't route console logs to logcat). Blob URLs are
-     * revoked afterward (later when a fallback tab still needs the URL).
+     * Save a file via chrome.downloads, falling back to opening it in a tab if
+     * the dispatch itself fails. The download promise resolves once the browser
+     * accepts it (after the user picks a location on Firefox for Android, whose
+     * save prompt the in-page UI keeps visible); we deliberately don't wait for
+     * a "complete" event, since that signal is unreliable there and left the
+     * status spinning. Blob URLs are revoked afterward.
      */
     async download(
         url: string,
@@ -226,33 +225,32 @@ export class OffscreenClient {
         let openedTab = false;
         let note: string | undefined;
 
-        const outcome = await this.trySave(url, filename, saveAs);
-
-        if (outcome.ok) {
+        try {
+            if (typeof chrome === "undefined" || !chrome.downloads?.download) {
+                throw new Error("downloads API unavailable");
+            }
+            report?.("Saving file…");
+            await chrome.downloads.download({ url, filename, saveAs });
             Log(`Saved "${filename}"`);
             report?.("Saved to your downloads");
-        } else {
-            Log(
-                `Save failed (${outcome.reason}); opening "${filename}" in a tab`,
-            );
-            report?.(
-                `Couldn't save automatically (${outcome.reason}); opening in a tab…`,
-            );
+        } catch (err) {
+            const reason = err instanceof Error ? err.message : "save failed";
+            Log(`Save failed (${reason}); opening "${filename}" in a tab`);
             try {
                 await chrome.tabs.create({ url });
                 openedTab = true;
-                note = `Opened in a tab (couldn't save directly: ${outcome.reason}) — save it from the browser menu`;
+                note = `Opened in a tab (couldn't save directly) — save it from the browser menu`;
                 report?.(note);
             } catch (tabErr) {
                 Log("Failed to open the download in a tab", tabErr);
-                note = `Download failed: ${outcome.reason}`;
+                note = `Download failed: ${reason}`;
                 report?.(note);
             }
         }
 
         this.scheduleRevoke(url, isBlob, openedTab);
 
-        return { ok: outcome.ok, openedTab, note };
+        return { ok: !openedTab, openedTab, note };
     }
 
     /** Revoke a blob URL after a delay (longer when a fallback tab uses it). */
@@ -264,81 +262,5 @@ export class OffscreenClient {
         setTimeout(() => {
             this.call("revoke-blob-url", { url }).catch(() => {});
         }, delay);
-    }
-
-    /** Dispatch a download and wait for its real terminal state. */
-    private async trySave(
-        url: string,
-        filename: string,
-        saveAs: boolean,
-    ): Promise<{ ok: boolean; reason?: string }> {
-        if (typeof chrome === "undefined" || !chrome.downloads?.download) {
-            return { ok: false, reason: "downloads API unavailable" };
-        }
-
-        let id: number | undefined;
-        try {
-            id = await Promise.race([
-                chrome.downloads.download({ url, filename, saveAs }),
-                new Promise<never>((_, reject) =>
-                    setTimeout(
-                        () => reject(new Error("dispatch timed out")),
-                        DOWNLOAD_DISPATCH_TIMEOUT_MS,
-                    ),
-                ),
-            ]);
-        } catch (err) {
-            return {
-                ok: false,
-                reason: err instanceof Error ? err.message : "dispatch failed",
-            };
-        }
-
-        if (id == null) return { ok: false, reason: "no download id" };
-        return this.awaitTerminal(id);
-    }
-
-    /**
-     * Resolve once download `id` reaches complete or interrupted. Also queries
-     * the current state so a download that finished before the listener
-     * attached isn't missed, and times out rather than hanging forever.
-     */
-    private awaitTerminal(
-        id: number,
-    ): Promise<{ ok: boolean; reason?: string }> {
-        if (!chrome.downloads?.onChanged) return Promise.resolve({ ok: true });
-
-        return new Promise((resolve) => {
-            const finish = (result: { ok: boolean; reason?: string }) => {
-                clearTimeout(timer);
-                chrome.downloads.onChanged.removeListener(onChanged);
-                resolve(result);
-            };
-
-            const onChanged = (delta: chrome.downloads.DownloadDelta) => {
-                if (delta.id !== id) return;
-                if (delta.error?.current) {
-                    finish({ ok: false, reason: delta.error.current });
-                } else if (delta.state?.current === "complete") {
-                    finish({ ok: true });
-                }
-            };
-
-            const timer = setTimeout(
-                () => finish({ ok: false, reason: "no completion signal" }),
-                DOWNLOAD_TERMINAL_TIMEOUT_MS,
-            );
-
-            chrome.downloads.onChanged.addListener(onChanged);
-
-            // Catch downloads that finished before the listener attached.
-            chrome.downloads.search({ id }).then((items) => {
-                const item = items?.[0];
-                if (item?.state === "complete") finish({ ok: true });
-                else if (item?.state === "interrupted") {
-                    finish({ ok: false, reason: item.error ?? "interrupted" });
-                }
-            });
-        });
     }
 }

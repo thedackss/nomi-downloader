@@ -25,14 +25,6 @@ export const DOWNLOAD_THROTTLE_MS = 500;
 export const ALBUM_FINALIZE_DELAY_MS = 1_000;
 export const BLOB_URL_REVOKE_DELAY_MS = 60_000;
 
-/**
- * How long to wait for chrome.downloads.download before assuming the platform
- * can't handle it. Firefox for Android stalls on blob URLs here, so we fall
- * back to opening the file in a tab.
- */
-export const DOWNLOAD_DISPATCH_TIMEOUT_MS = 10_000;
-/** How long to wait for a download to reach complete/interrupted before giving up. */
-export const DOWNLOAD_TERMINAL_TIMEOUT_MS = 8_000;
 /** Keep a fallback tab's blob URL alive long enough for the user to save it. */
 export const FALLBACK_REVOKE_DELAY_MS = 120_000;
 
