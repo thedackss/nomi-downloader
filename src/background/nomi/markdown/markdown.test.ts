@@ -52,7 +52,11 @@ const input: NomiJsonInput = {
     },
     mind: null,
     messages: [
-        { sent: "2026-06-01T12:00:00Z", text: "Hello <3", type: "User" } as never,
+        {
+            sent: "2026-06-01T12:00:00Z",
+            text: "Hello <3",
+            type: "User",
+        } as never,
         { sent: "2026-06-01T12:05:00Z", text: "Hi!", type: "Nomi" } as never,
     ],
 };
