@@ -80,6 +80,9 @@ export function useBackground() {
         maxMessages: Settings.chatDownload.maxMessages,
         includeSelfies: Settings.chatDownload.includeSelfies,
     };
+    const jsonOptions = {
+        rawData: Settings.jsonDownload.rawData,
+    };
 
     return {
         downloadStatus,
@@ -87,6 +90,7 @@ export function useBackground() {
             startDownload("DOWNLOAD_ALL", "Starting download...", {
                 ...albumOptions,
                 ...chatOptions,
+                ...jsonOptions,
             }),
         downloadAlbum: () =>
             startDownload(
@@ -108,6 +112,10 @@ export function useBackground() {
                 "Starting shared notes download...",
             ),
         downloadJSON: () =>
-            startDownload("DOWNLOAD_JSON", "Starting JSON download..."),
+            startDownload(
+                "DOWNLOAD_JSON",
+                "Starting JSON download...",
+                jsonOptions,
+            ),
     };
 }

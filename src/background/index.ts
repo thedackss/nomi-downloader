@@ -69,19 +69,6 @@ function downloadMindMap(nomiId: number): Promise<boolean> {
     return nomi.downloadMindMap({ nomiId });
 }
 
-/** Save a Nomi's raw info as a JSON file. */
-async function downloadNomiJson(nomiId: number): Promise<void> {
-    const data = await nomi.get({ nomiId });
-    const json = JSON.stringify(data, null, 2);
-    const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
-
-    await chrome.downloads.download({
-        url: dataUrl,
-        filename: `nomi-${nomiId}-${Date.now()}.json`,
-        saveAs: true,
-    });
-}
-
 function main() {
     Log("Extension initialized");
 
@@ -171,6 +158,7 @@ function main() {
                 break;
             }
             case "DOWNLOAD_JSON": {
+                const rawData = message.data?.rawData === true;
                 runDownload(
                     nomiId,
                     {
@@ -178,7 +166,7 @@ function main() {
                         done: "JSON downloaded!",
                         error: "Error downloading JSON",
                     },
-                    () => downloadNomiJson(nomiId),
+                    () => nomi.downloadJson({ nomiId }, rawData),
                 );
                 break;
             }
@@ -190,6 +178,7 @@ function main() {
                     imagesPerZip,
                     maxMessages,
                     includeSelfies,
+                    rawData: allRawData,
                 } = message.data;
                 runDownload(
                     nomiId,
@@ -228,7 +217,10 @@ function main() {
 
                         try {
                             onProgress("Downloading JSON...");
-                            await downloadNomiJson(nomiId);
+                            await nomi.downloadJson(
+                                { nomiId },
+                                allRawData === true,
+                            );
                         } catch (err) {
                             Log("JSON step failed", err);
                         }

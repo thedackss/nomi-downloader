@@ -26,7 +26,7 @@ Legend: [x] done · [~] partial · [ ] missing
 - [x] Mind map download as HTML _(new)_
 - [x] Download All _(new)_ — default split-button action; runs album → chat → mind → JSON in sequence
 - [x] Shared Notes as HTML _(new)_ — accordion export via offscreen render
-- [ ] JSON _(new)_ — only `/nomis/{id}` data; should include all Nomi info (decide JSON vs markdown)
+- [x] JSON _(new)_ — structured export (shared notes, image settings, mind map, chat) + "raw data" toggle for full API responses
 
 ## Group Download
 

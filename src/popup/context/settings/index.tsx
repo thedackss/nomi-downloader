@@ -17,6 +17,9 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             maxMessages: 0,
             includeSelfies: true,
         },
+        jsonDownload: {
+            rawData: false,
+        },
         layout: "auto",
         showStats: false,
         debug: false,

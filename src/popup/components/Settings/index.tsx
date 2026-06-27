@@ -364,6 +364,49 @@ export const Settings = () => {
                         </div>
                     </li>
                     <li>
+                        <h3>JSON</h3>
+                    </li>
+                    <li>
+                        <label htmlFor="set-raw-data">
+                            Enable raw data
+                            <Tooltip
+                                className={styles.warning}
+                                text="Include every field the Nomi API returns, not just the cleaned export.">
+                                <span className={styles.icon}>
+                                    <RiInformation2Line />
+                                </span>
+                            </Tooltip>
+                        </label>
+                        <div className={styles.row}>
+                            <label className={styles.switch}>
+                                <input
+                                    id="set-raw-data"
+                                    type="checkbox"
+                                    checked={Settings.jsonDownload.rawData}
+                                    onChange={(e) =>
+                                        updateSettings({
+                                            jsonDownload: {
+                                                ...Settings.jsonDownload,
+                                                rawData: e.target.checked,
+                                            },
+                                        })
+                                    }
+                                />
+                                <span className={styles.slider}></span>
+                            </label>
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.jsonDownload.rawData
+                                    ? "Full API data"
+                                    : "Cleaned export"}
+                            </p>
+                        </div>
+                    </li>
+                    <li>
                         <h3>Advanced</h3>
                     </li>
                     <li>

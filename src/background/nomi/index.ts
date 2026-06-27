@@ -10,6 +10,7 @@ import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
 import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
+import { buildNomiJson } from "./json/builder";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
 import {
@@ -136,17 +137,68 @@ export class Nomi {
     }
 
     /**
-     * Turn rendered HTML into a download URL. Prefers an offscreen Blob URL
+     * Build and save a Nomi's full data as a structured JSON file: shared
+     * notes, image settings, mind map and chat. With `rawData`, the untouched
+     * API responses are attached too. Saved via a Blob URL (can be large).
+     */
+    async downloadJson(
+        { nomiId }: NomiExistsProps,
+        rawData = false,
+    ): Promise<void> {
+        const [nomi, shared, anchors, mind] = await Promise.all([
+            this.api.get({ nomiId }),
+            this.api.getSharedNotes({ nomiId }),
+            this.api.getAnchorLooks({ nomiId }),
+            this.api.getMindInfo({ nomiId }),
+        ]);
+
+        let messages: Awaited<ReturnType<NomiApiClient["getMessages"]>> = [];
+        try {
+            messages = await this.api.getMessages({ nomiId });
+        } catch (err) {
+            Log("Failed to fetch messages for JSON export", err);
+        }
+
+        const json = buildNomiJson(
+            { nomiId, nomi, shared, anchors, mind, messages },
+            rawData,
+        );
+        const text = JSON.stringify(json, null, 2);
+
+        await this.offscreen.setupDocument();
+        const { url, isBlob } = await this.toDownloadUrl(
+            text,
+            "application/json",
+        );
+        const nameSafe = nomi.name.replace(/ /g, "-");
+        const stamp = new Date().toISOString().slice(0, 10);
+
+        await chrome.downloads.download({
+            url,
+            filename: `${nameSafe}_Data_${stamp}.json`,
+            saveAs: true,
+        });
+
+        if (isBlob) {
+            setTimeout(() => {
+                this.offscreen.call("revoke-blob-url", { url });
+            }, BLOB_URL_REVOKE_DELAY_MS);
+        }
+    }
+
+    /**
+     * Turn rendered content into a download URL. Prefers an offscreen Blob URL
      * (safe for large strings); falls back to a base64 data URI when offscreen
      * is unavailable (tests / Firefox page).
      */
     private async toDownloadUrl(
-        html: string,
+        content: string,
+        type = "text/html",
     ): Promise<{ url: string; isBlob: boolean }> {
         try {
             const res = await this.offscreen.call("create-blob-url", {
-                content: html,
-                type: "text/html",
+                content,
+                type,
             });
             if (res?.success && res.url) {
                 return { url: res.url, isBlob: true };
@@ -155,8 +207,8 @@ export class Nomi {
             // fall through to data URI
         }
 
-        const base64 = btoa(unescape(encodeURIComponent(html)));
-        return { url: `data:text/html;base64,${base64}`, isBlob: false };
+        const base64 = btoa(unescape(encodeURIComponent(content)));
+        return { url: `data:${type};base64,${base64}`, isBlob: false };
     }
 
     /** Fetch an image URL as a webp data URI; undefined if it can't be fetched. */

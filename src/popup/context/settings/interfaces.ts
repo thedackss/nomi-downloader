@@ -18,6 +18,10 @@ export interface Settings {
         /** Embed selfie images in the exported chat HTML. */
         includeSelfies: boolean;
     };
+    jsonDownload: {
+        /** Also include the full, unprocessed Nomi API responses. */
+        rawData: boolean;
+    };
     layout: "auto" | "mobile" | "desktop";
     /** Show a daily-usage stats panel under the header. */
     showStats: boolean;
