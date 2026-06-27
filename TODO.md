@@ -29,6 +29,7 @@ Legend: [x] done · [~] partial · [ ] missing
 - [x] JSON _(new)_ — structured export (shared notes, image settings, mind map, chat) + "raw data" toggle for full API responses
 - [x] Markdown _(new)_ — same data as JSON, rendered as readable Markdown (Nomi info, shared notes, image settings, mind map, chat log)
 - [x] Advanced Download mode _(new)_ — per-type toggles select which types appear on the button; off = one-click album + chat + shared notes
+- [x] Prompt files _(new)_ — save Art / edited-photo prompts alongside the image (sidecar .txt, PNG metadata, or both; off by default)
 
 **Single Nomi Download section complete.**
 
