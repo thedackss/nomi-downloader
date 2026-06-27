@@ -5,14 +5,6 @@
 
 const HOST_ID = "nomi-downloader-host";
 
-/** Coarse pointer ≈ touch device; that's where the in-page UI is worth showing. */
-function isTouchDevice(): boolean {
-    return (
-        window.matchMedia?.("(pointer: coarse)").matches ||
-        navigator.maxTouchPoints > 0
-    );
-}
-
 function injectBubble(): void {
     if (document.getElementById(HOST_ID)) return;
 
@@ -151,12 +143,11 @@ function injectBubble(): void {
     grabber.addEventListener("click", close);
 }
 
-if (isTouchDevice()) {
-    if (document.body) {
-        injectBubble();
-    } else {
-        document.addEventListener("DOMContentLoaded", injectBubble, {
-            once: true,
-        });
-    }
+// The in-page UI is meant for touch devices (Firefox Android, where the toolbar
+// popup opens as a separate view). Temporarily enabled on every platform so it
+// can be debugged on desktop with DevTools — re-add the touch gate afterward.
+if (document.body) {
+    injectBubble();
+} else {
+    document.addEventListener("DOMContentLoaded", injectBubble, { once: true });
 }
