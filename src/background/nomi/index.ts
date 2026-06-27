@@ -63,6 +63,12 @@ export class Nomi {
         return this.api.getMindInfo(props);
     }
 
+    /** Fetch an image URL as a data URI (cookies attached). Used by the in-page
+     * iframe, whose own image requests are cookie-partitioned and 401. */
+    fetchImage(url: string): Promise<string | undefined> {
+        return this.fetchImageDataUri(url);
+    }
+
     /**
      * Build and save a Nomi's mind map as a standalone HTML file. Returns false
      * when the Nomi has no mind map yet. Renders in the offscreen document so

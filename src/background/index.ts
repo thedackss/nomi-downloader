@@ -82,10 +82,12 @@ function downloadMindMap(nomiId: number): Promise<boolean> {
  */
 function handleApiRequest(data: {
     method: string;
-    args?: { nomiId?: number; groupId?: number };
+    args?: { nomiId?: number; groupId?: number; url?: string };
 }): Promise<unknown> {
     const { method, args } = data;
     switch (method) {
+        case "fetchImage":
+            return nomi.fetchImage(args?.url ?? "");
         case "getNomis":
             return nomi.getNomis();
         case "getGroups":

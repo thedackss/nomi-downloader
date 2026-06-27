@@ -3,7 +3,7 @@
 // in-page iframe (the mobile bubble); the iframe's direct requests are
 // cookie-partitioned and 401, but the background always has the session cookie.
 
-type ApiArgs = { nomiId?: number; groupId?: number };
+type ApiArgs = { nomiId?: number; groupId?: number; url?: string };
 
 interface ApiResponse<T> {
     ok: boolean;
