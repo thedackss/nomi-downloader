@@ -11,7 +11,9 @@
     width: 100%;
     height: 100%;
 
-    button {
+    // The gear toggle only — scope to a direct child so the tab buttons and
+    // other in-menu buttons aren't forced into the 2rem icon box.
+    > button {
         display: flex;
         flex-flow: column nowrap;
         justify-content: center;
@@ -110,6 +112,43 @@
 
         p {
             font-size: 0.9rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-top: 1rem;
+            padding: 4px;
+            background: rgb(from var(--text) r g b / 6%);
+            border-radius: 10px;
+
+            button {
+                flex: 1;
+                appearance: none;
+                border: 0;
+                background: transparent;
+                color: var(--text);
+                opacity: 0.55;
+                font-size: 0.9rem;
+                font-weight: 600;
+                font-family: inherit;
+                padding: 0.5rem;
+                border-radius: 8px;
+                cursor: pointer;
+                transition:
+                    background 0.15s ease,
+                    opacity 0.15s ease;
+
+                &:hover {
+                    opacity: 0.85;
+                }
+
+                &.activeTab {
+                    background: var(--primary);
+                    color: #fff;
+                    opacity: 1;
+                }
+            }
         }
 
         ul {
