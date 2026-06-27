@@ -1,5 +1,11 @@
+import { Log } from "../../utils/log";
 import type { ChatRenderPayload } from "./chat/types";
-import { OFFSCREEN_DOCUMENT_PATH } from "./constants";
+import {
+    BLOB_URL_REVOKE_DELAY_MS,
+    DOWNLOAD_DISPATCH_TIMEOUT_MS,
+    FALLBACK_REVOKE_DELAY_MS,
+    OFFSCREEN_DOCUMENT_PATH,
+} from "./constants";
 import type { MindMapRenderPayload } from "./mindmap/types";
 import type { SharedNotesRenderPayload } from "./sharednotes/types";
 
@@ -191,5 +197,64 @@ export class OffscreenClient {
             reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
+    }
+
+    /**
+     * Save a file via chrome.downloads, with a tab fallback. Firefox for Android
+     * stalls indefinitely on chrome.downloads.download for blob URLs, so the
+     * dispatch is raced against a timeout; on timeout/failure the URL is opened
+     * in a tab instead so the user can still save it. Blob URLs are revoked
+     * afterward (later when a fallback tab needs to keep using the URL).
+     */
+    async download(
+        url: string,
+        filename: string,
+        options: { isBlob?: boolean; saveAs?: boolean } = {},
+    ): Promise<void> {
+        const { isBlob = false, saveAs = false } = options;
+        let openedTab = false;
+
+        try {
+            await this.dispatchDownload(url, filename, saveAs);
+        } catch (err) {
+            Log(
+                "downloads.download unavailable or stalled; opening a tab",
+                err,
+            );
+            try {
+                await chrome.tabs.create({ url });
+                openedTab = true;
+            } catch (tabErr) {
+                Log("Failed to open the download in a tab", tabErr);
+            }
+        }
+
+        if (isBlob) {
+            const delay = openedTab
+                ? FALLBACK_REVOKE_DELAY_MS
+                : BLOB_URL_REVOKE_DELAY_MS;
+            setTimeout(() => {
+                this.call("revoke-blob-url", { url }).catch(() => {});
+            }, delay);
+        }
+    }
+
+    private dispatchDownload(
+        url: string,
+        filename: string,
+        saveAs: boolean,
+    ): Promise<unknown> {
+        if (typeof chrome === "undefined" || !chrome.downloads?.download) {
+            return Promise.reject(new Error("downloads API unavailable"));
+        }
+        return Promise.race([
+            chrome.downloads.download({ url, filename, saveAs }),
+            new Promise((_, reject) =>
+                setTimeout(
+                    () => reject(new Error("download timed out")),
+                    DOWNLOAD_DISPATCH_TIMEOUT_MS,
+                ),
+            ),
+        ]);
     }
 }

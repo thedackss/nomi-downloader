@@ -13,7 +13,6 @@ import type { ApiAnchorLooksResponse } from "../../nomi/types/api.nomis.id.ancho
 import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
-import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
 import { GroupChatDownloader } from "./groupChatDownloader";
 import { buildNomiJson, type NomiJsonInput } from "./json/builder";
 import { buildGroupJson } from "./json/groupBuilder";
@@ -72,18 +71,14 @@ export class Nomi {
         const nameSafe = nomi.name.replace(/ /g, "-");
         const stamp = new Date().toISOString().slice(0, 10);
 
-        await chrome.downloads.download({
+        await this.offscreen.download(
             url,
-            filename: `${nameSafe}_MindMap_${stamp}.html`,
-            saveAs: true,
-        });
-
-        if (isBlob) {
-            // Delay revoke so the download has time to start.
-            setTimeout(() => {
-                this.offscreen.call("revoke-blob-url", { url });
-            }, BLOB_URL_REVOKE_DELAY_MS);
-        }
+            `${nameSafe}_MindMap_${stamp}.html`,
+            {
+                isBlob,
+                saveAs: true,
+            },
+        );
 
         return true;
     }
@@ -128,18 +123,11 @@ export class Nomi {
         const nameSafe = nomi.name.replace(/ /g, "-");
         const stamp = new Date().toISOString().slice(0, 10);
 
-        await chrome.downloads.download({
+        await this.offscreen.download(
             url,
-            filename: `${nameSafe}_SharedNotes_${stamp}.html`,
-            saveAs: true,
-        });
-
-        if (isBlob) {
-            // Delay revoke so the download has time to start.
-            setTimeout(() => {
-                this.offscreen.call("revoke-blob-url", { url });
-            }, BLOB_URL_REVOKE_DELAY_MS);
-        }
+            `${nameSafe}_SharedNotes_${stamp}.html`,
+            { isBlob, saveAs: true },
+        );
 
         return true;
     }
@@ -204,17 +192,11 @@ export class Nomi {
         const nameSafe = nomiName.replace(/ /g, "-");
         const stamp = new Date().toISOString().slice(0, 10);
 
-        await chrome.downloads.download({
+        await this.offscreen.download(
             url,
-            filename: `${nameSafe}_Data_${stamp}.${extension}`,
-            saveAs: true,
-        });
-
-        if (isBlob) {
-            setTimeout(() => {
-                this.offscreen.call("revoke-blob-url", { url });
-            }, BLOB_URL_REVOKE_DELAY_MS);
-        }
+            `${nameSafe}_Data_${stamp}.${extension}`,
+            { isBlob, saveAs: true },
+        );
     }
 
     /**

@@ -216,19 +216,13 @@ export class AlbumDownloader {
             }
 
             for (const download of downloads) {
-                try {
-                    await chrome.downloads.download({
-                        url: download.url,
-                        filename: download.filename,
-                        saveAs: false,
-                    });
-                    // Small delay to avoid browser hiccups starting many downloads
-                    await new Promise((resolve) =>
-                        setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
-                    );
-                } catch (err) {
-                    Log("Download failed", err);
-                }
+                await this.offscreen.download(download.url, download.filename, {
+                    isBlob: true,
+                });
+                // Small delay to avoid browser hiccups starting many downloads
+                await new Promise((resolve) =>
+                    setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
+                );
             }
 
             await new Promise((resolve) =>

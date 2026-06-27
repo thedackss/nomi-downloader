@@ -12,7 +12,6 @@ import { Log } from "../../utils/log";
 import type { ChatItem } from "./chat/types";
 import { chunkBySize } from "./chunk";
 import {
-    BLOB_URL_REVOKE_DELAY_MS,
     CHAT_CHUNK_MAX_BYTES_TEXT,
     CHAT_CHUNK_MAX_BYTES_WITH_SELFIES,
     DOWNLOAD_THROTTLE_MS,
@@ -132,22 +131,11 @@ export class ChatDownloader {
                     fileName = `${nomiNameSafe}_Chat(${start}-${end})_${stringDate}_Part${j + 1}.html`;
                 }
 
-                await chrome.downloads.download({
-                    url,
-                    filename: fileName,
-                    saveAs: false,
-                });
+                await this.offscreen.download(url, fileName, { isBlob });
 
                 await new Promise((resolve) =>
                     setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
                 );
-
-                if (isBlob) {
-                    // Delay revoke so the download has time to start
-                    setTimeout(() => {
-                        this.offscreen.call("revoke-blob-url", { url });
-                    }, BLOB_URL_REVOKE_DELAY_MS);
-                }
 
                 currentMessageIndex += chunk.length;
             }
