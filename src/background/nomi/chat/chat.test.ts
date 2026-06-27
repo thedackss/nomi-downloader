@@ -98,5 +98,33 @@ describe("renderChatPayload", () => {
         expect(html).toContain("hi");
         expect(html).toContain('class="selfie"');
         expect(html).toContain("Image unavailable");
+        // No info card markup unless one is supplied (the CSS always defines
+        // the class, so check for the rendered element specifically).
+        expect(html).not.toContain('class="info-card"');
+    });
+
+    it("renders an info card at the top when info rows are given", () => {
+        const html = renderChatPayload({
+            name: "My Group",
+            info: [
+                { label: "Type", value: "group" },
+                { label: "Members", value: "Mya, Lexi" },
+            ],
+            items: [
+                {
+                    kind: "message",
+                    isNomi: true,
+                    text: "hi all",
+                    sent: "2026-02-19T14:00:00",
+                    name: "Mya",
+                },
+            ],
+        });
+
+        expect(html).toContain('class="info-card"');
+        expect(html).toContain("Members");
+        expect(html).toContain("Mya, Lexi");
+        // The info card precedes the first message.
+        expect(html.indexOf("info-card")).toBeLessThan(html.indexOf("hi all"));
     });
 });

@@ -150,7 +150,16 @@ export function useBackground() {
             startGroupDownload(
                 "DOWNLOAD_GROUP_CHAT",
                 "Starting group chat download...",
-                { name: group?.name, ...chatOptions },
+                {
+                    name: group?.name,
+                    info: group && {
+                        type: group.type,
+                        created: group.created,
+                        imageStyle: group.artSettings.imageStyle,
+                        members: group.nomis.map((n) => n.name),
+                    },
+                    ...chatOptions,
+                },
             ),
     };
 }

@@ -131,7 +131,7 @@ function main() {
                 break;
             }
             case "DOWNLOAD_GROUP_CHAT": {
-                const { groupId, name, maxMessages, includeSelfies } =
+                const { groupId, name, info, maxMessages, includeSelfies } =
                     message.data;
                 runDownload(
                     groupId,
@@ -144,6 +144,7 @@ function main() {
                         nomi.downloadGroupChat({
                             groupId,
                             name,
+                            info,
                             includeSelfies: includeSelfies ?? true,
                             maxMessages,
                             onProgress,

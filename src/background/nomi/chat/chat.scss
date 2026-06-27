@@ -90,6 +90,37 @@ body {
         margin: 0 auto;
         padding: 6rem 22px 72px;
 
+        // Group info card pinned at the top of the chat.
+        .info-card {
+            align-self: stretch;
+            display: flex;
+            flex-flow: column nowrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding: 16px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+
+            .info-row {
+                display: flex;
+                gap: 10px;
+                font-size: 0.9rem;
+            }
+
+            .info-label {
+                flex-shrink: 0;
+                min-width: 96px;
+                font-weight: 650;
+                color: var(--accent);
+            }
+
+            .info-value {
+                color: var(--text);
+                overflow-wrap: anywhere;
+            }
+        }
+
         .row {
             display: flex;
             flex-flow: column nowrap;

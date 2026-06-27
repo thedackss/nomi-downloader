@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import css from "./chat.scss?inline";
-import type { ChatRenderPayload } from "./types";
+import type { ChatInfoRow, ChatRenderPayload } from "./types";
 
 /*
  * The exported chat HTML, authored as a component so the design can be
@@ -76,6 +76,21 @@ export function ChatImageFailed() {
     );
 }
 
+/** Info card of labeled facts shown above the messages (group chats). */
+export function ChatInfo({ rows }: { rows: ChatInfoRow[] }) {
+    if (rows.length === 0) return null;
+    return (
+        <li className="info-card">
+            {rows.map((row) => (
+                <div className="info-row" key={row.label}>
+                    <span className="info-label">{row.label}</span>
+                    <span className="info-value">{row.value}</span>
+                </div>
+            ))}
+        </li>
+    );
+}
+
 interface ChatDocumentProps {
     /** Nomi name shown in the header and document title. */
     name: string;
@@ -122,21 +137,32 @@ export function renderChatDocument(props: ChatDocumentProps): string {
  * This is the entry point used by the offscreen document.
  */
 export function renderChatPayload(payload: ChatRenderPayload): string {
-    const children: ReactNode[] = payload.items.map((item, i) => {
+    const children: ReactNode[] = [];
+
+    if (payload.info?.length) {
+        children.push(
+            createElement(ChatInfo, { key: "info", rows: payload.info }),
+        );
+    }
+
+    for (let i = 0; i < payload.items.length; i++) {
+        const item = payload.items[i];
         if (item.kind === "message") {
-            return createElement(ChatMessage, {
-                key: i,
-                isNomi: item.isNomi,
-                text: item.text,
-                date: new Date(item.sent),
-                name: item.name,
-            });
+            children.push(
+                createElement(ChatMessage, {
+                    key: i,
+                    isNomi: item.isNomi,
+                    text: item.text,
+                    date: new Date(item.sent),
+                    name: item.name,
+                }),
+            );
+        } else if (item.kind === "selfie") {
+            children.push(createElement(ChatSelfie, { key: i, src: item.src }));
+        } else {
+            children.push(createElement(ChatImageFailed, { key: i }));
         }
-        if (item.kind === "selfie") {
-            return createElement(ChatSelfie, { key: i, src: item.src });
-        }
-        return createElement(ChatImageFailed, { key: i });
-    });
+    }
 
     return renderChatDocument({
         name: payload.name,

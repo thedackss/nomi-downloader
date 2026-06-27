@@ -14,10 +14,18 @@ export type ChatItem =
     | { kind: "selfie"; src: string }
     | { kind: "failed" };
 
+/** A labeled fact shown in the info card at the top of the chat (group chats). */
+export interface ChatInfoRow {
+    label: string;
+    value: string;
+}
+
 export interface ChatRenderPayload {
     /** Nomi name shown in the header. */
     name: string;
     /** Avatar as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
+    /** Optional facts rendered as a card above the messages (group chats). */
+    info?: ChatInfoRow[];
     items: ChatItem[];
 }

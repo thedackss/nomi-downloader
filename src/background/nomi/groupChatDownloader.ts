@@ -7,7 +7,7 @@ import type {
     GroupSelfieRequest,
 } from "../../nomi/types/api.groupChats.id.messages";
 import { Log } from "../../utils/log";
-import type { ChatItem } from "./chat/types";
+import type { ChatInfoRow, ChatItem } from "./chat/types";
 import { chunkBySize } from "./chunk";
 import {
     BLOB_URL_REVOKE_DELAY_MS,
@@ -34,11 +34,25 @@ export class GroupChatDownloader {
     async run({
         groupId,
         name,
+        info,
         includeSelfies,
         maxMessages = 0,
         onProgress,
     }: DownloadGroupChatProps) {
         const update = (message: string) => onProgress?.(message);
+
+        // Group facts shown as a card at the top of each exported file.
+        const infoRows: ChatInfoRow[] = info
+            ? [
+                  { label: "Type", value: info.type },
+                  {
+                      label: "Created",
+                      value: new Date(info.created).toLocaleDateString(),
+                  },
+                  { label: "Image style", value: info.imageStyle },
+                  { label: "Members", value: info.members.join(", ") },
+              ].filter((row) => row.value)
+            : [];
 
         try {
             Log(`Downloading chat for group ID: ${groupId}`);
@@ -113,6 +127,8 @@ export class GroupChatDownloader {
 
                 const chatHtml = await this.offscreen.renderChat({
                     name,
+                    // Show the info card on the first file only.
+                    info: j === 0 ? infoRows : undefined,
                     items,
                 });
 
