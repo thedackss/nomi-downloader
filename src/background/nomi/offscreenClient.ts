@@ -82,14 +82,28 @@ export class OffscreenClient {
                 return zipService.clearZip(data.id!);
             case "create-blob-url": {
                 const blob = new Blob([data.content!], { type: data.type });
+                // Firefox (no offscreen API) lands here, and it forbids
+                // downloading data: URLs — so hand back a blob: URL where the
+                // platform supports it, falling back to a data URI otherwise.
+                if (typeof URL !== "undefined" && URL.createObjectURL) {
+                    return { success: true, url: URL.createObjectURL(blob) };
+                }
                 const b64 = await this.blobToBase64(blob);
                 return {
                     success: true,
                     url: `data:${data.type};base64,${b64}`,
                 };
             }
-            case "revoke-blob-url":
+            case "revoke-blob-url": {
+                if (
+                    data.url &&
+                    typeof URL !== "undefined" &&
+                    URL.revokeObjectURL
+                ) {
+                    URL.revokeObjectURL(data.url);
+                }
                 return { success: true };
+            }
             default:
                 throw new Error(`Unknown offscreen type: ${type}`);
         }
