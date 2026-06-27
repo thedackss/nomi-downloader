@@ -7,6 +7,7 @@
         "dev": "vite",
         "dev:firefox": "BROWSER_TARGET=firefox vite",
         "build:firefox": "tsc -b && BROWSER_TARGET=firefox vite build",
+        "start:firefox-android": "npm run build:firefox && web-ext run -t firefox-android --source-dir dist",
         "build": "tsc -b && vite build",
         "lint": "biome lint ; npm run lint:scss",
         "lint:scss": "stylelint \"src/**/*.scss\"",
@@ -40,6 +41,7 @@
         "stylelint-config-standard-scss": "^17.0.0",
         "typescript": "~5.9.3",
         "vite": "^7.2.4",
-        "vitest": "^4.1.9"
+        "vitest": "^4.1.9",
+        "web-ext": "^10.4.0"
     }
 }

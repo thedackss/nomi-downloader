@@ -122,6 +122,30 @@ npm install
 
 > Temporary add-ons are removed when Firefox restarts, so re-load each session.
 
+### Firefox for Android
+
+Testing on a phone uses remote debugging over USB via `web-ext`:
+
+1. On the phone: install **Firefox** (Nightly recommended), enable **Developer
+   options → USB debugging**, and in Firefox enable **Settings → Remote debugging
+   via USB**.
+2. On the computer: install `adb` and confirm the device shows in `adb devices`.
+3. Run:
+
+   ```bash
+   npm run start:firefox-android
+   ```
+
+   This builds the Firefox target and launches it on the connected device
+   (`web-ext run -t firefox-android --source-dir dist`). If you have more than one
+   device, pass `--android-device <id>`; to target a specific build, append
+   `--firefox-apk org.mozilla.fenix` (Nightly) / `org.mozilla.firefox` (Release).
+
+The popup opens from the **⋮ menu → Extensions → Nomi Downloader**. The manifest
+declares `gecko_android`, so the published add-on can also be installed straight
+from [AMO](https://addons.mozilla.org/en-GB/firefox/addon/nomi-downloader/) on
+Firefox for Android.
+
 ## Architecture
 
 ```

@@ -50,6 +50,7 @@ type ExtensionManifest = Omit<
     permissions: string[];
     browser_specific_settings?: {
         gecko: { id: string; strict_min_version: string };
+        gecko_android?: Record<string, never>;
     };
 };
 
@@ -68,6 +69,8 @@ if (isFirefox) {
             id: "nomi-downloader@example.com",
             strict_min_version: "109.0",
         },
+        // Declare Android support so web-ext / AMO accept it on Firefox mobile.
+        gecko_android: {},
     };
     extensionManifest.permissions = extensionManifest.permissions.filter(
         (p: string) => p !== "offscreen",
