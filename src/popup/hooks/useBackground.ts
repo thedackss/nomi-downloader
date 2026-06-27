@@ -105,6 +105,17 @@ export function useBackground() {
         rawData: Settings.jsonDownload.rawData,
     };
 
+    // Shared payload identifying the selected group for any group export.
+    const groupPayload = group && {
+        name: group.name,
+        info: {
+            type: group.type,
+            created: group.created,
+            imageStyle: group.artSettings.imageStyle,
+            members: group.nomis.map((n) => n.name),
+        },
+    };
+
     return {
         downloadStatus,
         // Non-advanced one-click download: album + chat + shared notes.
@@ -150,16 +161,19 @@ export function useBackground() {
             startGroupDownload(
                 "DOWNLOAD_GROUP_CHAT",
                 "Starting group chat download...",
-                {
-                    name: group?.name,
-                    info: group && {
-                        type: group.type,
-                        created: group.created,
-                        imageStyle: group.artSettings.imageStyle,
-                        members: group.nomis.map((n) => n.name),
-                    },
-                    ...chatOptions,
-                },
+                { ...groupPayload, ...chatOptions },
+            ),
+        downloadGroupJson: () =>
+            startGroupDownload(
+                "DOWNLOAD_GROUP_JSON",
+                "Starting JSON download...",
+                { ...groupPayload, ...jsonOptions },
+            ),
+        downloadGroupMarkdown: () =>
+            startGroupDownload(
+                "DOWNLOAD_GROUP_MARKDOWN",
+                "Starting Markdown download...",
+                { ...groupPayload },
             ),
     };
 }

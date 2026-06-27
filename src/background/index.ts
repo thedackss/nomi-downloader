@@ -153,6 +153,38 @@ function main() {
                 );
                 break;
             }
+            case "DOWNLOAD_GROUP_JSON": {
+                const { groupId, name, info, rawData } = message.data;
+                runDownload(
+                    groupId,
+                    {
+                        start: "Starting JSON download...",
+                        done: "Group JSON downloaded!",
+                        error: "Error downloading group JSON",
+                    },
+                    () =>
+                        nomi.downloadGroupJson(
+                            { groupId, name, info },
+                            rawData,
+                        ),
+                    "group",
+                );
+                break;
+            }
+            case "DOWNLOAD_GROUP_MARKDOWN": {
+                const { groupId, name, info } = message.data;
+                runDownload(
+                    groupId,
+                    {
+                        start: "Starting Markdown download...",
+                        done: "Group Markdown downloaded!",
+                        error: "Error downloading group Markdown",
+                    },
+                    () => nomi.downloadGroupMarkdown({ groupId, name, info }),
+                    "group",
+                );
+                break;
+            }
             case "DOWNLOAD_MIND": {
                 runDownload(
                     nomiId,

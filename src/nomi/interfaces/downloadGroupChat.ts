@@ -6,12 +6,15 @@ export interface GroupChatInfo {
     members: string[];
 }
 
-export interface DownloadGroupChatProps {
+export interface GroupExportProps {
     groupId: number;
     /** Group name for the header and file name. */
     name: string;
-    /** Group facts shown in an info card at the top of the export. */
+    /** Group facts shown in the export. */
     info?: GroupChatInfo;
+}
+
+export interface DownloadGroupChatProps extends GroupExportProps {
     /** Embed selfie images in the exported HTML. */
     includeSelfies: boolean;
     /** Keep only the last N items; 0 / undefined = unlimited. */

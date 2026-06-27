@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from "react";
 import type { GroupChat } from "../../../nomi/types/api.groupChats";
 import { useBackground } from "../../hooks/useBackground";
+import { useSettings } from "../../hooks/useSettings";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
 
@@ -8,7 +10,41 @@ interface GroupInfoProps {
 }
 
 export const GroupInfo = ({ group }: GroupInfoProps) => {
-    const { downloadStatus, downloadGroupChat } = useBackground();
+    const {
+        downloadStatus,
+        downloadGroupChat,
+        downloadGroupJson,
+        downloadGroupMarkdown,
+    } = useBackground();
+    const { Settings } = useSettings();
+    const dl = Settings.download;
+
+    // In advanced mode the select offers only the enabled group types.
+    const downloadOptions = [
+        { name: "Chat", key: "chat", fn: downloadGroupChat },
+        { name: "JSON", key: "json", fn: downloadGroupJson },
+        { name: "Markdown", key: "markdown", fn: downloadGroupMarkdown },
+    ].filter((o) => dl[o.key as keyof typeof dl]);
+
+    // Track the selection by name, then resolve the option fresh each render so
+    // the click always uses the latest settings (avoids a stale closure).
+    const [selectedName, setSelectedName] = useState(downloadOptions[0]?.name);
+    const selected =
+        downloadOptions.find((o) => o.name === selectedName) ??
+        downloadOptions[0];
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const splitRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!dropdownOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (!splitRef.current?.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [dropdownOpen]);
 
     const isCurrentGroup =
         downloadStatus.type === "group" && downloadStatus.id === group.id;
@@ -56,15 +92,87 @@ export const GroupInfo = ({ group }: GroupInfoProps) => {
                         <p>{message}</p>
                     </h3>
                 </LoadingSpin>
-                <div className={styles.splitButton}>
-                    <button
-                        type="button"
-                        className={`${styles.splitMain} ${styles.solo}`}
-                        onClick={downloadGroupChat}
-                        disabled={downloadStatus.inProgress}>
-                        Download Chat
-                    </button>
-                </div>
+                {!dl.advanced ? (
+                    <div className={styles.splitButton}>
+                        <button
+                            type="button"
+                            className={`${styles.splitMain} ${styles.solo}`}
+                            onClick={downloadGroupChat}
+                            disabled={downloadStatus.inProgress}>
+                            Download Chat
+                        </button>
+                    </div>
+                ) : downloadOptions.length === 0 ? (
+                    <div className={styles.splitButton}>
+                        <button
+                            type="button"
+                            className={`${styles.splitMain} ${styles.solo}`}
+                            disabled>
+                            No downloads enabled
+                        </button>
+                    </div>
+                ) : downloadOptions.length === 1 ? (
+                    <div className={styles.splitButton}>
+                        <button
+                            type="button"
+                            className={`${styles.splitMain} ${styles.solo}`}
+                            onClick={selected?.fn}
+                            disabled={downloadStatus.inProgress}>
+                            Download {selected?.name}
+                        </button>
+                    </div>
+                ) : (
+                    <div className={styles.splitButton} ref={splitRef}>
+                        <button
+                            type="button"
+                            className={styles.splitMain}
+                            onClick={selected?.fn}
+                            disabled={downloadStatus.inProgress}>
+                            Download {selected?.name}
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.splitArrow}
+                            onClick={() => setDropdownOpen((o) => !o)}
+                            disabled={downloadStatus.inProgress}
+                            aria-label="Choose download type">
+                            <svg
+                                aria-hidden="true"
+                                viewBox="0 0 24 24"
+                                width="14"
+                                height="14"
+                                style={{
+                                    transform: dropdownOpen
+                                        ? "rotate(180deg)"
+                                        : undefined,
+                                    transition: "transform 0.2s ease",
+                                }}>
+                                <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                            </svg>
+                        </button>
+                        {dropdownOpen && (
+                            <div className={styles.splitDropdown}>
+                                {downloadOptions.map((option) => (
+                                    <button
+                                        type="button"
+                                        key={option.name}
+                                        className={
+                                            selected?.name === option.name
+                                                ? styles.active
+                                                : undefined
+                                        }
+                                        onClick={() => {
+                                            setSelectedName(option.name);
+                                            setDropdownOpen(false);
+                                        }}
+                                        disabled={downloadStatus.inProgress}>
+                                        {option.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </>
     );

@@ -2,7 +2,10 @@ import { NomiApiClient } from "../../nomi/api";
 import { api } from "../../nomi/http";
 import type { DownloadAlbumProps } from "../../nomi/interfaces/downloadAlbum";
 import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
-import type { DownloadGroupChatProps } from "../../nomi/interfaces/downloadGroupChat";
+import type {
+    DownloadGroupChatProps,
+    GroupExportProps,
+} from "../../nomi/interfaces/downloadGroupChat";
 import type { NomiExistsProps } from "../../nomi/interfaces/exists";
 import { getNomiImageUrl } from "../../nomi/media";
 import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
@@ -13,7 +16,9 @@ import { ChatDownloader } from "./chatDownloader";
 import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
 import { GroupChatDownloader } from "./groupChatDownloader";
 import { buildNomiJson, type NomiJsonInput } from "./json/builder";
+import { buildGroupJson } from "./json/groupBuilder";
 import { buildNomiMarkdown } from "./markdown/builder";
+import { buildGroupMarkdown } from "./markdown/groupBuilder";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
 import {
@@ -286,5 +291,31 @@ export class Nomi {
 
     downloadGroupChat(props: DownloadGroupChatProps) {
         return new GroupChatDownloader(this.api, this.offscreen).run(props);
+    }
+
+    /** Save a group's data (facts + chat log) as structured JSON. */
+    async downloadGroupJson(
+        { groupId, name, info }: GroupExportProps,
+        rawData = false,
+    ): Promise<void> {
+        const messages = await this.api.getGroupMessages({ groupId });
+        const json = buildGroupJson({ groupId, name, info, messages }, rawData);
+        await this.saveExport(
+            name,
+            JSON.stringify(json, null, 2),
+            "application/json",
+            "json",
+        );
+    }
+
+    /** Save a group's data (facts + chat log) as a Markdown document. */
+    async downloadGroupMarkdown({
+        groupId,
+        name,
+        info,
+    }: GroupExportProps): Promise<void> {
+        const messages = await this.api.getGroupMessages({ groupId });
+        const markdown = buildGroupMarkdown({ groupId, name, info, messages });
+        await this.saveExport(name, markdown, "text/markdown", "md");
     }
 }

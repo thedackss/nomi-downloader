@@ -36,7 +36,10 @@ Legend: [x] done · [~] partial · [ ] missing
 ## Group Download
 
 - [x] Chat download as HTML (with/without images) — paginates `/group-chats/:id/messages`, renders via the shared chat document with per-speaker name labels
-- [ ] Chat info download _(new)_
+- [x] Chat info _(new)_ — group facts (type, created, image style, members) shown as a card atop the chat HTML, and as JSON/Markdown exports
+- [x] JSON / Markdown _(new)_ — group facts + chat log; offered via the advanced-mode select button (alongside Chat)
+
+**Group Download section complete.**
 
 ## New features — user requests (after parity with `main`)
 
