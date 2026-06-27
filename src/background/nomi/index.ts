@@ -39,34 +39,8 @@ export class Nomi {
         return this.api.get(props);
     }
 
-    getNomis() {
-        return this.api.getNomis();
-    }
-
-    getGroups() {
-        return this.api.getGroups();
-    }
-
-    getGroup(props: { groupId: number }) {
-        return this.api.getGroup(props);
-    }
-
-    getUserInfo() {
-        return this.api.getUserInfo();
-    }
-
-    getDailyUsage() {
-        return this.api.getDailyUsage();
-    }
-
     getMindInfo(props: NomiExistsProps) {
         return this.api.getMindInfo(props);
-    }
-
-    /** Fetch an image URL as a data URI (cookies attached). Used by the in-page
-     * iframe, whose own image requests are cookie-partitioned and 401. */
-    fetchImage(url: string): Promise<string | undefined> {
-        return this.fetchImageDataUri(url);
     }
 
     /**

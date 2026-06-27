@@ -1,7 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { getNomiImageUrl } from "../../../nomi/media";
-import { useAuthedImages } from "../../hooks/useAuthedImage";
 import { useNomi } from "../../hooks/useNomi";
 import { useSettings } from "../../hooks/useSettings";
 import { LoadingSpin } from "../LoadingSpin";
@@ -19,17 +18,15 @@ export const Info = () => {
     const Nomi = Nomis.selected.nomi;
     const Group = Nomis.selected.group;
 
-    const rawBgImages: string[] = [];
+    const bgImages: string[] = [];
 
     if (isMobile) {
         if (Nomi) {
-            rawBgImages.push(getNomiImageUrl(Nomi));
+            bgImages.push(getNomiImageUrl(Nomi));
         } else if (Group) {
-            rawBgImages.push(...Group.nomis.slice(0, 4).map(getNomiImageUrl));
+            bgImages.push(...Group.nomis.slice(0, 4).map(getNomiImageUrl));
         }
     }
-
-    const bgImages = useAuthedImages(rawBgImages);
 
     let bgStyle: React.CSSProperties | undefined;
     if (bgImages.length > 0) {

@@ -3,8 +3,6 @@ import { NomiError } from "./errors";
 import { api } from "./http";
 import type { NomiExistsProps } from "./interfaces/exists";
 import type { GetMediasProps } from "./interfaces/getMedias";
-import type { ApiGroupChatsResponse } from "./types/api.groupChats";
-import type { ApiGroupChatsIdResponse } from "./types/api.groupChats.id";
 import type {
     ApiGroupMessagesResponse,
     GroupMessage,
@@ -17,7 +15,6 @@ import type {
     ApiMindMapsTermsResponse,
     MemoryTermItem,
 } from "./types/api.mindMaps.nomis.id.memoryTerms";
-import type { ApiNomisResponse } from "./types/api.nomis";
 import type { ApiNomisIdResponse } from "./types/api.nomis.id";
 import type { ApiAnchorLooksResponse } from "./types/api.nomis.id.anchorLooks";
 import type {
@@ -59,26 +56,6 @@ export class NomiApiClient {
                 message: `Failed to get Nomi with ID ${nomiId}`,
             });
         }
-    }
-
-    public async getNomis() {
-        Log("Getting Nomis list");
-        const { data } = await api.get<ApiNomisResponse>("/nomis");
-        return data;
-    }
-
-    public async getGroups() {
-        Log("Getting group chats list");
-        const { data } = await api.get<ApiGroupChatsResponse>("/group-chats");
-        return data;
-    }
-
-    public async getGroup({ groupId }: { groupId: number }) {
-        Log(`Getting group chat ${groupId}`);
-        const { data } = await api.get<ApiGroupChatsIdResponse>(
-            `/group-chats/${groupId}`,
-        );
-        return data;
     }
 
     public async getSharedNotes({ nomiId }: NomiExistsProps) {

@@ -74,39 +74,6 @@ function downloadMindMap(nomiId: number): Promise<boolean> {
     return nomi.downloadMindMap({ nomiId });
 }
 
-/**
- * Read-only nomi.ai data, proxied for the popup. The popup runs the same code
- * in the toolbar and in an in-page iframe; the iframe's requests are
- * cookie-partitioned and 401, so all reads go through the background (the main
- * extension context with the session cookie).
- */
-function handleApiRequest(data: {
-    method: string;
-    args?: { nomiId?: number; groupId?: number; url?: string };
-}): Promise<unknown> {
-    const { method, args } = data;
-    switch (method) {
-        case "fetchImage":
-            return nomi.fetchImage(args?.url ?? "");
-        case "getNomis":
-            return nomi.getNomis();
-        case "getGroups":
-            return nomi.getGroups();
-        case "getGroup":
-            return nomi.getGroup({ groupId: args?.groupId ?? -1 });
-        case "getNomi":
-            return nomi.get({ nomiId: args?.nomiId ?? -1 });
-        case "getMindInfo":
-            return nomi.getMindInfo({ nomiId: args?.nomiId ?? -1 });
-        case "getUserInfo":
-            return nomi.getUserInfo();
-        case "getDailyUsage":
-            return nomi.getDailyUsage();
-        default:
-            return Promise.reject(new Error(`Unknown API method: ${method}`));
-    }
-}
-
 function main() {
     Log("Extension initialized");
 
@@ -114,22 +81,6 @@ function main() {
         if (message.type === "GET_DOWNLOAD_STATUS") {
             sendResponse(downloadStatus);
             return;
-        }
-
-        if (message.type === "NOMI_API") {
-            setDebugLogging(message.data?.debug ?? false);
-            handleApiRequest(message.data)
-                .then((result) => sendResponse({ ok: true, result }))
-                .catch((error) =>
-                    sendResponse({
-                        ok: false,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    }),
-                );
-            return true; // keep the channel open for the async response
         }
 
         const { nomiId } = message.data;

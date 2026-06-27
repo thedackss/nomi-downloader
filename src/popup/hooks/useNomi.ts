@@ -1,4 +1,5 @@
 import { useCallback, useContext } from "react";
+import { api } from "../../nomi/http";
 import type {
     ApiGroupChatsResponse,
     GroupChat,
@@ -7,7 +8,6 @@ import type { ApiGroupChatsIdResponse } from "../../nomi/types/api.groupChats.id
 import type { ApiNomisResponse, Nomi } from "../../nomi/types/api.nomis";
 import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
 import { Log } from "../../utils/log";
-import { nomiApi } from "../api";
 import { NomisContext } from "../context/nomis";
 import type { Nomis } from "../context/nomis/interfaces";
 import { useTab } from "./useTab";
@@ -37,7 +37,7 @@ export const useNomi = () => {
 
     const fetchNomis = useCallback(async () => {
         try {
-            const data = await nomiApi<ApiNomisResponse>("getNomis");
+            const { data } = await api.get<ApiNomisResponse>("/nomis");
 
             const list = data.nomis as Nomi[];
 
@@ -62,9 +62,9 @@ export const useNomi = () => {
 
     const fetchNomi = useCallback(async (nomiId: number) => {
         try {
-            const data = await nomiApi<ApiNomisIdResponse>("getNomi", {
-                nomiId,
-            });
+            const { data } = await api.get<ApiNomisIdResponse>(
+                `/nomis/${nomiId}`,
+            );
 
             return data;
         } catch (error) {
@@ -79,7 +79,8 @@ export const useNomi = () => {
 
     const fetchGroups = useCallback(async () => {
         try {
-            const data = await nomiApi<ApiGroupChatsResponse>("getGroups");
+            const { data } =
+                await api.get<ApiGroupChatsResponse>("/group-chats");
 
             const list = data.groupChats;
 
@@ -104,9 +105,9 @@ export const useNomi = () => {
 
     const fetchGroup = useCallback(async (groupId: number) => {
         try {
-            const data = await nomiApi<ApiGroupChatsIdResponse>("getGroup", {
-                groupId,
-            });
+            const { data } = await api.get<ApiGroupChatsIdResponse>(
+                `/group-chats/${groupId}`,
+            );
 
             return data;
         } catch (error) {
