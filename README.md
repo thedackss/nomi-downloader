@@ -1,22 +1,82 @@
 # Nomi Downloader
 
-A browser extension (Chrome & Firefox, Manifest V3) for exporting your content from
-[nomi.ai](https://beta.nomi.ai). Built with React + TypeScript + Vite, using
-[`@crxjs/vite-plugin`](https://crxjs.dev/) for extension bundling and HMR.
+Export and archive everything you do with your [nomi.ai](https://beta.nomi.ai)
+companions — albums, chats, memories and more — straight from a browser popup.
+
+A cross-browser extension (Chrome & Firefox, Manifest V3) built with
+React + TypeScript + Vite, using [`@crxjs/vite-plugin`](https://crxjs.dev/) for
+bundling and HMR.
+
+**Get it from the stores:**
+
+- 🦊 [Firefox Add-ons](https://addons.mozilla.org/en-GB/firefox/addon/nomi-downloader/)
+- 🟦 [Chrome Web Store](https://chromewebstore.google.com/detail/dglkpknkpjcfdbbmgidognlnanlocfem)
+
+> Uses your **existing browser session** with nomi.ai (via `host_permissions`) —
+> there's no separate login. Just be signed in to nomi.ai in the same browser.
+
+## Store description
+
+> Nomi Downloader is a powerful **Firefox** extension designed to help you easily
+> manage and save all your interactions with your favourite Nomi. Whether you want
+> to keep a complete archive of your chats or download an entire album of your
+> Nomi's media, Nomi Saver has you covered. With just a few clicks, you can download
+> entire albums or entire chat histories, preserving your memories with your Nomi
+> for offline access.
+
+The Chrome listing is identical, with "Firefox" replaced by "Chrome".
 
 ## Features
 
-Open the popup on a `beta.nomi.ai` tab, pick a Nomi or group, and export:
+Open the popup on a `beta.nomi.ai` tab, pick a Nomi or a group, and export. Every
+export is a self-contained file (or `.zip`) that works fully offline.
 
-- **Album** — all of a Nomi's media, packed into one or more `.zip` files (split by size for
-  large albums).
-- **Chat** — the full conversation as a standalone `.html` file (optionally with selfies
-  inlined).
-- **Mind map** — the Nomi's memory graph and terms as an `.html` file.
-- **JSON** — the raw Nomi data as a `.json` file.
+### Single Nomi
 
-> The extension uses your **existing browser session** with nomi.ai (via `host_permissions`);
-> there is no separate login. You must be signed in to nomi.ai in the same browser.
+- **Album** — every selfie, art image, edited photo and video, packed into one or
+  more `.zip` files. Automatically split by size for large albums, optionally
+  organized into per-type folders, in HD (`.png`) or SD (`.webp`).
+- **Prompt files** — optionally save the generation prompt for Art and edited
+  photos alongside each image, as a sidecar `.txt`, embedded in the image metadata
+  (PNG), or both.
+- **Chat** — the full conversation as a standalone, styled `.html` file, with
+  selfies inlined or text-only.
+- **Mind Map** — the Nomi's memory graph and terms as an interactive `.html` file
+  (force-directed graph + a browsable table of entries).
+- **Shared Notes** — backstory, roleplay, appearance and other shared notes,
+  plus image/anchor settings, as an `.html` file.
+- **JSON** — all of the above as structured data in one `.json` file, ideal for
+  feeding to another tool or AI. An optional **raw data** toggle attaches the
+  untouched API responses too.
+- **Markdown** — the same structured data as a readable `.md` document.
+- **Download All / one-click** — grab album + chat + shared notes in a single
+  click, or (in advanced mode) pick exactly which type the button downloads.
+
+### Group chats
+
+- **Chat** — the group conversation as a standalone `.html` file, with each
+  speaker's messages clearly labeled, selfies inlined or text-only.
+- **Group info** — the group's facts (type, created date, image style, members)
+  shown as a card at the top of the chat export.
+- **JSON / Markdown** — the group's facts and full chat log as structured data.
+
+### Configuration
+
+A tabbed settings panel (Interface · Downloads · Advanced):
+
+- **Image quality** — HD (`.png`) or SD (`.webp`).
+- **Images per zip** — cap how many images each `.zip` holds (0 = auto, split by
+  size only).
+- **Organize into folders** — sort album media into per-type subfolders.
+- **Concurrent downloads** — how many media items to fetch in parallel.
+- **Max messages** — export only the most recent N chat messages (0 = all).
+- **Include selfies in chat** — embed images in the chat HTML, or keep it text-only.
+- **Prompt files** — off / sidecar `.txt` / image metadata / both.
+- **Raw data** — include the untouched API responses in JSON exports.
+- **Advanced download mode** — per-type toggles that turn the download button into
+  a selector, so you choose precisely which export each click produces.
+- **Interface** — layout (auto/mobile/desktop), Nomi icon shape & size, a daily
+  usage stats panel, and a debug logging toggle.
 
 ## Requirements
 
@@ -76,32 +136,38 @@ src/
 ├── popup/            React UI shown in the toolbar popup
 │   ├── components/   List, Info, Settings, Header, LoadingSpin
 │   ├── context/      nomis + settings React contexts
-│   └── hooks/        useNomi, useSettings, useTab
+│   └── hooks/        useNomi, useSettings, useBackground, useTab
 ├── background/       MV3 service worker
 │   ├── index.ts      message router; maps popup actions → download workflows
 │   └── nomi/         chrome.*-specific orchestration:
 │       ├── index.ts            Nomi facade (composes the pieces below)
-│       ├── offscreenClient.ts  zip/blob bridge to the offscreen document
-│       ├── albumDownloader.ts  album workflow
-│       ├── chatDownloader.ts   chat workflow
-│       ├── chunk.ts            chunkBySize() shared by both downloaders
+│       ├── offscreenClient.ts  zip/blob/render bridge to the offscreen document
+│       ├── albumDownloader.ts  album workflow (+ prompt sidecars/metadata)
+│       ├── chatDownloader.ts   single-Nomi chat workflow
+│       ├── groupChatDownloader.ts  group chat workflow
+│       ├── metadata.ts         PNG prompt embedding + base64 helpers
+│       ├── chat/ mindmap/ sharednotes/  JSX → standalone HTML documents
+│       ├── json/ markdown/     structured data builders (Nomi + group)
+│       ├── chunk.ts            chunkBySize() shared by the downloaders
 │       └── constants.ts        chunk sizes, timeouts, pacing
-├── offscreen/        Offscreen document (runs JSZip / Blob APIs MV3 can't)
+├── offscreen/        Offscreen document (runs JSZip / Blob / react-dom/server)
 ├── content/          Content script injected on nomi.ai
-└── utils/            logging, zip, deepMerge, mind-map HTML
+└── utils/            logging, zip, deepMerge
 ```
 
 Dependency direction: both `popup/` and `background/` depend on the shared
 `src/nomi/` layer; nothing depends on `background/` except itself.
 
 Flow: the **popup** sends a message to the **background** worker, which drives a
-**downloader** (data fetched via `NomiApiClient`, zipped/encoded via the **offscreen**
-document) and reports progress back to the popup, finishing with `chrome.downloads`.
+**downloader** (data fetched via `NomiApiClient`, zipped/encoded and HTML rendered via
+the **offscreen** document) and reports progress back to the popup, finishing with
+`chrome.downloads`.
 
 ## Testing
 
-- **`npm test`** — Vitest unit tests for the pure helpers (`getNomiMedia`, `deepMerge`,
-  `chunkBySize`). No browser needed.
+- **`npm test`** — Vitest unit tests for the pure helpers and builders (`getNomiMedia`,
+  `deepMerge`, `chunkBySize`, the JSON/Markdown builders, prompt metadata, HTML render).
+  No browser needed.
 - **`npm run test:e2e`** — builds the extension, then loads it in a real (headful) Chromium
   via Playwright and asserts the popup mounts, renders, and opens settings without errors.
   Browser extensions can't load in headless Chromium, so the script wraps Playwright in
