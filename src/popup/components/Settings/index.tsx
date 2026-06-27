@@ -20,8 +20,8 @@ export const Settings = () => {
         { id: "advanced", label: "Advanced" },
     ];
 
-    // A download-type section header: title + an enable switch (grayed while
-    // advanced mode is off, since the simple button ignores per-type choices).
+    // A per-type "Enable X download" toggle, grayed while advanced mode is off
+    // (the simple button ignores per-type choices). Lives in the Advanced tab.
     type DownloadType =
         | "album"
         | "chat"
@@ -29,25 +29,25 @@ export const Settings = () => {
         | "sharedNotes"
         | "json"
         | "markdown";
-    const typeHeader = (key: DownloadType, label: string) => (
-        <li className={styles.sectionHead}>
-            <h3>{label}</h3>
-            <label
-                className={styles.switch}
-                style={{ opacity: dl.advanced ? 1 : 0.4 }}>
-                <input
-                    type="checkbox"
-                    aria-label={`Enable ${label} download`}
-                    disabled={!dl.advanced}
-                    checked={dl[key]}
-                    onChange={(e) =>
-                        updateSettings({
-                            download: { ...dl, [key]: e.target.checked },
-                        })
-                    }
-                />
-                <span className={styles.slider}></span>
-            </label>
+    const enableToggle = (key: DownloadType, label: string) => (
+        <li style={{ opacity: dl.advanced ? 1 : 0.4 }}>
+            <label htmlFor={`set-dl-${key}`}>{label}</label>
+            <div className={styles.row}>
+                <label className={styles.switch}>
+                    <input
+                        id={`set-dl-${key}`}
+                        type="checkbox"
+                        disabled={!dl.advanced}
+                        checked={dl[key]}
+                        onChange={(e) =>
+                            updateSettings({
+                                download: { ...dl, [key]: e.target.checked },
+                            })
+                        }
+                    />
+                    <span className={styles.slider}></span>
+                </label>
+            </div>
         </li>
     );
 
@@ -183,40 +183,8 @@ export const Settings = () => {
                     {tab === "downloads" && (
                         <>
                             <li>
-                                <label htmlFor="set-advanced-download">
-                                    Advanced Download
-                                </label>
-                                <div className={styles.row}>
-                                    <label className={styles.switch}>
-                                        <input
-                                            id="set-advanced-download"
-                                            type="checkbox"
-                                            checked={dl.advanced}
-                                            onChange={(e) =>
-                                                updateSettings({
-                                                    download: {
-                                                        ...dl,
-                                                        advanced:
-                                                            e.target.checked,
-                                                    },
-                                                })
-                                            }
-                                        />
-                                        <span className={styles.slider}></span>
-                                    </label>
-                                    <p
-                                        style={{
-                                            margin: 0,
-                                            opacity: 0.7,
-                                            fontSize: "0.8rem",
-                                        }}>
-                                        {dl.advanced
-                                            ? "Pick which types appear on the button"
-                                            : "One button: album + chat + shared notes"}
-                                    </p>
-                                </div>
+                                <h3>Album</h3>
                             </li>
-                            {typeHeader("album", "Album")}
                             <li>
                                 <label htmlFor="set-quantity">
                                     <span>Concurrent Downloads</span>
@@ -388,7 +356,9 @@ export const Settings = () => {
                                     </p>
                                 </div>
                             </li>
-                            {typeHeader("chat", "Chat")}
+                            <li>
+                                <h3>Chat</h3>
+                            </li>
                             <li>
                                 <label htmlFor="set-max-messages">
                                     Max messages
@@ -473,9 +443,9 @@ export const Settings = () => {
                                     </p>
                                 </div>
                             </li>
-                            {typeHeader("mindMap", "Mind Map")}
-                            {typeHeader("sharedNotes", "Shared Notes")}
-                            {typeHeader("json", "JSON")}
+                            <li>
+                                <h3>JSON</h3>
+                            </li>
                             <li>
                                 <label htmlFor="set-raw-data">
                                     Enable raw data
@@ -519,11 +489,56 @@ export const Settings = () => {
                                     </p>
                                 </div>
                             </li>
-                            {typeHeader("markdown", "Markdown")}
                         </>
                     )}
                     {tab === "advanced" && (
                         <>
+                            <li>
+                                <h3>Downloads</h3>
+                            </li>
+                            <li>
+                                <label htmlFor="set-advanced-download">
+                                    Advanced Download
+                                </label>
+                                <div className={styles.row}>
+                                    <label className={styles.switch}>
+                                        <input
+                                            id="set-advanced-download"
+                                            type="checkbox"
+                                            checked={dl.advanced}
+                                            onChange={(e) =>
+                                                updateSettings({
+                                                    download: {
+                                                        ...dl,
+                                                        advanced:
+                                                            e.target.checked,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                        <span className={styles.slider}></span>
+                                    </label>
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {dl.advanced
+                                            ? "Pick which types appear on the button"
+                                            : "One button: album + chat + shared notes"}
+                                    </p>
+                                </div>
+                            </li>
+                            {enableToggle("album", "Album")}
+                            {enableToggle("chat", "Chat")}
+                            {enableToggle("mindMap", "Mind Map")}
+                            {enableToggle("sharedNotes", "Shared Notes")}
+                            {enableToggle("json", "JSON")}
+                            {enableToggle("markdown", "Markdown")}
+                            <li>
+                                <h3>Other</h3>
+                            </li>
                             <li>
                                 <label htmlFor="set-debug">
                                     Debug mode

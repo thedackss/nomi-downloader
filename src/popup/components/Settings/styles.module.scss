@@ -179,14 +179,6 @@
                 position: relative;
                 font-size: 1rem;
 
-                // Download-type header: title left, enable switch right.
-                &.sectionHead {
-                    flex-flow: row nowrap;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-top: 0.75rem;
-                }
-
                 label {
                     height: 1.25rem;
                     font-size: 1rem;
