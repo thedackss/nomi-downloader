@@ -88,6 +88,7 @@ function main() {
                     folderization,
                     quality,
                     imagesPerZip,
+                    prompts,
                 } = message.data;
                 runDownload(
                     nomiId,
@@ -103,6 +104,7 @@ function main() {
                             folderization,
                             quality,
                             imagesPerZip,
+                            prompts,
                             onProgress,
                         }),
                 );
@@ -188,6 +190,7 @@ function main() {
                     folderization,
                     quality,
                     imagesPerZip,
+                    prompts,
                     maxMessages,
                     includeSelfies,
                 } = message.data;
@@ -206,6 +209,7 @@ function main() {
                             folderization,
                             quality,
                             imagesPerZip,
+                            prompts,
                             onProgress,
                         });
 
@@ -233,6 +237,7 @@ function main() {
                     folderization,
                     quality,
                     imagesPerZip,
+                    prompts,
                     maxMessages,
                     includeSelfies,
                     rawData: allRawData,
@@ -254,6 +259,7 @@ function main() {
                             folderization,
                             quality,
                             imagesPerZip,
+                            prompts,
                             onProgress,
                         });
 

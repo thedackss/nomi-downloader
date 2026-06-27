@@ -16,6 +16,7 @@ import {
     SD_IMAGE_BYTES,
     VIDEO_BYTES,
 } from "./constants";
+import { bytesToBase64, embedPrompt, textToBase64 } from "./metadata";
 import type { OffscreenClient } from "./offscreenClient";
 
 type MediaType = "Photo" | "Video" | "Art" | "PhotoEdit";
@@ -34,6 +35,7 @@ export class AlbumDownloader {
         folderization = false,
         downloadQuantity = DEFAULT_DOWNLOAD_QUANTITY,
         imagesPerZip = 0,
+        prompts = "off",
     }: DownloadAlbumProps) {
         const update = (message: string) => onProgress?.(message);
 
@@ -114,13 +116,55 @@ export class AlbumDownloader {
                             timeout: MEDIA_DOWNLOAD_TIMEOUT_MS,
                         });
 
-                        const base64 = await this.offscreen.blobToBase64(data);
+                        const promptText =
+                            prompts === "off"
+                                ? null
+                                : this.extractPrompt(media, type);
+
+                        const wantEmbed =
+                            !!promptText &&
+                            (prompts === "embed" || prompts === "both");
+
+                        let base64: string | undefined;
+                        let embedded = false;
+
+                        if (wantEmbed) {
+                            const fileExt = path.split(".").pop() ?? "";
+                            const raw = new Uint8Array(
+                                await data.arrayBuffer(),
+                            );
+                            const out = embedPrompt(raw, fileExt, promptText);
+                            if (out) {
+                                base64 = bytesToBase64(out);
+                                embedded = true;
+                            }
+                        }
+
+                        if (base64 === undefined) {
+                            base64 = await this.offscreen.blobToBase64(data);
+                        }
 
                         await this.offscreen.call("add-file", {
                             id: chunkId,
                             path,
                             content: base64,
                         });
+
+                        // Write a sidecar when asked for one, or as the fallback
+                        // when embedding wasn't possible for this format.
+                        const wantSidecar =
+                            !!promptText &&
+                            (prompts === "sidecar" ||
+                                prompts === "both" ||
+                                (wantEmbed && !embedded));
+
+                        if (promptText && wantSidecar) {
+                            await this.offscreen.call("add-file", {
+                                id: chunkId,
+                                path: path.replace(/\.[^.]+$/, ".txt"),
+                                content: textToBase64(promptText),
+                            });
+                        }
                     } catch (error) {
                         update(
                             `${chunkMessage}Error downloading media ${globalIndex + 1}/${medias.length}, skipping`,
@@ -208,6 +252,24 @@ export class AlbumDownloader {
         if (media.mediaType === "ImageEditRequest") return imageSize;
         if (media.mediaType === "VideoRequest") return VIDEO_BYTES;
         return DEFAULT_MEDIA_BYTES;
+    }
+
+    /**
+     * The generation prompt to save alongside a media item. Art photos carry an
+     * `artPrompt` (per-Nomi for group photos); edited photos carry a `textPrompt`.
+     * Plain selfies and videos have nothing useful to attach.
+     */
+    private extractPrompt(media: Media, type: MediaType): string | null {
+        if (type === "Art") {
+            const prompt =
+                media.artPrompt ??
+                media.nomis?.find((n) => n.artPrompt)?.artPrompt;
+            return prompt?.trim() || null;
+        }
+        if (type === "PhotoEdit") {
+            return media.textPrompt?.trim() || null;
+        }
+        return null;
     }
 
     private resolveType(media: Media): MediaType {

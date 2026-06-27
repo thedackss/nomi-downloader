@@ -24,6 +24,12 @@ export interface Settings {
         downloadQuantity: number;
         /** Max images per zip; 0 = auto (size-based chunking only). */
         imagesPerZip: number;
+        /**
+         * Save the generation prompt for Art / edited photos:
+         * off | sidecar .txt | embedded in the image | both.
+         * Embedding only applies to PNG (HD); WebP/video fall back to a sidecar.
+         */
+        prompts: "off" | "sidecar" | "embed" | "both";
     };
     chatDownload: {
         /** Keep only the last N messages; 0 = unlimited. */

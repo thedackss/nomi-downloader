@@ -75,6 +75,7 @@ export function useBackground() {
         folderization: Settings.albumDownload.folderization,
         quality: Settings.albumDownload.quality,
         imagesPerZip: Settings.albumDownload.imagesPerZip,
+        prompts: Settings.albumDownload.prompts,
     };
     const chatOptions = {
         maxMessages: Settings.chatDownload.maxMessages,

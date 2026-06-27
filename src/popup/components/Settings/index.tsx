@@ -357,6 +357,42 @@ export const Settings = () => {
                                 </div>
                             </li>
                             <li>
+                                <label htmlFor="set-prompts">
+                                    Prompt files
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="Save the generation prompt for Art and edited photos. Embedding writes into the image metadata (PNG/HD only); WebP and videos always use a sidecar .txt.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <select
+                                    id="set-prompts"
+                                    value={Settings.albumDownload.prompts}
+                                    onChange={(e) =>
+                                        updateSettings({
+                                            albumDownload: {
+                                                ...Settings.albumDownload,
+                                                prompts: e.target.value as
+                                                    | "off"
+                                                    | "sidecar"
+                                                    | "embed"
+                                                    | "both",
+                                            },
+                                        })
+                                    }>
+                                    <option value="off">Off</option>
+                                    <option value="sidecar">
+                                        Sidecar .txt
+                                    </option>
+                                    <option value="embed">
+                                        Image metadata
+                                    </option>
+                                    <option value="both">Both</option>
+                                </select>
+                            </li>
+                            <li>
                                 <h3>Chat</h3>
                             </li>
                             <li>
