@@ -23,6 +23,10 @@
         {
             "resources": ["src/offscreen/index.html"],
             "matches": ["<all_urls>"]
+        },
+        {
+            "resources": ["index.html", "assets/*"],
+            "matches": ["https://*.nomi.ai/*"]
         }
     ],
 
