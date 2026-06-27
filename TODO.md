@@ -35,7 +35,7 @@ Legend: [x] done · [~] partial · [ ] missing
 
 ## Group Download
 
-- [ ] Chat download as HTML (with/without images) — `main` has it; `rework` button is a no-op
+- [x] Chat download as HTML (with/without images) — paginates `/group-chats/:id/messages`, renders via the shared chat document with per-speaker name labels
 - [ ] Chat info download _(new)_
 
 ## New features — user requests (after parity with `main`)

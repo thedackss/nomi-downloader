@@ -38,15 +38,18 @@ interface ChatMessageProps {
     isNomi: boolean;
     text: string;
     date: Date;
+    /** Speaker label shown above the bubble (group chats with many Nomis). */
+    name?: string;
 }
 
 /** A chat message: a bubble with its timestamp grouped in a row. */
-export function ChatMessage({ isNomi, text, date }: ChatMessageProps) {
+export function ChatMessage({ isNomi, text, date, name }: ChatMessageProps) {
     const who = isNomi ? "nomi" : "user";
     const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
     return (
         <li className={`row ${who}`}>
+            {name ? <span className="name">{name}</span> : null}
             <div className="bubble">{text}</div>
             <span className="time">
                 {date.toDateString()} · {time}
@@ -126,6 +129,7 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
                 isNomi: item.isNomi,
                 text: item.text,
                 date: new Date(item.sent),
+                name: item.name,
             });
         }
         if (item.kind === "selfie") {

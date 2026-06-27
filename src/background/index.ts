@@ -28,9 +28,10 @@ type ProgressFn = (message: string) => void;
  * publishes start/done/error status, and exposes a progress callback to the work.
  */
 async function runDownload(
-    nomiId: number,
+    id: number,
     messages: { start: string; done: string; error: string },
     work: (onProgress: ProgressFn) => Promise<void>,
+    type: "nomi" | "group" = "nomi",
 ) {
     if (downloadStatus.inProgress) {
         Log("Already downloading");
@@ -41,8 +42,8 @@ async function runDownload(
         updateDownloadStatus({
             inProgress: true,
             message,
-            id: nomiId,
-            type: "nomi",
+            id,
+            type,
         });
 
     const setIdleStatus = (message: string) =>
@@ -126,6 +127,28 @@ function main() {
                             maxMessages,
                             onProgress,
                         }),
+                );
+                break;
+            }
+            case "DOWNLOAD_GROUP_CHAT": {
+                const { groupId, name, maxMessages, includeSelfies } =
+                    message.data;
+                runDownload(
+                    groupId,
+                    {
+                        start: "Starting download...",
+                        done: "Group chat downloaded!",
+                        error: "Error downloading group chat",
+                    },
+                    (onProgress) =>
+                        nomi.downloadGroupChat({
+                            groupId,
+                            name,
+                            includeSelfies: includeSelfies ?? true,
+                            maxMessages,
+                            onProgress,
+                        }),
+                    "group",
                 );
                 break;
             }

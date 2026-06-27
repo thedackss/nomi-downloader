@@ -3,7 +3,14 @@
 // so react-dom/server never loads in the worker.
 
 export type ChatItem =
-    | { kind: "message"; isNomi: boolean; text: string; sent: string }
+    | {
+          kind: "message";
+          isNomi: boolean;
+          text: string;
+          sent: string;
+          /** Speaker label, shown above the bubble (used by group chats). */
+          name?: string;
+      }
     | { kind: "selfie"; src: string }
     | { kind: "failed" };
 

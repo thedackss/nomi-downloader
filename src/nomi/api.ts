@@ -3,6 +3,11 @@ import { NomiError } from "./errors";
 import { api } from "./http";
 import type { NomiExistsProps } from "./interfaces/exists";
 import type { GetMediasProps } from "./interfaces/getMedias";
+import type {
+    ApiGroupMessagesResponse,
+    GroupMessage,
+    GroupSelfieRequest,
+} from "./types/api.groupChats.id.messages";
 import type { ApiMeResponse } from "./types/api.me";
 import type { ApiDailyUsageResponse } from "./types/api.me.dailyUsage";
 import type { ApiMindMapsGraphResponse } from "./types/api.mindMaps.nomis.id.graph";
@@ -147,6 +152,43 @@ export class NomiApiClient {
                 message: `Nomi with ID ${nomiId} does not exist`,
             });
         }
+    }
+
+    public async getGroupMessages({ groupId }: { groupId: number }) {
+        Log(`Getting messages for group ID: ${groupId}`);
+
+        const messages: GroupMessage[] = [];
+        const requests: GroupSelfieRequest[] = [];
+
+        // Pages walk backwards via a maxDate cursor ("default" = first page).
+        let nextMaxDate: string | undefined = "default";
+        let url = `/group-chats/${groupId}/messages`;
+
+        try {
+            while (nextMaxDate) {
+                if (nextMaxDate !== "default") {
+                    url = `/group-chats/${groupId}/messages?maxDate=${nextMaxDate}`;
+                }
+
+                const { data } = await api.get<ApiGroupMessagesResponse>(url);
+
+                messages.push(...data.messages);
+                requests.push(...data.selfies);
+
+                nextMaxDate = data.nextMaxDate ?? undefined;
+            }
+        } catch (error) {
+            Log(`Error fetching messages for group ID ${groupId}:`, error);
+        }
+
+        return [...messages, ...requests].sort((a, b) => {
+            const dateA =
+                "sent" in a ? new Date(a.sent) : new Date(a.completed);
+            const dateB =
+                "sent" in b ? new Date(b.sent) : new Date(b.completed);
+
+            return dateA.getTime() - dateB.getTime();
+        });
     }
 
     public async getMedias({ nomiId, onProgress }: GetMediasProps) {

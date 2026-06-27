@@ -2,6 +2,7 @@ import { NomiApiClient } from "../../nomi/api";
 import { api } from "../../nomi/http";
 import type { DownloadAlbumProps } from "../../nomi/interfaces/downloadAlbum";
 import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
+import type { DownloadGroupChatProps } from "../../nomi/interfaces/downloadGroupChat";
 import type { NomiExistsProps } from "../../nomi/interfaces/exists";
 import { getNomiImageUrl } from "../../nomi/media";
 import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
@@ -10,6 +11,7 @@ import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
 import { BLOB_URL_REVOKE_DELAY_MS } from "./constants";
+import { GroupChatDownloader } from "./groupChatDownloader";
 import { buildNomiJson, type NomiJsonInput } from "./json/builder";
 import { buildNomiMarkdown } from "./markdown/builder";
 import { buildMindMapPayload } from "./mindmap/builder";
@@ -280,5 +282,9 @@ export class Nomi {
 
     downloadChat(props: DownloadChatProps) {
         return new ChatDownloader(this.api, this.offscreen).run(props);
+    }
+
+    downloadGroupChat(props: DownloadGroupChatProps) {
+        return new GroupChatDownloader(this.api, this.offscreen).run(props);
     }
 }

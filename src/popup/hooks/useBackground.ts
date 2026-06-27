@@ -19,6 +19,7 @@ export function useBackground() {
     const { Nomis } = useNomi();
     const { Settings } = useSettings();
     const nomi = Nomis.selected.nomi;
+    const group = Nomis.selected.group;
 
     const [downloadStatus, setDownloadStatus] =
         useState<DownloadStatus>(INITIAL_STATUS);
@@ -67,6 +68,25 @@ export function useBackground() {
             message,
             id: nomi.id,
             type: "nomi",
+        });
+    }
+
+    function startGroupDownload(
+        type: string,
+        message: string,
+        extraData?: Record<string, unknown>,
+    ) {
+        if (!group) return;
+        chrome.runtime.sendMessage({
+            type,
+            data: { groupId: group.id, debug: Settings.debug, ...extraData },
+        });
+        // Optimistic update; the background broadcasts real progress.
+        setDownloadStatus({
+            inProgress: true,
+            message,
+            id: group.id,
+            type: "group",
         });
     }
 
@@ -126,5 +146,11 @@ export function useBackground() {
             ),
         downloadMarkdown: () =>
             startDownload("DOWNLOAD_MARKDOWN", "Starting Markdown download..."),
+        downloadGroupChat: () =>
+            startGroupDownload(
+                "DOWNLOAD_GROUP_CHAT",
+                "Starting group chat download...",
+                { name: group?.name, ...chatOptions },
+            ),
     };
 }

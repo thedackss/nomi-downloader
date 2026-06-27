@@ -44,6 +44,24 @@ describe("renderChatDocument", () => {
         expect(html).toContain('class="bubble"');
     });
 
+    it("renders a sender name label above the bubble when provided", () => {
+        const group = renderChatDocument({
+            name: "My Group",
+            children: createElement(ChatMessage, {
+                isNomi: true,
+                text: "hi all",
+                date: new Date("2026-02-19T14:05:00"),
+                name: "Mya",
+            }),
+        });
+        expect(group).toContain('class="name"');
+        expect(group).toContain("Mya");
+    });
+
+    it("omits the name label when no name is given", () => {
+        expect(html).not.toContain('class="name"');
+    });
+
     it("escapes message text (no raw HTML injection)", () => {
         const evil = renderChatDocument({
             name: "Veronica",

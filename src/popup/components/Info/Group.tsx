@@ -1,4 +1,6 @@
 import type { GroupChat } from "../../../nomi/types/api.groupChats";
+import { useBackground } from "../../hooks/useBackground";
+import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
 
 interface GroupInfoProps {
@@ -6,6 +8,14 @@ interface GroupInfoProps {
 }
 
 export const GroupInfo = ({ group }: GroupInfoProps) => {
+    const { downloadStatus, downloadGroupChat } = useBackground();
+
+    const isCurrentGroup =
+        downloadStatus.type === "group" && downloadStatus.id === group.id;
+    const message = isCurrentGroup
+        ? downloadStatus.message
+        : "Another download is in progress";
+
     return (
         <>
             <h2>{group.name}</h2>
@@ -30,6 +40,32 @@ export const GroupInfo = ({ group }: GroupInfoProps) => {
                     </li>
                 )}
             </ul>
+
+            <div
+                className={
+                    styles.downloadSection +
+                    `${
+                        downloadStatus.inProgress ? ` ${styles.inProgress}` : ""
+                    }`
+                }>
+                <LoadingSpin
+                    className={styles.loadingSpin}
+                    visible={downloadStatus.inProgress}>
+                    <h3>
+                        Downloading
+                        <p>{message}</p>
+                    </h3>
+                </LoadingSpin>
+                <div className={styles.splitButton}>
+                    <button
+                        type="button"
+                        className={`${styles.splitMain} ${styles.solo}`}
+                        onClick={downloadGroupChat}
+                        disabled={downloadStatus.inProgress}>
+                        Download Chat
+                    </button>
+                </div>
+            </div>
         </>
     );
 };
