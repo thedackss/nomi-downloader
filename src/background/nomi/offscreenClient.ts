@@ -8,13 +8,6 @@ import {
 import type { MindMapRenderPayload } from "./mindmap/types";
 import type { SharedNotesRenderPayload } from "./sharednotes/types";
 
-/** Firefox for Android, where a background-page anchor click doesn't fire. */
-function isAndroid(): boolean {
-    return (
-        typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent)
-    );
-}
-
 export interface OffscreenPayload {
     id?: string;
     path?: string;
@@ -215,12 +208,11 @@ export class OffscreenClient {
     }
 
     /**
-     * Save a file via chrome.downloads, falling back to opening it in a tab if
-     * the dispatch itself fails. The download promise resolves once the browser
-     * accepts it (after the user picks a location on Firefox for Android, whose
-     * save prompt the in-page UI keeps visible); we deliberately don't wait for
-     * a "complete" event, since that signal is unreliable there and left the
-     * status spinning. Blob URLs are revoked afterward.
+     * Save a file. On Firefox the background can't reliably start a download
+     * (on Android it silently does nothing), so the save is triggered from the
+     * nomi.ai page's content script — like the published version — which makes
+     * the download actually fire. Falls back to a background anchor (desktop)
+     * and then the downloads API (Chrome). Blob URLs are revoked afterward.
      */
     async download(
         url: string,
@@ -232,17 +224,26 @@ export class OffscreenClient {
         let openedTab = false;
         let note: string | undefined;
 
-        // Desktop Firefox runs the background as a DOM page; use an <a download>
-        // there so it honors the browser's "ask where to save" setting (the
-        // original method), instead of chrome.downloads silently auto-saving.
-        // Android's background page doesn't fire the click, so it falls through
-        // to the downloads API; Chrome's service worker has no document.
-        if (typeof document !== "undefined" && !isAndroid()) {
-            this.anchorDownload(url, filename);
-            Log(`Saved "${filename}" via anchor`);
-            report?.("Saved to your downloads");
-            this.scheduleRevoke(url, isBlob, false);
-            return { ok: true, openedTab: false };
+        // Firefox (background is a DOM page): trigger the save from the page.
+        // Chrome's service worker has no document and uses the downloads API.
+        if (typeof document !== "undefined") {
+            report?.("Saving file…");
+            if (await this.saveViaPage(url, filename)) {
+                Log(`Saved "${filename}" via the page`);
+                report?.("Saved to your downloads");
+                this.scheduleRevoke(url, isBlob, false);
+                return { ok: true, openedTab: false };
+            }
+            // Desktop fallback: a background-page anchor still works there.
+            try {
+                this.anchorDownload(url, filename);
+                Log(`Saved "${filename}" via background anchor`);
+                report?.("Saved to your downloads");
+                this.scheduleRevoke(url, isBlob, false);
+                return { ok: true, openedTab: false };
+            } catch (err) {
+                Log("Background anchor download failed", err);
+            }
         }
 
         try {
@@ -271,6 +272,45 @@ export class OffscreenClient {
         this.scheduleRevoke(url, isBlob, openedTab);
 
         return { ok: !openedTab, openedTab, note };
+    }
+
+    /**
+     * Hand the file to the nomi.ai page's content script, which triggers the
+     * actual download from a live tab. Returns false (so the caller can fall
+     * back) when there's no reachable nomi tab. The blob lives in this context,
+     * so it's fetched back to bytes and sent as base64.
+     */
+    private async saveViaPage(url: string, filename: string): Promise<boolean> {
+        if (typeof chrome === "undefined" || !chrome.tabs?.sendMessage) {
+            return false;
+        }
+        try {
+            let [tab] = await chrome.tabs.query({
+                active: true,
+                currentWindow: true,
+            });
+            if (!tab?.id || !/\bnomi\.ai\b/.test(tab.url ?? "")) {
+                [tab] = await chrome.tabs.query({
+                    url: "https://*.nomi.ai/*",
+                });
+            }
+            if (!tab?.id) return false;
+
+            const blob = await (await fetch(url)).blob();
+            const base64 = await this.blobToBase64(blob);
+            const res = await chrome.tabs.sendMessage(tab.id, {
+                action: "SAVE_FILE",
+                data: {
+                    base64,
+                    mime: blob.type || "application/octet-stream",
+                    filename,
+                },
+            });
+            return res?.ok === true;
+        } catch (err) {
+            Log("Page save failed", err);
+            return false;
+        }
     }
 
     /** Trigger a download through a DOM anchor so the filename is honored and

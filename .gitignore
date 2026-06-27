@@ -73,3 +73,6 @@ backup-*.sql
 .claude
 .temp
 .tmp
+
+# Local media / scratch uploads
+*.mp4
