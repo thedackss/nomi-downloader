@@ -58,10 +58,8 @@ html {
     // fixed 800px that sizes the popup; when the popup renders a few px under
     // 800 (outline/scrollbar), html stays in-bounds and clips the slight body
     // overflow (only the right padding) instead of growing a scrollbar.
-    width: var(--width);
-    height: var(--height);
     outline: 1px solid rgb(from var(--accent) r g b / 35%);
-    overflow-x: hidden;
+    overflow: hidden;
 
     body {
         background:
@@ -75,8 +73,7 @@ html {
 
         // Fixed 800 to size the popup, but cap at the viewport so a slightly
         // narrower popup shrinks the body instead of overflowing it.
-        width: 100%;
-        max-width: var(--width);
+        width: var(--width);
         height: var(--height);
         overflow-x: hidden;
 
