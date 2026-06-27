@@ -31,7 +31,13 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
     ];
 
     const [mindMapActive, setMindMapActive] = useState(false);
-    const [selected, setSelected] = useState(downloadOptions[0]);
+    // Track the selection by name, then resolve the option fresh each render —
+    // storing the option object would capture a stale download closure (and
+    // thus stale settings) until the popup is reopened.
+    const [selectedName, setSelectedName] = useState(downloadOptions[0].name);
+    const selected =
+        downloadOptions.find((o) => o.name === selectedName) ??
+        downloadOptions[0];
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const splitRef = useRef<HTMLDivElement>(null);
 
@@ -189,7 +195,7 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                                                     : undefined
                                             }
                                             onClick={() => {
-                                                setSelected(option);
+                                                setSelectedName(option.name);
                                                 setDropdownOpen(false);
                                             }}
                                             disabled={
