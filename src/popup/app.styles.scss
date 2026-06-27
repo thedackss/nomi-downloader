@@ -71,6 +71,11 @@ html {
             var(--background);
         color: var(--text);
 
+        &.mobile {
+            --width: 100dvw;
+            --height: 100dvh;
+        }
+
         // Fixed 800 to size the popup, but cap at the viewport so a slightly
         // narrower popup shrinks the body instead of overflowing it.
         width: var(--width);

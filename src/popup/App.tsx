@@ -10,7 +10,6 @@ function App() {
     const { InitializeSettings, isMobile } = useSettings();
     const { fetchNomis, fetchGroups, checkSelectedNomi, Nomis } = useNomi();
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: bootstrap settings and lists once on mount
     useEffect(() => {
         async function initialize() {
             InitializeSettings();
@@ -24,6 +23,14 @@ function App() {
     useEffect(() => {
         checkSelectedNomi();
     }, [checkSelectedNomi]);
+
+    // Mirror the layout onto <body> so its sized vars (--width/--height) switch
+    // between the fixed desktop popup and a full-viewport mobile one. The class
+    // on the wrapper below only drives the inner grid, not the body size.
+    useEffect(() => {
+        document.body.classList.toggle("mobile", isMobile);
+        document.body.classList.toggle("desktop", !isMobile);
+    }, [isMobile]);
 
     const hasSelection = Nomis.selected.nomi || Nomis.selected.group;
 
