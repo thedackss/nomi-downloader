@@ -27,6 +27,10 @@ Legend: [x] done · [~] partial · [ ] missing
 - [x] Download All _(new)_ — default split-button action; runs album → chat → mind → JSON in sequence
 - [x] Shared Notes as HTML _(new)_ — accordion export via offscreen render
 - [x] JSON _(new)_ — structured export (shared notes, image settings, mind map, chat) + "raw data" toggle for full API responses
+- [x] Markdown _(new)_ — same data as JSON, rendered as readable Markdown (Nomi info, shared notes, image settings, mind map, chat log)
+- [x] Advanced Download mode _(new)_ — per-type toggles select which types appear on the button; off = one-click album + chat + shared notes
+
+**Single Nomi Download section complete.**
 
 ## Group Download
 
