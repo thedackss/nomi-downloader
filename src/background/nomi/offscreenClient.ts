@@ -210,12 +210,12 @@ export class OffscreenClient {
     }
 
     /**
-     * Save a file via chrome.downloads, confirming it actually completed and
-     * falling back to opening the file in a tab when it doesn't. Firefox for
-     * Android accepts the download but then interrupts blob-URL saves (and
-     * never routes console logs to logcat), so the outcome is reported through
-     * `report` to surface it in the popup. Blob URLs are revoked afterward
-     * (later when a fallback tab still needs the URL).
+     * Save a file. Firefox runs the background as a real DOM page, where
+     * chrome.downloads.download ignores the `filename` for blob URLs (you get a
+     * UUID), so there we trigger an <a download> which honors the name. Chrome's
+     * service worker has no document, so it uses the downloads API — confirming
+     * completion and falling back to opening the file in a tab if it fails.
+     * Blob URLs are revoked afterward.
      */
     async download(
         url: string,
@@ -226,6 +226,14 @@ export class OffscreenClient {
         const { isBlob = false, saveAs = false } = options;
         let openedTab = false;
         let note: string | undefined;
+
+        if (typeof document !== "undefined") {
+            this.anchorDownload(url, filename);
+            Log(`Saved "${filename}" via anchor`);
+            report?.("Saved to your downloads");
+            this.scheduleRevoke(url, isBlob, false);
+            return { ok: true, openedTab: false };
+        }
 
         const outcome = await this.trySave(url, filename, saveAs);
 
@@ -251,16 +259,32 @@ export class OffscreenClient {
             }
         }
 
-        if (isBlob) {
-            const delay = openedTab
-                ? FALLBACK_REVOKE_DELAY_MS
-                : BLOB_URL_REVOKE_DELAY_MS;
-            setTimeout(() => {
-                this.call("revoke-blob-url", { url }).catch(() => {});
-            }, delay);
-        }
+        this.scheduleRevoke(url, isBlob, openedTab);
 
         return { ok: outcome.ok, openedTab, note };
+    }
+
+    /** Trigger a download through a DOM anchor so the filename is honored. */
+    private anchorDownload(url: string, filename: string): void {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.rel = "noopener";
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    /** Revoke a blob URL after a delay (longer when a fallback tab uses it). */
+    private scheduleRevoke(url: string, isBlob: boolean, openedTab: boolean) {
+        if (!isBlob) return;
+        const delay = openedTab
+            ? FALLBACK_REVOKE_DELAY_MS
+            : BLOB_URL_REVOKE_DELAY_MS;
+        setTimeout(() => {
+            this.call("revoke-blob-url", { url }).catch(() => {});
+        }, delay);
     }
 
     /** Dispatch a download and wait for its real terminal state. */
