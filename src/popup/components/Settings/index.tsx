@@ -122,6 +122,79 @@ export const Settings = () => {
                         </div>
                     </li>
                     <li>
+                        <h3>Download</h3>
+                    </li>
+                    <li>
+                        <label htmlFor="set-advanced-download">
+                            Advanced Download
+                        </label>
+                        <div className={styles.row}>
+                            <label className={styles.switch}>
+                                <input
+                                    id="set-advanced-download"
+                                    type="checkbox"
+                                    checked={Settings.download.advanced}
+                                    onChange={(e) =>
+                                        updateSettings({
+                                            download: {
+                                                ...Settings.download,
+                                                advanced: e.target.checked,
+                                            },
+                                        })
+                                    }
+                                />
+                                <span className={styles.slider}></span>
+                            </label>
+                            <p
+                                style={{
+                                    margin: 0,
+                                    opacity: 0.7,
+                                    fontSize: "0.8rem",
+                                }}>
+                                {Settings.download.advanced
+                                    ? "Pick download types"
+                                    : "One button: album + chat + shared notes"}
+                            </p>
+                        </div>
+                    </li>
+                    {(
+                        [
+                            ["album", "Enable album download"],
+                            ["chat", "Enable chat download"],
+                            ["mindMap", "Enable mind map download"],
+                            ["sharedNotes", "Enable shared notes download"],
+                            ["json", "Enable JSON download"],
+                            ["markdown", "Enable markdown download"],
+                        ] as const
+                    ).map(([key, label]) => (
+                        <li
+                            key={key}
+                            style={{
+                                opacity: Settings.download.advanced ? 1 : 0.4,
+                            }}>
+                            <label htmlFor={`set-dl-${key}`}>{label}</label>
+                            <div className={styles.row}>
+                                <label className={styles.switch}>
+                                    <input
+                                        id={`set-dl-${key}`}
+                                        type="checkbox"
+                                        disabled={!Settings.download.advanced}
+                                        checked={Settings.download[key]}
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                download: {
+                                                    ...Settings.download,
+                                                    [key]: e.target.checked,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <span className={styles.slider}></span>
+                                </label>
+                            </div>
+                        </li>
+                    ))}
+                    <li>
                         <h3>Album</h3>
                     </li>
                     <li>

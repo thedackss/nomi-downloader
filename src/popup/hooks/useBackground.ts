@@ -86,6 +86,12 @@ export function useBackground() {
 
     return {
         downloadStatus,
+        // Non-advanced one-click download: album + chat + shared notes.
+        downloadSimple: () =>
+            startDownload("DOWNLOAD_SIMPLE", "Starting download...", {
+                ...albumOptions,
+                ...chatOptions,
+            }),
         downloadAll: () =>
             startDownload("DOWNLOAD_ALL", "Starting download...", {
                 ...albumOptions,

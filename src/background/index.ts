@@ -182,6 +182,51 @@ function main() {
                 );
                 break;
             }
+            case "DOWNLOAD_SIMPLE": {
+                const {
+                    downloadQuantity,
+                    folderization,
+                    quality,
+                    imagesPerZip,
+                    maxMessages,
+                    includeSelfies,
+                } = message.data;
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting download...",
+                        done: "Download complete!",
+                        error: "Error during download",
+                    },
+                    async (onProgress) => {
+                        onProgress("Downloading album...");
+                        await nomi.downloadAlbum({
+                            nomiId,
+                            downloadQuantity,
+                            folderization,
+                            quality,
+                            imagesPerZip,
+                            onProgress,
+                        });
+
+                        onProgress("Downloading chat...");
+                        await nomi.downloadChat({
+                            nomiId,
+                            includeSelfies: includeSelfies ?? true,
+                            maxMessages,
+                            onProgress,
+                        });
+
+                        try {
+                            onProgress("Downloading shared notes...");
+                            await nomi.downloadSharedNotes({ nomiId });
+                        } catch (err) {
+                            Log("Shared notes step failed", err);
+                        }
+                    },
+                );
+                break;
+            }
             case "DOWNLOAD_ALL": {
                 const {
                     downloadQuantity,

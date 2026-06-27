@@ -7,6 +7,15 @@ const SettingsContext = createContext<SettingsContextType | null>(null);
 const SettingsProvider: FC<ReactElement> = ({ children }) => {
     const Default: Settings = {
         list: { iconShape: "circle", iconSize: "medium" },
+        download: {
+            advanced: false,
+            album: true,
+            chat: true,
+            mindMap: true,
+            sharedNotes: true,
+            json: true,
+            markdown: true,
+        },
         albumDownload: {
             quality: "SD",
             folderization: true,

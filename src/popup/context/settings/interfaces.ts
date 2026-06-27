@@ -3,8 +3,21 @@ export interface IconSettings {
     iconShape: "circle" | "square" | "sharp";
 }
 
+export interface DownloadSettings {
+    /** Show per-type toggles + a select button instead of one combined button. */
+    advanced: boolean;
+    album: boolean;
+    chat: boolean;
+    mindMap: boolean;
+    sharedNotes: boolean;
+    json: boolean;
+    markdown: boolean;
+}
+
 export interface Settings {
     list: IconSettings;
+    /** Which download types are offered, and whether advanced mode is on. */
+    download: DownloadSettings;
     albumDownload: {
         quality: "HD" | "SD";
         folderization: boolean;
