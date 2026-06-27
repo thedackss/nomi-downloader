@@ -11,7 +11,7 @@ export const useSettings = () => {
         throw new Error("useSettings must be used within a SettingsProvider");
     }
 
-    const { Settings, setSettings } = context;
+    const { Settings, setSettings, menuOpen, setMenuOpen } = context;
 
     async function InitializeSettings() {
         const storedConfig = localStorage.getItem("config");
@@ -65,5 +65,12 @@ export const useSettings = () => {
               ? false
               : window.innerHeight >= window.innerWidth;
 
-    return { Settings, InitializeSettings, updateSettings, isMobile };
+    return {
+        Settings,
+        InitializeSettings,
+        updateSettings,
+        isMobile,
+        menuOpen,
+        setMenuOpen,
+    };
 };

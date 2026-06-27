@@ -6,11 +6,10 @@ import { RiSettingsLine } from "./RiSettingsLine";
 import styles from "./styles.module.scss";
 
 export const Settings = () => {
-    const { Settings, updateSettings } = useSettings();
+    const { Settings, updateSettings, menuOpen, setMenuOpen } = useSettings();
     const dl = Settings.download;
 
-    const [isOpen, setIsOpen] = useState(false);
-    const toggleSettings = () => setIsOpen(!isOpen);
+    const toggleSettings = () => setMenuOpen(!menuOpen);
 
     type Tab = "interface" | "downloads" | "advanced";
     const [tab, setTab] = useState<Tab>("interface");
@@ -56,14 +55,14 @@ export const Settings = () => {
             <button
                 type="button"
                 aria-label="Toggle settings"
-                className={isOpen ? styles.active : undefined}
+                className={menuOpen ? styles.active : undefined}
                 onClick={toggleSettings}>
                 <RiSettingsLine />
                 <RiSettingsLine />
             </button>
 
             <div
-                className={`${styles.menu}${isOpen ? ` ${styles.visible}` : ""}`}>
+                className={`${styles.menu}${menuOpen ? ` ${styles.visible}` : ""}`}>
                 <h2>Settings</h2>
                 <p>Here you can configure your settings.</p>
 

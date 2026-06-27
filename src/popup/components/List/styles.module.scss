@@ -18,6 +18,12 @@
         transparent 100%
     );
 
+    // Freeze the list behind the settings overlay so it can't scroll under it.
+    &.noScroll {
+        overflow-y: hidden;
+        pointer-events: none;
+    }
+
     li {
         margin-bottom: 1rem;
         display: flex;

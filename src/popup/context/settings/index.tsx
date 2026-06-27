@@ -38,12 +38,15 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
     };
 
     const [Settings, setSettings] = useState<Settings>(Default);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     return (
         <SettingsContext.Provider
             value={{
                 Settings,
                 setSettings,
+                menuOpen,
+                setMenuOpen,
             }}>
             {children}
         </SettingsContext.Provider>

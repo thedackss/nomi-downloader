@@ -51,4 +51,7 @@ export interface Settings {
 export type SettingsContextType = {
     Settings: Settings;
     setSettings: (value: Settings) => void;
+    /** Whether the settings menu overlay is open. */
+    menuOpen: boolean;
+    setMenuOpen: (value: boolean) => void;
 };
