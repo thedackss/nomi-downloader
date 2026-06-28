@@ -54,11 +54,16 @@ Ordered roughly by demand.
 - [x] **Generation prompts saved with media** — the "Prompt files" feature attaches each
       item's prompt (sidecar `.txt`, PNG metadata embed, or both). Coverage by type:
       Art → `artPrompt`, edited photo → `textPrompt`, video → `textPrompt` (sidecar only,
-      since embed writes PNG iTXt). Plain selfies have no prompt and appear inline in the
-      chat HTML. (macbiff)
-- [~] **Group chat image prompts** — group photos expose per-Nomi `artPrompt` in the medias
-      API; album prompt files already pick these up. Surfacing them inside the group chat
-      _transcript_ is still open. (Joe)
+      since embed writes PNG iTXt). (macbiff)
+      - Plain selfies (`Photo`) have **no prompt field** in the medias API. The "selfie
+        description" you see in a chat export is a separate *hidden chat message*, not a
+        property of the selfie — it lives in the chat stream, never in the album. Attaching
+        it to album selfies would need a fuzzy timestamp-adjacency join between the hidden
+        message and the `SelfieRequest`; no hard FK exists. Low-confidence, deferred.
+- [ ] ~~**Group chat image prompts**~~ — not doable: the group messages endpoint doesn't
+      expose them. `GroupSelfieRequest`/`GroupSelfie` carry only IDs + `nsfwScore`, no
+      prompt/caption. (Per-member `artPrompt` is still reachable by downloading each
+      member's individual album — but the group chat itself has no prompt to surface.) (Joe)
 - [ ] ~~**Convert old `.webp` videos to `.mp4`**~~ — out of scope: in-browser transcoding
       needs FFmpeg.wasm (~30–50 MB) with heavy perf/memory cost. The downloader already
       fetches `.mp4` when the backend offers it. (astropol)
