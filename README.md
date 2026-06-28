@@ -34,17 +34,21 @@ export is a self-contained file (or `.zip`) that works fully offline.
 ### Single Nomi
 
 - **Album** — every selfie, art image, edited photo and video, packed into one or
-  more `.zip` files. Automatically split by size for large albums, optionally
-  organized into per-type folders, in HD (`.png`) or SD (`.webp`).
+  more `.zip` files. Split by a configurable per-zip size (and optionally an image
+  count), optionally organized into per-type folders, in HD (`.png`) or SD (`.webp`).
 - **Prompt files** — optionally save the generation prompt for Art and edited
   photos alongside each image, as a sidecar `.txt`, embedded in the image metadata
   (PNG), or both.
 - **Chat** — the full conversation as a standalone, styled `.html` file, with
-  selfies inlined or text-only.
+  selfies inlined or text-only. Long chats split across multiple files by a
+  configurable message count and/or file size.
 - **Mind Map** — the Nomi's memory graph and terms as an interactive `.html` file
   (force-directed graph + a browsable table of entries).
 - **Shared Notes** — backstory, roleplay, appearance and other shared notes,
   plus image/anchor settings, as an `.html` file.
+- **Profile picture in headers** — the chat, mind map and shared notes HTML
+  headers show the Nomi's avatar; for a video profile they use the video preview
+  by default, or embed the playing video when "Animate header" is enabled.
 - **JSON** — all of the above as structured data in one `.json` file, ideal for
   feeding to another tool or AI. An optional **raw data** toggle attaches the
   untouched API responses too.
@@ -67,16 +71,24 @@ A tabbed settings panel (Interface · Downloads · Advanced):
 - **Image quality** — HD (`.png`) or SD (`.webp`).
 - **Images per zip** — cap how many images each `.zip` holds (0 = auto, split by
   size only).
+- **Max zip size (MB)** — per-zip size cap that drives album splitting (0 = the
+  built-in safe default). Raise it to split into fewer, larger zips.
 - **Organize into folders** — sort album media into per-type subfolders.
 - **Concurrent downloads** — how many media items to fetch in parallel.
 - **Max messages** — export only the most recent N chat messages (0 = all).
+- **Messages per file** — split the chat export every N messages (0 = no count cap).
+- **Max file size (MB)** — per-file size cap for chat exports (0 = the built-in
+  safe default). Raise it to split into fewer, larger files.
 - **Include selfies in chat** — embed images in the chat HTML, or keep it text-only.
+- **Animate header** — when a Nomi's profile is a video, embed the playing video in
+  the chat / mind map / shared notes HTML headers instead of a still frame.
 - **Prompt files** — off / sidecar `.txt` / image metadata / both.
 - **Raw data** — include the untouched API responses in JSON exports.
 - **Advanced download mode** — per-type toggles that turn the download button into
   a selector, so you choose precisely which export each click produces.
 - **Interface** — layout (auto/mobile/desktop), Nomi icon shape & size, a daily
-  usage stats panel, and a debug logging toggle.
+  usage stats panel, and a debug logging toggle. On mobile the selected Nomi or
+  group's picture is shown on its info screen (the list is hidden when one pane).
 
 ## Requirements
 
@@ -170,6 +182,7 @@ src/
 │       ├── chatDownloader.ts   single-Nomi chat workflow
 │       ├── groupChatDownloader.ts  group chat workflow
 │       ├── metadata.ts         PNG prompt embedding + base64 helpers
+│       ├── headerMedia.ts      export-header avatar/video → data URIs
 │       ├── chat/ mindmap/ sharednotes/  JSX → standalone HTML documents
 │       ├── json/ markdown/     structured data builders (Nomi + group)
 │       ├── chunk.ts            chunkBySize() shared by the downloaders
