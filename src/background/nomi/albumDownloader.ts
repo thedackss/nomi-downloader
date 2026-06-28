@@ -266,8 +266,10 @@ export class AlbumDownloader {
 
     /**
      * The generation prompt to save alongside a media item. Art photos carry an
-     * `artPrompt` (per-Nomi for group photos); edited photos carry a `textPrompt`.
-     * Plain selfies and videos have nothing useful to attach.
+     * `artPrompt` (per-Nomi for group photos); edited photos and videos carry a
+     * `textPrompt`. Plain selfies have nothing useful to attach. Videos can only
+     * take a sidecar — `embedPrompt` writes PNG iTXt chunks, so mp4/webp fall
+     * back to a `.txt` anyway.
      */
     private extractPrompt(media: Media, type: MediaType): string | null {
         if (type === "Art") {
@@ -276,7 +278,7 @@ export class AlbumDownloader {
                 media.nomis?.find((n) => n.artPrompt)?.artPrompt;
             return prompt?.trim() || null;
         }
-        if (type === "PhotoEdit") {
+        if (type === "PhotoEdit" || type === "Video") {
             return media.textPrompt?.trim() || null;
         }
         return null;
