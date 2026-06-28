@@ -47,13 +47,18 @@ Ordered roughly by demand.
 
 - [ ] **Album range / offset** — only the last N photos, or start at photo #N
       (Mark, Kyo-Kun, Jymm, solcuerda)
-- [ ] **Incremental download** — remember what was already downloaded per Nomi, fetch only new content
-      (solcuerda, Kyo-Kun)
 - [ ] **Chat message range (X→Y)** — explicit start/end, beyond the last-N "Max messages" setting
       (Bagman; Joe's "last 50" is covered once Max messages is restored)
-- [ ] **Create-art prompts in chat/full export** — include art-request prompts, not just text + selfie images
-      (data exists in the medias API: `artPrompt`, `textPrompt`) (macbiff)
-- [ ] **Group chat image prompts** — once group download is back, capture image prompts like individual chats
-      (Joe)
-- [ ] **Convert old `.webp` videos to `.mp4`** — research in-browser conversion for pre-update videos
-      (astropol)
+- [ ] **Incremental download** — remember what was already downloaded per Nomi, fetch only new content
+      (solcuerda, Kyo-Kun)
+- [x] **Generation prompts saved with media** — the "Prompt files" feature attaches each
+      item's prompt (sidecar `.txt`, PNG metadata embed, or both). Coverage by type:
+      Art → `artPrompt`, edited photo → `textPrompt`, video → `textPrompt` (sidecar only,
+      since embed writes PNG iTXt). Plain selfies have no prompt and appear inline in the
+      chat HTML. (macbiff)
+- [~] **Group chat image prompts** — group photos expose per-Nomi `artPrompt` in the medias
+      API; album prompt files already pick these up. Surfacing them inside the group chat
+      _transcript_ is still open. (Joe)
+- [ ] ~~**Convert old `.webp` videos to `.mp4`**~~ — out of scope: in-browser transcoding
+      needs FFmpeg.wasm (~30–50 MB) with heavy perf/memory cost. The downloader already
+      fetches `.mp4` when the backend offers it. (astropol)
