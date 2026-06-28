@@ -17,6 +17,7 @@ import {
     SELFIE_BYTES,
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
+import { applyMessageRange } from "./messageRange";
 import type { OffscreenClient } from "./offscreenClient";
 
 const SELFIE_EXTENSION = "webp";
@@ -36,6 +37,8 @@ export class GroupChatDownloader {
         info,
         includeSelfies,
         maxMessages = 0,
+        rangeStart = 0,
+        rangeEnd = 0,
         messagesPerFile = 0,
         maxFileSizeMB = 0,
         onProgress,
@@ -69,8 +72,13 @@ export class GroupChatDownloader {
                 });
             }
 
-            // Keep only the last N items when a cap is set (0 = unlimited).
-            const messages = maxMessages > 0 ? all.slice(-maxMessages) : all;
+            // An explicit From→To range wins; otherwise fall back to last-N.
+            const messages = applyMessageRange(
+                all,
+                rangeStart,
+                rangeEnd,
+                maxMessages,
+            );
 
             const stringDate = new Date().toDateString().replace(/ /g, "-");
 

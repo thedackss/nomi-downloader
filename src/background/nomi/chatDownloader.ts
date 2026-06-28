@@ -18,6 +18,7 @@ import {
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
 import { fetchHeaderMedia } from "./headerMedia";
+import { applyMessageRange } from "./messageRange";
 import type { OffscreenClient } from "./offscreenClient";
 
 const SELFIE_EXTENSION = "webp";
@@ -34,6 +35,8 @@ export class ChatDownloader {
         nomiId,
         includeSelfies,
         maxMessages = 0,
+        rangeStart = 0,
+        rangeEnd = 0,
         messagesPerFile = 0,
         maxFileSizeMB = 0,
         onProgress,
@@ -55,8 +58,13 @@ export class ChatDownloader {
                 });
             }
 
-            // Keep only the last N items when a cap is set (0 = unlimited).
-            const messages = maxMessages > 0 ? all.slice(-maxMessages) : all;
+            // An explicit From→To range wins; otherwise fall back to last-N.
+            const messages = applyMessageRange(
+                all,
+                rangeStart,
+                rangeEnd,
+                maxMessages,
+            );
 
             // Embed the avatar/video as data URIs so the header works offline.
             const { avatar, avatarVideo } = await fetchHeaderMedia(
