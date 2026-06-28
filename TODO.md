@@ -51,7 +51,11 @@ Ordered roughly by demand.
 - [x] **Chat message range (X→Y)** — explicit From→To range (1-based, inclusive) in Chat
       settings; overrides the last-N "Max messages" when set. Shared `applyMessageRange`
       helper used by both the single and group chat HTML exports. (Bagman, Joe)
-- [ ] **Incremental download** — remember what was already downloaded per Nomi, fetch only new content
+- [x] **Incremental download (BETA)** — opt-in "Only new since last" toggle (off by default).
+      Album / single chat / group downloads fetch only content newer than the last
+      successful run, tracked per Nomi/group by newest timestamp in `chrome.storage.local`
+      (needs the `storage` permission). A "Reset history" button forgets everything.
+      Composes with the range filters (incremental narrows first, then range).
       (solcuerda, Kyo-Kun)
 - [x] **Generation prompts saved with media** — the "Prompt files" feature attaches each
       item's prompt (sidecar `.txt`, PNG metadata embed, or both). Coverage by type:
