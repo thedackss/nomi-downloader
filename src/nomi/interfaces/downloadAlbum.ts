@@ -6,6 +6,8 @@ export interface DownloadAlbumProps extends GetMediasProps {
     downloadQuantity?: number;
     /** Max images per zip; 0 / undefined = auto (size-based chunking only). */
     imagesPerZip?: number;
+    /** Max estimated size per zip, in MB; undefined / 0 = use the default cap. */
+    maxZipSizeMB?: number;
     /** Save Art/PhotoEdit prompts: off | sidecar .txt | embed in image | both. */
     prompts?: "off" | "sidecar" | "embed" | "both";
 }

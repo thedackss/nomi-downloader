@@ -22,6 +22,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             folderization: true,
             downloadQuantity: 2,
             imagesPerZip: 0,
+            maxZipSizeMB: 750,
             prompts: "off",
         },
         chatDownload: {

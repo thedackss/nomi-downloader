@@ -319,6 +319,51 @@ export const Settings = () => {
                                 </div>
                             </li>
                             <li>
+                                <label htmlFor="set-max-zip-size">
+                                    Max zip size (MB)
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="Albums also split when a zip's estimated size passes this, regardless of the image count. The zip is built in memory, so very large values may fail. Default 750.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <input
+                                        id="set-max-zip-size"
+                                        type="number"
+                                        min={100}
+                                        step={250}
+                                        value={
+                                            Settings.albumDownload.maxZipSizeMB
+                                        }
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                albumDownload: {
+                                                    ...Settings.albumDownload,
+                                                    maxZipSizeMB: Math.max(
+                                                        100,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 750,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {`~${Settings.albumDownload.maxZipSizeMB} MB per zip`}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
                                 <label htmlFor="set-folders">
                                     Organize into folders
                                 </label>

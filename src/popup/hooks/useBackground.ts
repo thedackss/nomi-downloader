@@ -105,6 +105,7 @@ export function useBackground() {
         folderization: Settings.albumDownload.folderization,
         quality: Settings.albumDownload.quality,
         imagesPerZip: Settings.albumDownload.imagesPerZip,
+        maxZipSizeMB: Settings.albumDownload.maxZipSizeMB,
         prompts: Settings.albumDownload.prompts,
     };
     const chatOptions = {

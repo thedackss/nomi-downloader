@@ -30,6 +30,11 @@ export interface Settings {
         /** Max images per zip; 0 = auto (size-based chunking only). */
         imagesPerZip: number;
         /**
+         * Max estimated size per zip, in MB. The zip is built in memory, so this
+         * is a safety floor against multi-GB zips; raise it to split less often.
+         */
+        maxZipSizeMB: number;
+        /**
          * Save the generation prompt for Art / edited photos:
          * off | sidecar .txt | embedded in the image | both.
          * Embedding only applies to PNG (HD); WebP/video fall back to a sidecar.

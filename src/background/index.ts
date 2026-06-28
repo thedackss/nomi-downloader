@@ -94,6 +94,7 @@ function main() {
                     folderization,
                     quality,
                     imagesPerZip,
+                    maxZipSizeMB,
                     prompts,
                 } = message.data;
                 runDownload(
@@ -110,6 +111,7 @@ function main() {
                             folderization,
                             quality,
                             imagesPerZip,
+                            maxZipSizeMB,
                             prompts,
                             onProgress,
                         }),
@@ -251,6 +253,7 @@ function main() {
                     folderization,
                     quality,
                     imagesPerZip,
+                    maxZipSizeMB,
                     prompts,
                     maxMessages,
                     includeSelfies,
@@ -270,6 +273,7 @@ function main() {
                             folderization,
                             quality,
                             imagesPerZip,
+                            maxZipSizeMB,
                             prompts,
                             onProgress,
                         });
@@ -298,6 +302,7 @@ function main() {
                     folderization,
                     quality,
                     imagesPerZip,
+                    maxZipSizeMB,
                     prompts,
                     maxMessages,
                     includeSelfies,
@@ -320,6 +325,7 @@ function main() {
                             folderization,
                             quality,
                             imagesPerZip,
+                            maxZipSizeMB,
                             prompts,
                             onProgress,
                         });
