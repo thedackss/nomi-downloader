@@ -9,6 +9,7 @@
         "build:firefox": "tsc -b && BROWSER_TARGET=firefox vite build",
         "start:firefox-android": "npm run build:firefox && web-ext run -t firefox-android --source-dir dist",
         "build": "tsc -b && vite build",
+        "package": "node scripts/package-extension.mjs",
         "lint": "biome lint ; npm run lint:scss",
         "lint:scss": "stylelint \"src/**/*.scss\"",
         "format": "biome check --write && npm run format:scss",
