@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { clearIncremental } from "../../../background/nomi/incrementalStore";
 import { useSettings } from "../../hooks/useSettings";
 import { Tooltip } from "../Tooltip";
 import { RiInformation2Line } from "./RiInformation2Line";
@@ -13,6 +14,8 @@ export const Settings = () => {
 
     type Tab = "interface" | "downloads" | "advanced";
     const [tab, setTab] = useState<Tab>("interface");
+    // Transient confirmation after clearing the incremental download history.
+    const [historyCleared, setHistoryCleared] = useState(false);
     const tabs: Array<{ id: Tab; label: string }> = [
         { id: "interface", label: "Interface" },
         { id: "downloads", label: "Downloads" },
@@ -875,6 +878,78 @@ export const Settings = () => {
                                         {Settings.jsonDownload.rawData
                                             ? "Full API data"
                                             : "Cleaned export"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
+                                <h3>Incremental (BETA)</h3>
+                            </li>
+                            <li>
+                                <label htmlFor="set-incremental">
+                                    Only new since last
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="BETA. Album, chat and group downloads fetch only content newer than your last successful download, remembered per Nomi/group. Use Reset to download everything again.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <label className={styles.switch}>
+                                        <input
+                                            id="set-incremental"
+                                            type="checkbox"
+                                            checked={
+                                                Settings.incremental.enabled
+                                            }
+                                            onChange={(e) => {
+                                                setHistoryCleared(false);
+                                                updateSettings({
+                                                    incremental: {
+                                                        enabled:
+                                                            e.target.checked,
+                                                    },
+                                                });
+                                            }}
+                                        />
+                                        <span className={styles.slider}></span>
+                                    </label>
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {Settings.incremental.enabled
+                                            ? "Only newer content"
+                                            : "Always full download"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
+                                <label htmlFor="set-incremental-reset">
+                                    Download history
+                                </label>
+                                <div className={styles.row}>
+                                    <button
+                                        id="set-incremental-reset"
+                                        type="button"
+                                        onClick={async () => {
+                                            await clearIncremental();
+                                            setHistoryCleared(true);
+                                        }}>
+                                        Reset history
+                                    </button>
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {historyCleared
+                                            ? "History cleared"
+                                            : "Forget what was downloaded"}
                                     </p>
                                 </div>
                             </li>
