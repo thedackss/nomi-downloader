@@ -96,10 +96,17 @@ interface ChatDocumentProps {
     name: string;
     /** Avatar image as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
+    /** Profile video as a data URI; played in the header when present. */
+    avatarVideo?: string;
     children: ReactNode;
 }
 
-function ChatDocument({ name, avatar, children }: ChatDocumentProps) {
+function ChatDocument({
+    name,
+    avatar,
+    avatarVideo,
+    children,
+}: ChatDocumentProps) {
     return (
         <html lang="en">
             <head>
@@ -114,7 +121,17 @@ function ChatDocument({ name, avatar, children }: ChatDocumentProps) {
             </head>
             <body>
                 <header className="chat-header">
-                    {avatar ? (
+                    {avatarVideo ? (
+                        <video
+                            className="avatar"
+                            src={avatarVideo}
+                            poster={avatar}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                        />
+                    ) : avatar ? (
                         <img className="avatar" src={avatar} alt={name} />
                     ) : null}
                     <h1>{name}</h1>
@@ -167,6 +184,7 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
     return renderChatDocument({
         name: payload.name,
         avatar: payload.avatar,
+        avatarVideo: payload.avatarVideo,
         children,
     });
 }

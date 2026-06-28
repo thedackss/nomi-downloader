@@ -15,6 +15,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             sharedNotes: true,
             json: true,
             markdown: true,
+            embedHeaderVideo: false,
         },
         albumDownload: {
             quality: "SD",

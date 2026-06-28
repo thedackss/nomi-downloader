@@ -38,6 +38,24 @@ describe("renderChatDocument", () => {
         expect(html).toContain('src="data:image/webp;base64,AAAA"');
     });
 
+    it("plays the profile video in the header, with the still as poster", () => {
+        const withVideo = renderChatDocument({
+            name: "Veronica",
+            avatar: "data:image/webp;base64,AAAA",
+            avatarVideo: "data:video/mp4;base64,BBBB",
+            children: createElement(ChatMessage, {
+                isNomi: true,
+                text: "hi",
+                date: new Date("2026-02-19T14:05:00"),
+            }),
+        });
+        expect(withVideo).toContain("<video");
+        expect(withVideo).toContain('src="data:video/mp4;base64,BBBB"');
+        expect(withVideo).toContain('poster="data:image/webp;base64,AAAA"');
+        // The still is the video's poster, not a separate header <img>.
+        expect(withVideo).not.toContain('<img class="avatar"');
+    });
+
     it("renders the message text inside a nomi row bubble", () => {
         expect(html).toContain("hello there");
         expect(html).toContain('class="row nomi"');

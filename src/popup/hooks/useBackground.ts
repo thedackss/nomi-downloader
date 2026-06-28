@@ -60,7 +60,12 @@ export function useBackground() {
         if (!nomi) return;
         chrome.runtime.sendMessage({
             type,
-            data: { nomiId: nomi.id, debug: Settings.debug, ...extraData },
+            data: {
+                nomiId: nomi.id,
+                debug: Settings.debug,
+                embedHeaderVideo: Settings.download.embedHeaderVideo,
+                ...extraData,
+            },
         });
         // Optimistic update; the background broadcasts real progress.
         setDownloadStatus({
@@ -79,7 +84,12 @@ export function useBackground() {
         if (!group) return;
         chrome.runtime.sendMessage({
             type,
-            data: { groupId: group.id, debug: Settings.debug, ...extraData },
+            data: {
+                groupId: group.id,
+                debug: Settings.debug,
+                embedHeaderVideo: Settings.download.embedHeaderVideo,
+                ...extraData,
+            },
         });
         // Optimistic update; the background broadcasts real progress.
         setDownloadStatus({

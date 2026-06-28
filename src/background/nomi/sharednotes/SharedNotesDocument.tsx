@@ -129,7 +129,15 @@ function AnchorsNote({
 }
 
 function SharedNotesDocument(payload: SharedNotesRenderPayload) {
-    const { name, avatar, generatedAt, notes, anchors, imageNotes } = payload;
+    const {
+        name,
+        avatar,
+        avatarVideo,
+        generatedAt,
+        notes,
+        anchors,
+        imageNotes,
+    } = payload;
     const generated = formatDate(generatedAt);
     const hasImageSettings = anchors.length > 0 || imageNotes.length > 0;
 
@@ -147,7 +155,17 @@ function SharedNotesDocument(payload: SharedNotesRenderPayload) {
             </head>
             <body>
                 <header className="notes-header">
-                    {avatar ? (
+                    {avatarVideo ? (
+                        <video
+                            className="avatar"
+                            src={avatarVideo}
+                            poster={avatar}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                        />
+                    ) : avatar ? (
                         <img className="avatar" src={avatar} alt={name} />
                     ) : null}
                     <div className="title">

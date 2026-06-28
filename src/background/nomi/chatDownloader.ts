@@ -2,8 +2,6 @@ import type { NomiApiClient } from "../../nomi/api";
 import { NomiError } from "../../nomi/errors";
 import { api } from "../../nomi/http";
 import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
-import { getNomiImageUrl } from "../../nomi/media";
-import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
 import type {
     Message,
     SelfieRequest,
@@ -19,6 +17,7 @@ import {
     SELFIE_BYTES,
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
+import { fetchHeaderMedia } from "./headerMedia";
 import type { OffscreenClient } from "./offscreenClient";
 
 const SELFIE_EXTENSION = "webp";
@@ -28,6 +27,7 @@ export class ChatDownloader {
     constructor(
         private readonly nomiApi: NomiApiClient,
         private readonly offscreen: OffscreenClient,
+        private readonly embedHeaderVideo = false,
     ) {}
 
     async run({
@@ -56,8 +56,12 @@ export class ChatDownloader {
             // Keep only the last N items when a cap is set (0 = unlimited).
             const messages = maxMessages > 0 ? all.slice(-maxMessages) : all;
 
-            // Embed the avatar as a data URI so the header works offline.
-            const avatar = await this.fetchAvatar(nomi);
+            // Embed the avatar/video as data URIs so the header works offline.
+            const { avatar, avatarVideo } = await fetchHeaderMedia(
+                nomi,
+                this.offscreen,
+                this.embedHeaderVideo,
+            );
 
             const stringDate = new Date().toDateString().replace(/ /g, "-");
 
@@ -126,6 +130,7 @@ export class ChatDownloader {
                 const chatHtml = await this.offscreen.renderChat({
                     name: nomi.name,
                     avatar,
+                    avatarVideo,
                     items,
                 });
 
@@ -175,23 +180,6 @@ export class ChatDownloader {
     ): number {
         if ("sent" in item) return MESSAGE_BYTES;
         return includeSelfies ? item.selfies.length * SELFIE_BYTES : 0;
-    }
-
-    /** Fetch the Nomi's avatar as a data URI so the header renders offline. */
-    private async fetchAvatar(
-        nomi: ApiNomisIdResponse,
-    ): Promise<string | undefined> {
-        try {
-            const { data } = await api.get(getNomiImageUrl(nomi), {
-                responseType: "blob",
-                timeout: SELFIE_DOWNLOAD_TIMEOUT_MS,
-            });
-            const base64 = await this.offscreen.blobToBase64(data);
-            return `data:image/webp;base64,${base64}`;
-        } catch (err) {
-            Log("Failed to fetch Nomi avatar", err);
-            return undefined;
-        }
     }
 
     private async fetchSelfies(request: SelfieRequest): Promise<ChatItem[]> {

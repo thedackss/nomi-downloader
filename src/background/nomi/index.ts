@@ -7,13 +7,12 @@ import type {
     GroupExportProps,
 } from "../../nomi/interfaces/downloadGroupChat";
 import type { NomiExistsProps } from "../../nomi/interfaces/exists";
-import { getNomiImageUrl } from "../../nomi/media";
-import type { ApiNomisIdResponse } from "../../nomi/types/api.nomis.id";
 import type { ApiAnchorLooksResponse } from "../../nomi/types/api.nomis.id.anchorLooks";
 import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
 import { ChatDownloader } from "./chatDownloader";
 import { GroupChatDownloader } from "./groupChatDownloader";
+import { fetchHeaderMedia } from "./headerMedia";
 import { buildNomiJson, type NomiJsonInput } from "./json/builder";
 import { buildGroupJson } from "./json/groupBuilder";
 import { buildNomiMarkdown } from "./markdown/builder";
@@ -34,6 +33,13 @@ import type { AnchorLook, SharedNotesRenderPayload } from "./sharednotes/types";
 export class Nomi {
     private readonly api = new NomiApiClient();
     private readonly offscreen = new OffscreenClient();
+
+    /** Embed the profile video in HTML export headers (set per request). */
+    private embedHeaderVideo = false;
+
+    setEmbedHeaderVideo(value: boolean) {
+        this.embedHeaderVideo = value;
+    }
 
     get(props: NomiExistsProps) {
         return this.api.get(props);
@@ -57,13 +63,18 @@ export class Nomi {
         await this.offscreen.setupDocument();
 
         const nomi = await this.api.get({ nomiId });
-        const avatar = await this.fetchAvatar(nomi);
+        const { avatar, avatarVideo } = await fetchHeaderMedia(
+            nomi,
+            this.offscreen,
+            this.embedHeaderVideo,
+        );
 
         const payload = buildMindMapPayload(
             nomi.name,
             data,
             new Date().toISOString(),
             avatar,
+            avatarVideo,
         );
         const html = await this.offscreen.renderMindMap(payload);
 
@@ -109,9 +120,15 @@ export class Nomi {
             return false;
         }
 
+        const { avatar, avatarVideo } = await fetchHeaderMedia(
+            nomi,
+            this.offscreen,
+            this.embedHeaderVideo,
+        );
         const payload: SharedNotesRenderPayload = {
             name: nomi.name,
-            avatar: await this.fetchAvatar(nomi),
+            avatar,
+            avatarVideo,
             generatedAt: new Date().toISOString(),
             notes,
             anchors,
@@ -236,11 +253,6 @@ export class Nomi {
         }
     }
 
-    /** Fetch a Nomi's avatar as a data URI; undefined if it can't be fetched. */
-    private fetchAvatar(nomi: ApiNomisIdResponse): Promise<string | undefined> {
-        return this.fetchImageDataUri(getNomiImageUrl(nomi));
-    }
-
     /** Resolve anchor looks into renderable items with embedded preview images. */
     private async fetchAnchors(
         nomiId: number,
@@ -268,7 +280,11 @@ export class Nomi {
     }
 
     downloadChat(props: DownloadChatProps) {
-        return new ChatDownloader(this.api, this.offscreen).run(props);
+        return new ChatDownloader(
+            this.api,
+            this.offscreen,
+            this.embedHeaderVideo,
+        ).run(props);
     }
 
     downloadGroupChat(props: DownloadGroupChatProps) {

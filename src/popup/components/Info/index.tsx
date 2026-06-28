@@ -84,7 +84,9 @@ export const Info = () => {
                             <span
                                 key={tile.id}
                                 className={styles.heroImg}
-                                style={{ backgroundImage: `url(${tile.still})` }}
+                                style={{
+                                    backgroundImage: `url(${tile.still})`,
+                                }}
                             />
                         ),
                     )}

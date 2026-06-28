@@ -85,6 +85,7 @@ function main() {
 
         const { nomiId } = message.data;
         setDebugLogging(message.data.debug ?? false);
+        nomi.setEmbedHeaderVideo(message.data.embedHeaderVideo ?? false);
 
         switch (message.type) {
             case "DOWNLOAD_ALBUM": {

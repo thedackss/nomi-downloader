@@ -256,7 +256,8 @@ function TermRow({ entry }: { entry: MindMapEntry }) {
 }
 
 function MindMapDocument(payload: MindMapRenderPayload) {
-    const { name, avatar, generatedAt, nodes, edges, entries } = payload;
+    const { name, avatar, avatarVideo, generatedAt, nodes, edges, entries } =
+        payload;
     const generated = formatDate(generatedAt);
 
     // Inlined graph data; escape "<" so it can't break out of the script tag.
@@ -276,7 +277,17 @@ function MindMapDocument(payload: MindMapRenderPayload) {
             </head>
             <body>
                 <header className="mindmap-header">
-                    {avatar ? (
+                    {avatarVideo ? (
+                        <video
+                            className="avatar"
+                            src={avatarVideo}
+                            poster={avatar}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                        />
+                    ) : avatar ? (
                         <img className="avatar" src={avatar} alt={name} />
                     ) : null}
                     <div className="title">

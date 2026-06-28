@@ -45,6 +45,8 @@ export interface MindMapRenderPayload {
     name: string;
     /** Avatar image as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
+    /** Profile video as a data URI; played in the header when present. */
+    avatarVideo?: string;
     /** ISO timestamp of when the export was generated. */
     generatedAt: string;
     nodes: MindMapGraphNode[];

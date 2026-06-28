@@ -479,6 +479,50 @@ export const Settings = () => {
                                 </div>
                             </li>
                             <li>
+                                <h3>Export headers</h3>
+                            </li>
+                            <li>
+                                <label htmlFor="set-header-video">
+                                    Animate header
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="When a Nomi's profile is a video, embed that video in the chat / mind map / shared notes HTML headers instead of a still frame. Increases file size.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <label className={styles.switch}>
+                                        <input
+                                            id="set-header-video"
+                                            type="checkbox"
+                                            checked={dl.embedHeaderVideo}
+                                            onChange={(e) =>
+                                                updateSettings({
+                                                    download: {
+                                                        ...dl,
+                                                        embedHeaderVideo:
+                                                            e.target.checked,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                        <span className={styles.slider}></span>
+                                    </label>
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {dl.embedHeaderVideo
+                                            ? "Embed video (larger files)"
+                                            : "Still image"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
                                 <h3>JSON</h3>
                             </li>
                             <li>

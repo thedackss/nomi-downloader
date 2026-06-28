@@ -25,6 +25,8 @@ export interface ChatRenderPayload {
     name: string;
     /** Avatar as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
+    /** Profile video as a data URI; played in the header when present. */
+    avatarVideo?: string;
     /** Optional facts rendered as a card above the messages (group chats). */
     info?: ChatInfoRow[];
     items: ChatItem[];

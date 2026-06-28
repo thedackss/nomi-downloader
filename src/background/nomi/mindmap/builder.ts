@@ -17,6 +17,7 @@ export function buildMindMapPayload(
     data: MindInfoData,
     generatedAt: string,
     avatar?: string,
+    avatarVideo?: string,
 ): MindMapRenderPayload {
     const nodes = data.graph.nodes.map((n) => ({
         uuid: n.uuid,
@@ -71,5 +72,5 @@ export function buildMindMapPayload(
         ),
     }));
 
-    return { name, avatar, generatedAt, nodes, edges, entries };
+    return { name, avatar, avatarVideo, generatedAt, nodes, edges, entries };
 }

@@ -12,6 +12,11 @@ export interface DownloadSettings {
     sharedNotes: boolean;
     json: boolean;
     markdown: boolean;
+    /**
+     * When a Nomi's profile is a video, embed that video in the chat / mind map
+     * / shared notes HTML headers instead of a still frame. Larger files.
+     */
+    embedHeaderVideo: boolean;
 }
 
 export interface Settings {
