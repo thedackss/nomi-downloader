@@ -110,6 +110,8 @@ export function useBackground() {
     };
     const chatOptions = {
         maxMessages: Settings.chatDownload.maxMessages,
+        messagesPerFile: Settings.chatDownload.messagesPerFile,
+        maxFileSizeMB: Settings.chatDownload.maxFileSizeMB,
         includeSelfies: Settings.chatDownload.includeSelfies,
     };
     const jsonOptions = {

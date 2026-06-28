@@ -44,6 +44,10 @@ export interface Settings {
     chatDownload: {
         /** Keep only the last N messages; 0 = unlimited. */
         maxMessages: number;
+        /** Max messages per exported file; 0 = no count cap (size only). */
+        messagesPerFile: number;
+        /** Max estimated size per file, in MB; 0 = built-in safe cap. */
+        maxFileSizeMB: number;
         /** Embed selfie images in the exported chat HTML. */
         includeSelfies: boolean;
     };

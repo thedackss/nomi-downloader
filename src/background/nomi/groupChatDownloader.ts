@@ -36,6 +36,8 @@ export class GroupChatDownloader {
         info,
         includeSelfies,
         maxMessages = 0,
+        messagesPerFile = 0,
+        maxFileSizeMB = 0,
         onProgress,
     }: DownloadGroupChatProps) {
         const update = (message: string) => onProgress?.(message);
@@ -74,12 +76,24 @@ export class GroupChatDownloader {
 
             update(`Scanning messages: ${messages.length} found`);
 
+            // A file closes when either limit is hit. The byte cap defaults to
+            // the built-in safe value (selfie-heavy files allow more); an
+            // optional "messages per file" caps the count on top of it.
+            const maxBytes =
+                maxFileSizeMB > 0
+                    ? maxFileSizeMB * 1024 * 1024
+                    : includeSelfies
+                      ? CHAT_CHUNK_MAX_BYTES_WITH_SELFIES
+                      : CHAT_CHUNK_MAX_BYTES_TEXT;
+            const maxCount =
+                messagesPerFile > 0
+                    ? messagesPerFile
+                    : Number.POSITIVE_INFINITY;
             const chunks = chunkBySize(
                 messages,
                 (item) => this.estimateItemSize(item, includeSelfies),
-                includeSelfies
-                    ? CHAT_CHUNK_MAX_BYTES_WITH_SELFIES
-                    : CHAT_CHUNK_MAX_BYTES_TEXT,
+                maxBytes,
+                maxCount,
             );
 
             update(`Downloading ${messages.length} messages... 0%`);

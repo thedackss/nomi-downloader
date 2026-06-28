@@ -119,7 +119,12 @@ function main() {
                 break;
             }
             case "DOWNLOAD_CHAT": {
-                const { maxMessages, includeSelfies } = message.data;
+                const {
+                    maxMessages,
+                    messagesPerFile,
+                    maxFileSizeMB,
+                    includeSelfies,
+                } = message.data;
                 runDownload(
                     nomiId,
                     {
@@ -132,14 +137,23 @@ function main() {
                             nomiId,
                             includeSelfies: includeSelfies ?? true,
                             maxMessages,
+                            messagesPerFile,
+                            maxFileSizeMB,
                             onProgress,
                         }),
                 );
                 break;
             }
             case "DOWNLOAD_GROUP_CHAT": {
-                const { groupId, name, info, maxMessages, includeSelfies } =
-                    message.data;
+                const {
+                    groupId,
+                    name,
+                    info,
+                    maxMessages,
+                    messagesPerFile,
+                    maxFileSizeMB,
+                    includeSelfies,
+                } = message.data;
                 runDownload(
                     groupId,
                     {
@@ -154,6 +168,8 @@ function main() {
                             info,
                             includeSelfies: includeSelfies ?? true,
                             maxMessages,
+                            messagesPerFile,
+                            maxFileSizeMB,
                             onProgress,
                         }),
                     "group",
@@ -256,6 +272,8 @@ function main() {
                     maxZipSizeMB,
                     prompts,
                     maxMessages,
+                    messagesPerFile,
+                    maxFileSizeMB,
                     includeSelfies,
                 } = message.data;
                 runDownload(
@@ -283,6 +301,8 @@ function main() {
                             nomiId,
                             includeSelfies: includeSelfies ?? true,
                             maxMessages,
+                            messagesPerFile,
+                            maxFileSizeMB,
                             onProgress,
                         });
 
@@ -305,6 +325,8 @@ function main() {
                     maxZipSizeMB,
                     prompts,
                     maxMessages,
+                    messagesPerFile,
+                    maxFileSizeMB,
                     includeSelfies,
                     rawData: allRawData,
                 } = message.data;
@@ -335,6 +357,8 @@ function main() {
                             nomiId,
                             includeSelfies: includeSelfies ?? true,
                             maxMessages,
+                            messagesPerFile,
+                            maxFileSizeMB,
                             onProgress,
                         });
 

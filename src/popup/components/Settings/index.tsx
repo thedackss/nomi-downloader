@@ -487,6 +487,102 @@ export const Settings = () => {
                                 </div>
                             </li>
                             <li>
+                                <label htmlFor="set-messages-per-file">
+                                    Messages per file
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="0 = no limit. Split the export into HTML files of at most this many messages each (the size cap below still applies).">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <input
+                                        id="set-messages-per-file"
+                                        type="number"
+                                        min={0}
+                                        step={500}
+                                        value={
+                                            Settings.chatDownload
+                                                .messagesPerFile
+                                        }
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                chatDownload: {
+                                                    ...Settings.chatDownload,
+                                                    messagesPerFile: Math.max(
+                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 0,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {Settings.chatDownload.messagesPerFile >
+                                        0
+                                            ? `${Settings.chatDownload.messagesPerFile} per file`
+                                            : "No limit (size only)"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
+                                <label htmlFor="set-chat-max-size">
+                                    Max file size (MB)
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="0 = built-in safe cap (10 MB text / 75 MB with selfies). The file is built in memory, so very large values may fail. Raise it to split less often.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <input
+                                        id="set-chat-max-size"
+                                        type="number"
+                                        min={0}
+                                        step={10}
+                                        value={
+                                            Settings.chatDownload.maxFileSizeMB
+                                        }
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                chatDownload: {
+                                                    ...Settings.chatDownload,
+                                                    maxFileSizeMB: Math.max(
+                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 0,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {Settings.chatDownload.maxFileSizeMB > 0
+                                            ? `~${Settings.chatDownload.maxFileSizeMB} MB per file`
+                                            : "Auto (safe default)"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
                                 <label htmlFor="set-include-selfies">
                                     Include selfies
                                 </label>
