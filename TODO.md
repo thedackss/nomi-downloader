@@ -45,10 +45,12 @@ Legend: [x] done · [~] partial · [ ] missing
 
 Ordered roughly by demand.
 
-- [ ] **Album range / offset** — only the last N photos, or start at photo #N
-      (Mark, Kyo-Kun, Jymm, solcuerda)
-- [ ] **Chat message range (X→Y)** — explicit start/end, beyond the last-N "Max messages" setting
-      (Bagman; Joe's "last 50" is covered once Max messages is restored)
+- [x] **Album range / offset** — "Most recent N photos" + "Start at photo #N" (oldest = #1)
+      in Album settings; they compose (skip to #N, then keep the recent N). Applied after
+      the chronological sort, before chunking. (Mark, Kyo-Kun, Jymm, solcuerda)
+- [x] **Chat message range (X→Y)** — explicit From→To range (1-based, inclusive) in Chat
+      settings; overrides the last-N "Max messages" when set. Shared `applyMessageRange`
+      helper used by both the single and group chat HTML exports. (Bagman, Joe)
 - [ ] **Incremental download** — remember what was already downloaded per Nomi, fetch only new content
       (solcuerda, Kyo-Kun)
 - [x] **Generation prompts saved with media** — the "Prompt files" feature attaches each
