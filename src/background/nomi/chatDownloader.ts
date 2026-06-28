@@ -18,6 +18,12 @@ import {
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
 import { fetchHeaderMedia } from "./headerMedia";
+import {
+    filterNewerThan,
+    getLastTimestamp,
+    newestTimestamp,
+    setLastTimestamp,
+} from "./incrementalStore";
 import { applyMessageRange } from "./messageRange";
 import type { OffscreenClient } from "./offscreenClient";
 
@@ -39,6 +45,7 @@ export class ChatDownloader {
         rangeEnd = 0,
         messagesPerFile = 0,
         maxFileSizeMB = 0,
+        incremental = false,
         onProgress,
     }: DownloadChatProps) {
         const update = (message: string) => onProgress?.(message);
@@ -58,9 +65,24 @@ export class ChatDownloader {
                 });
             }
 
+            // BETA: keep only items newer than the last successful download.
+            const itemTime = (item: Message | SelfieRequest) =>
+                "sent" in item ? item.sent : item.completed;
+            const lastTs = incremental
+                ? await getLastTimestamp("chat", nomiId)
+                : undefined;
+            const fresh = incremental
+                ? filterNewerThan(all, itemTime, lastTs)
+                : all;
+
+            if (incremental && fresh.length === 0) {
+                update("No new messages since your last download.");
+                return "No new messages since your last download.";
+            }
+
             // An explicit From→To range wins; otherwise fall back to last-N.
             const messages = applyMessageRange(
-                all,
+                fresh,
                 rangeStart,
                 rangeEnd,
                 maxMessages,
@@ -181,6 +203,12 @@ export class ChatDownloader {
                 );
 
                 currentMessageIndex += chunk.length;
+            }
+
+            // Caught up: remember the newest item we just downloaded.
+            if (incremental && messages.length > 0) {
+                const newest = newestTimestamp(messages, itemTime);
+                if (newest) await setLastTimestamp("chat", nomiId, newest);
             }
 
             update(`Downloaded ${messages.length} messages`);

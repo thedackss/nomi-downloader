@@ -16,6 +16,12 @@ import {
     SD_IMAGE_BYTES,
     VIDEO_BYTES,
 } from "./constants";
+import {
+    filterNewerThan,
+    getLastTimestamp,
+    newestTimestamp,
+    setLastTimestamp,
+} from "./incrementalStore";
 import { bytesToBase64, embedPrompt, textToBase64 } from "./metadata";
 import type { OffscreenClient } from "./offscreenClient";
 
@@ -39,6 +45,7 @@ export class AlbumDownloader {
         prompts = "off",
         recentLimit = 0,
         startIndex = 0,
+        incremental = false,
     }: DownloadAlbumProps) {
         const update = (message: string) => onProgress?.(message);
 
@@ -65,9 +72,26 @@ export class AlbumDownloader {
                 });
             }
 
+            // BETA: keep only photos newer than the last successful download.
+            const lastTs = incremental
+                ? await getLastTimestamp("album", nomiId)
+                : undefined;
+            const freshMedias = incremental
+                ? filterNewerThan(allMedias, (m) => String(m.completed), lastTs)
+                : allMedias;
+
+            if (incremental && freshMedias.length === 0) {
+                update("No new photos since your last download.");
+                return "No new photos since your last download.";
+            }
+
             // Apply the optional range over the chronological (oldest→newest)
             // list: skip to photo #startIndex, then keep the most recent N.
-            const medias = this.applyRange(allMedias, startIndex, recentLimit);
+            const medias = this.applyRange(
+                freshMedias,
+                startIndex,
+                recentLimit,
+            );
 
             if (medias.length === 0) {
                 throw new NomiError({
@@ -254,6 +278,15 @@ export class AlbumDownloader {
                 await new Promise((resolve) =>
                     setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
                 );
+            }
+
+            // Caught up: remember the newest photo we just downloaded so the
+            // next incremental run starts after it. Only when something saved.
+            if (incremental && downloads.length > 0) {
+                const newest = newestTimestamp(medias, (m) =>
+                    String(m.completed),
+                );
+                if (newest) await setLastTimestamp("album", nomiId, newest);
             }
 
             await new Promise((resolve) =>

@@ -17,6 +17,12 @@ import {
     SELFIE_BYTES,
     SELFIE_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
+import {
+    filterNewerThan,
+    getLastTimestamp,
+    newestTimestamp,
+    setLastTimestamp,
+} from "./incrementalStore";
 import { applyMessageRange } from "./messageRange";
 import type { OffscreenClient } from "./offscreenClient";
 
@@ -41,6 +47,7 @@ export class GroupChatDownloader {
         rangeEnd = 0,
         messagesPerFile = 0,
         maxFileSizeMB = 0,
+        incremental = false,
         onProgress,
     }: DownloadGroupChatProps) {
         const update = (message: string) => onProgress?.(message);
@@ -72,9 +79,24 @@ export class GroupChatDownloader {
                 });
             }
 
+            // BETA: keep only items newer than the last successful download.
+            const itemTime = (item: GroupItem) =>
+                "sent" in item ? item.sent : item.completed;
+            const lastTs = incremental
+                ? await getLastTimestamp("group", groupId)
+                : undefined;
+            const fresh = incremental
+                ? filterNewerThan(all, itemTime, lastTs)
+                : all;
+
+            if (incremental && fresh.length === 0) {
+                update("No new messages since your last download.");
+                return "No new messages since your last download.";
+            }
+
             // An explicit From→To range wins; otherwise fall back to last-N.
             const messages = applyMessageRange(
-                all,
+                fresh,
                 rangeStart,
                 rangeEnd,
                 maxMessages,
@@ -186,6 +208,12 @@ export class GroupChatDownloader {
                 );
 
                 currentMessageIndex += chunk.length;
+            }
+
+            // Caught up: remember the newest item we just downloaded.
+            if (incremental && messages.length > 0) {
+                const newest = newestTimestamp(messages, itemTime);
+                if (newest) await setLastTimestamp("group", groupId, newest);
             }
 
             update(`Downloaded ${messages.length} messages`);
