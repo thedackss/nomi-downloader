@@ -36,12 +36,14 @@ export is a self-contained file (or `.zip`) that works fully offline.
 - **Album** — every selfie, art image, edited photo and video, packed into one or
   more `.zip` files. Split by a configurable per-zip size (and optionally an image
   count), optionally organized into per-type folders, in HD (`.png`) or SD (`.webp`).
-- **Prompt files** — optionally save the generation prompt for Art and edited
-  photos alongside each image, as a sidecar `.txt`, embedded in the image metadata
-  (PNG), or both.
+  Optionally limit to a photo range — the most recent N, and/or starting at photo #N.
+- **Prompt files** — optionally save the generation prompt for Art, edited photos
+  and videos alongside each image, as a sidecar `.txt`, embedded in the image
+  metadata (PNG), or both.
 - **Chat** — the full conversation as a standalone, styled `.html` file, with
   selfies inlined or text-only. Long chats split across multiple files by a
-  configurable message count and/or file size.
+  configurable message count and/or file size. Optionally export only the most
+  recent N messages, or an explicit message range.
 - **Mind Map** — the Nomi's memory graph and terms as an interactive `.html` file
   (force-directed graph + a browsable table of entries).
 - **Shared Notes** — backstory, roleplay, appearance and other shared notes,
@@ -75,11 +77,19 @@ A tabbed settings panel (Interface · Downloads · Advanced):
   built-in safe default). Raise it to split into fewer, larger zips.
 - **Organize into folders** — sort album media into per-type subfolders.
 - **Concurrent downloads** — how many media items to fetch in parallel.
+- **Most recent photos / Start at photo #** — limit the album to the most recent N
+  photos and/or skip to photo #N (oldest = #1); the two compose.
 - **Max messages** — export only the most recent N chat messages (0 = all).
+- **Message range** — export an explicit range (from #X to #Y, oldest = #1);
+  overrides Max messages when set.
 - **Messages per file** — split the chat export every N messages (0 = no count cap).
 - **Max file size (MB)** — per-file size cap for chat exports (0 = the built-in
   safe default). Raise it to split into fewer, larger files.
 - **Include selfies in chat** — embed images in the chat HTML, or keep it text-only.
+- **Incremental download (BETA)** — opt-in (off by default). Album, chat and group
+  downloads fetch only content newer than your last successful download, tracked
+  per Nomi/group. A **Reset history** button forgets everything and downloads in
+  full again.
 - **Animate header** — when a Nomi's profile is a video, embed the playing video in
   the chat / mind map / shared notes HTML headers instead of a still frame.
 - **Prompt files** — off / sidecar `.txt` / image metadata / both.
@@ -186,6 +196,8 @@ src/
 │       ├── chat/ mindmap/ sharednotes/  JSX → standalone HTML documents
 │       ├── json/ markdown/     structured data builders (Nomi + group)
 │       ├── chunk.ts            chunkBySize() shared by the downloaders
+│       ├── messageRange.ts     applyMessageRange() for chat From→To / last-N
+│       ├── incrementalStore.ts BETA per-Nomi download history (chrome.storage)
 │       └── constants.ts        chunk sizes, timeouts, pacing
 ├── offscreen/        Offscreen document (runs JSZip / Blob / react-dom/server)
 ├── content/          Content script injected on nomi.ai
