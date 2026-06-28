@@ -10,4 +10,8 @@ export interface DownloadAlbumProps extends GetMediasProps {
     maxZipSizeMB?: number;
     /** Save Art/PhotoEdit prompts: off | sidecar .txt | embed in image | both. */
     prompts?: "off" | "sidecar" | "embed" | "both";
+    /** Keep only the most recent N photos; 0 / undefined = all. */
+    recentLimit?: number;
+    /** Start at photo #N (1-based, oldest = #1); 0 / undefined = from the first. */
+    startIndex?: number;
 }

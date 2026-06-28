@@ -24,9 +24,13 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             imagesPerZip: 0,
             maxZipSizeMB: 750,
             prompts: "off",
+            recentLimit: 0,
+            startIndex: 0,
         },
         chatDownload: {
             maxMessages: 0,
+            rangeStart: 0,
+            rangeEnd: 0,
             messagesPerFile: 0,
             maxFileSizeMB: 0,
             // Off by default: the simple download already grabs the album, so

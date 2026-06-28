@@ -185,6 +185,100 @@ export const Settings = () => {
                                 <h3>Album</h3>
                             </li>
                             <li>
+                                <label htmlFor="set-recent-limit">
+                                    Most recent photos
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="0 = all. Set a number to download only the most recent N photos.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <input
+                                        id="set-recent-limit"
+                                        type="number"
+                                        min={0}
+                                        step={50}
+                                        value={
+                                            Settings.albumDownload.recentLimit
+                                        }
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                albumDownload: {
+                                                    ...Settings.albumDownload,
+                                                    recentLimit: Math.max(
+                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 0,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {Settings.albumDownload.recentLimit > 0
+                                            ? `Last ${Settings.albumDownload.recentLimit} photos`
+                                            : "All photos"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
+                                <label htmlFor="set-start-index">
+                                    Start at photo #
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="0 = from the first. Skip to this position (oldest = #1) before applying the recent-photos limit.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <input
+                                        id="set-start-index"
+                                        type="number"
+                                        min={0}
+                                        step={50}
+                                        value={
+                                            Settings.albumDownload.startIndex
+                                        }
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                albumDownload: {
+                                                    ...Settings.albumDownload,
+                                                    startIndex: Math.max(
+                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 0,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            opacity: 0.7,
+                                            fontSize: "0.8rem",
+                                        }}>
+                                        {Settings.albumDownload.startIndex > 1
+                                            ? `From photo #${Settings.albumDownload.startIndex}`
+                                            : "From the first"}
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
                                 <label htmlFor="set-quantity">
                                     <span>Concurrent Downloads</span>
                                     <Tooltip
@@ -485,6 +579,81 @@ export const Settings = () => {
                                             : "All messages"}
                                     </p>
                                 </div>
+                            </li>
+                            <li>
+                                <label htmlFor="set-range-start">
+                                    Message range
+                                    <Tooltip
+                                        className={styles.warning}
+                                        text="Export an explicit range (oldest = #1, inclusive). 0 = open end. When set, this overrides Max messages.">
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </Tooltip>
+                                </label>
+                                <div className={styles.row}>
+                                    <input
+                                        id="set-range-start"
+                                        type="number"
+                                        min={0}
+                                        step={50}
+                                        placeholder="From #"
+                                        value={Settings.chatDownload.rangeStart}
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                chatDownload: {
+                                                    ...Settings.chatDownload,
+                                                    rangeStart: Math.max(
+                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 0,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <input
+                                        id="set-range-end"
+                                        type="number"
+                                        min={0}
+                                        step={50}
+                                        placeholder="To #"
+                                        value={Settings.chatDownload.rangeEnd}
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                chatDownload: {
+                                                    ...Settings.chatDownload,
+                                                    rangeEnd: Math.max(
+                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                            10,
+                                                        ) || 0,
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <p
+                                    style={{
+                                        margin: "0.25rem 0 0",
+                                        opacity: 0.7,
+                                        fontSize: "0.8rem",
+                                    }}>
+                                    {Settings.chatDownload.rangeStart > 0 ||
+                                    Settings.chatDownload.rangeEnd > 0
+                                        ? `Messages #${
+                                              Settings.chatDownload
+                                                  .rangeStart || 1
+                                          } to ${
+                                              Settings.chatDownload.rangeEnd ||
+                                              "end"
+                                          }`
+                                        : "Full range (uses Max messages)"}
+                                </p>
                             </li>
                             <li>
                                 <label htmlFor="set-messages-per-file">

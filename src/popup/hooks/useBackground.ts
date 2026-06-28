@@ -107,9 +107,13 @@ export function useBackground() {
         imagesPerZip: Settings.albumDownload.imagesPerZip,
         maxZipSizeMB: Settings.albumDownload.maxZipSizeMB,
         prompts: Settings.albumDownload.prompts,
+        recentLimit: Settings.albumDownload.recentLimit,
+        startIndex: Settings.albumDownload.startIndex,
     };
     const chatOptions = {
         maxMessages: Settings.chatDownload.maxMessages,
+        rangeStart: Settings.chatDownload.rangeStart,
+        rangeEnd: Settings.chatDownload.rangeEnd,
         messagesPerFile: Settings.chatDownload.messagesPerFile,
         maxFileSizeMB: Settings.chatDownload.maxFileSizeMB,
         includeSelfies: Settings.chatDownload.includeSelfies,

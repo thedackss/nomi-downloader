@@ -27,6 +27,13 @@ export interface Settings {
         quality: "HD" | "SD";
         folderization: boolean;
         downloadQuantity: number;
+        /** Keep only the most recent N photos; 0 = all. Applied after startIndex. */
+        recentLimit: number;
+        /**
+         * Start at photo #N in the album (1-based, oldest = #1); 0 = from the
+         * first. Composes with recentLimit (skip to #N, then keep the recent N).
+         */
+        startIndex: number;
         /** Max images per zip; 0 = auto (size-based chunking only). */
         imagesPerZip: number;
         /**
@@ -44,6 +51,12 @@ export interface Settings {
     chatDownload: {
         /** Keep only the last N messages; 0 = unlimited. */
         maxMessages: number;
+        /**
+         * Explicit message range (1-based, inclusive, oldest = #1). When either
+         * bound is set it takes precedence over maxMessages. 0 = open end.
+         */
+        rangeStart: number;
+        rangeEnd: number;
         /** Max messages per exported file; 0 = no count cap (size only). */
         messagesPerFile: number;
         /** Max estimated size per file, in MB; 0 = built-in safe cap. */

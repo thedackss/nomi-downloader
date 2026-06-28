@@ -37,6 +37,8 @@ export class AlbumDownloader {
         imagesPerZip = 0,
         maxZipSizeMB = 0,
         prompts = "off",
+        recentLimit = 0,
+        startIndex = 0,
     }: DownloadAlbumProps) {
         const update = (message: string) => onProgress?.(message);
 
@@ -51,12 +53,26 @@ export class AlbumDownloader {
             const nomi = await this.nomiApi.get({ nomiId });
             const nomiName = nomi.name || `Nomi_${nomiId}`;
 
-            const medias = await this.nomiApi.getMedias({ nomiId, onProgress });
+            const allMedias = await this.nomiApi.getMedias({
+                nomiId,
+                onProgress,
+            });
+
+            if (allMedias.length === 0) {
+                throw new NomiError({
+                    id: nomiId,
+                    message: `No media found for Nomi with ID ${nomiId}`,
+                });
+            }
+
+            // Apply the optional range over the chronological (oldest→newest)
+            // list: skip to photo #startIndex, then keep the most recent N.
+            const medias = this.applyRange(allMedias, startIndex, recentLimit);
 
             if (medias.length === 0) {
                 throw new NomiError({
                     id: nomiId,
-                    message: `No media found for Nomi with ID ${nomiId}`,
+                    message: `No media in the selected range for Nomi with ID ${nomiId}`,
                 });
             }
 
@@ -282,6 +298,23 @@ export class AlbumDownloader {
             return media.textPrompt?.trim() || null;
         }
         return null;
+    }
+
+    /**
+     * Narrow the chronological (oldest→newest) media list to the user's range.
+     * `startIndex` is 1-based (oldest = #1); 0 = from the first. `recentLimit`
+     * keeps only the most recent N of what remains; 0 = no limit. Composing them
+     * means "start at #N, then keep the most recent N from there."
+     */
+    private applyRange(
+        medias: Media[],
+        startIndex: number,
+        recentLimit: number,
+    ): Media[] {
+        let result = medias;
+        if (startIndex > 1) result = result.slice(startIndex - 1);
+        if (recentLimit > 0) result = result.slice(-recentLimit);
+        return result;
     }
 
     /** Friendly label for progress text, e.g. "photo", "edited photo". */
