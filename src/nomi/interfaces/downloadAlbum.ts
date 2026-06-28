@@ -14,4 +14,6 @@ export interface DownloadAlbumProps extends GetMediasProps {
     recentLimit?: number;
     /** Start at photo #N (1-based, oldest = #1); 0 / undefined = from the first. */
     startIndex?: number;
+    /** BETA: download only photos newer than the last successful run. */
+    incremental?: boolean;
 }

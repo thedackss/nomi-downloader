@@ -10,6 +10,8 @@ export interface DownloadChatProps extends NomiExistsProps {
      */
     rangeStart?: number;
     rangeEnd?: number;
+    /** BETA: download only messages newer than the last successful run. */
+    incremental?: boolean;
     /** Max messages per file; 0 / undefined = no count cap (size only). */
     messagesPerFile?: number;
     /** Max estimated size per file, in MB; 0 / undefined = built-in safe cap. */

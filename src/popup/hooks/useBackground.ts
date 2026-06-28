@@ -109,6 +109,7 @@ export function useBackground() {
         prompts: Settings.albumDownload.prompts,
         recentLimit: Settings.albumDownload.recentLimit,
         startIndex: Settings.albumDownload.startIndex,
+        incremental: Settings.incremental.enabled,
     };
     const chatOptions = {
         maxMessages: Settings.chatDownload.maxMessages,
@@ -117,6 +118,7 @@ export function useBackground() {
         messagesPerFile: Settings.chatDownload.messagesPerFile,
         maxFileSizeMB: Settings.chatDownload.maxFileSizeMB,
         includeSelfies: Settings.chatDownload.includeSelfies,
+        incremental: Settings.incremental.enabled,
     };
     const jsonOptions = {
         rawData: Settings.jsonDownload.rawData,

@@ -68,6 +68,14 @@ export interface Settings {
         /** Also include the full, unprocessed Nomi API responses. */
         rawData: boolean;
     };
+    /**
+     * BETA. When on, album / chat / group downloads fetch only content newer
+     * than the last successful download (tracked per Nomi/group by timestamp).
+     * Off by default; the Reset button forgets the history.
+     */
+    incremental: {
+        enabled: boolean;
+    };
     layout: "auto" | "mobile" | "desktop";
     /** Show a daily-usage stats panel under the header. */
     showStats: boolean;

@@ -40,6 +40,9 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
         jsonDownload: {
             rawData: false,
         },
+        incremental: {
+            enabled: false,
+        },
         layout: "auto",
         showStats: false,
         debug: false,

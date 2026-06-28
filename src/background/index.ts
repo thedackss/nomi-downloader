@@ -98,6 +98,7 @@ function main() {
                     prompts,
                     recentLimit,
                     startIndex,
+                    incremental,
                 } = message.data;
                 runDownload(
                     nomiId,
@@ -117,6 +118,7 @@ function main() {
                             prompts,
                             recentLimit,
                             startIndex,
+                            incremental,
                             onProgress,
                         }),
                 );
@@ -130,6 +132,7 @@ function main() {
                     messagesPerFile,
                     maxFileSizeMB,
                     includeSelfies,
+                    incremental,
                 } = message.data;
                 runDownload(
                     nomiId,
@@ -147,6 +150,7 @@ function main() {
                             rangeEnd,
                             messagesPerFile,
                             maxFileSizeMB,
+                            incremental,
                             onProgress,
                         }),
                 );
@@ -163,6 +167,7 @@ function main() {
                     messagesPerFile,
                     maxFileSizeMB,
                     includeSelfies,
+                    incremental,
                 } = message.data;
                 runDownload(
                     groupId,
@@ -182,6 +187,7 @@ function main() {
                             rangeEnd,
                             messagesPerFile,
                             maxFileSizeMB,
+                            incremental,
                             onProgress,
                         }),
                     "group",
