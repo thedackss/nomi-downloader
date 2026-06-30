@@ -39,22 +39,26 @@ export interface DownloadResult {
 export class OffscreenClient {
     async setupDocument(): Promise<void> {
         if (typeof chrome === "undefined" || !chrome.offscreen) return;
-        if (!(await chrome.offscreen.hasDocument())) {
-            await chrome.offscreen.createDocument({
-                url: OFFSCREEN_DOCUMENT_PATH,
-                reasons: [
-                    chrome.offscreen.Reason.BLOBS,
-                    chrome.offscreen.Reason.WORKERS,
-                ],
-                justification: "To generate ZIP files for download",
-            });
-        }
+        // The Firefox build has no offscreen API, so __IS_FIREFOX__ lets this
+        // whole block dead-code-eliminate out of that bundle.
+        if (!__IS_FIREFOX__) {
+            if (!(await chrome.offscreen.hasDocument())) {
+                await chrome.offscreen.createDocument({
+                    url: OFFSCREEN_DOCUMENT_PATH,
+                    reasons: [
+                        chrome.offscreen.Reason.BLOBS,
+                        chrome.offscreen.Reason.WORKERS,
+                    ],
+                    justification: "To generate ZIP files for download",
+                });
+            }
 
-        // createDocument() resolves before the document's script registers its
-        // onMessage listener, so the first message can be lost to a race (the
-        // render returns no response). Ping keep-alive until the listener
-        // answers before handing back control.
-        await this.waitUntilReady();
+            // createDocument() resolves before the document's script registers
+            // its onMessage listener, so the first message can be lost to a race
+            // (the render returns no response). Ping keep-alive until the
+            // listener answers before handing back control.
+            await this.waitUntilReady();
+        }
     }
 
     private async waitUntilReady(): Promise<void> {

@@ -84,6 +84,11 @@ if (isFirefox) {
 
 // https://vite.dev/config/
 export default defineConfig({
+    // Compile-time flag: lets the Firefox build dead-code-eliminate the
+    // offscreen branch (Firefox has no chrome.offscreen API).
+    define: {
+        __IS_FIREFOX__: JSON.stringify(isFirefox),
+    },
     build: {
         // Stable (unhashed) output names. With the build-on-server →
         // load-on-desktop workflow, hashed names rename every build and a
