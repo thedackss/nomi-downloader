@@ -35,16 +35,19 @@ export const GroupList = () => {
                     selectGroup(group);
                 }
 
-                const images = group.nomis
+                const members = group.nomis
                     .filter((nomi) => !nomi.removed)
                     .map((nomi) => {
                         const media = getNomiMedia(nomi);
-                        return (
-                            media.videoPrev ||
-                            media.edit ||
-                            media.selfie ||
-                            media.default
-                        );
+                        return {
+                            id: nomi.id,
+                            img:
+                                media.videoPrev ||
+                                media.edit ||
+                                media.selfie ||
+                                media.default,
+                            video: media.video,
+                        };
                     });
 
                 return (
@@ -61,14 +64,21 @@ export const GroupList = () => {
                             className={`${styles.icon} ${styles.group} ${getIconSize(Settings.list.iconSize)} ${getIconShape(Settings.list.iconShape)}`}>
                             <span
                                 className={`${styles.groupImg} ${isSelected ? styles.selected : ""}`}>
-                                {images.map((img) => (
+                                {members.map((member) => (
                                     <span
-                                        key={img}
+                                        key={member.id}
                                         className={styles.img}
                                         style={{
-                                            background: `url(${img}) center top / cover no-repeat`,
-                                        }}
-                                    />
+                                            background: `url(${member.img}) center top / cover no-repeat`,
+                                        }}>
+                                        {member.video && (
+                                            <video
+                                                src={member.video}
+                                                loop
+                                                muted
+                                                autoPlay></video>
+                                        )}
+                                    </span>
                                 ))}
                             </span>
                             <svg

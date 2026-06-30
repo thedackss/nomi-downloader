@@ -1,13 +1,17 @@
-// Build each store target and zip it into ./release.
+// Build each store target into ./release.
 //
 // dist/ is overwritten per target (single output folder, last build wins), so
-// each target must be built and zipped before the next one runs. The zip holds
-// the contents of dist/ with manifest.json at the root — what the stores expect.
+// each target must be built before the next one runs. For each target we keep
+// both an unpacked folder (release/<name>/) and a zip (release/<name>.zip) — the
+// folder for loading unpacked / inspecting, the zip for store upload. Each holds
+// the contents of dist/ with manifest.json at the root, which is what the stores
+// expect.
 //
-//   npm run package        → release/chrome.zip + release/firefox.zip
+//   npm run release        → release/{chrome,firefox}/ + release/{chrome,firefox}.zip
 
 import { execSync } from "node:child_process";
 import {
+    cpSync,
     existsSync,
     mkdirSync,
     readdirSync,
@@ -47,12 +51,13 @@ function listFiles(dir, base = dir) {
     return entries;
 }
 
-async function zipDist(zipPath) {
+/** Zip the contents of `srcDir` (manifest.json at the root) to `zipPath`. */
+async function zipDir(srcDir, zipPath) {
     const zip = new JSZip();
-    const files = listFiles(distDir);
+    const files = listFiles(srcDir);
     for (const file of files) {
         // Normalize to forward slashes so zips are valid on every platform.
-        zip.file(file.split("\\").join("/"), readFileSync(join(distDir, file)));
+        zip.file(file.split("\\").join("/"), readFileSync(join(srcDir, file)));
     }
     const buffer = await zip.generateAsync({
         type: "nodebuffer",
@@ -77,15 +82,21 @@ async function main() {
             );
         }
 
+        // Keep an unpacked copy of this build alongside its zip.
+        const folderPath = join(outDir, target.name);
+        cpSync(distDir, folderPath, { recursive: true });
+
         const zipPath = join(outDir, `${target.name}.zip`);
-        const { count, bytes } = await zipDist(zipPath);
+        const { count, bytes } = await zipDir(folderPath, zipPath);
         const kb = (bytes / 1024).toFixed(1);
         console.log(
-            `✓ release/${target.name}.zip — ${count} files, ${kb} kB`,
+            `✓ release/${target.name}/ + release/${target.name}.zip — ${count} files, ${kb} kB`,
         );
     }
 
-    console.log(`\nPackaged v${version} → release/chrome.zip, release/firefox.zip`);
+    console.log(
+        `\nPackaged v${version} → release/{chrome,firefox}/ + release/{chrome,firefox}.zip`,
+    );
 }
 
 main().catch((err) => {
