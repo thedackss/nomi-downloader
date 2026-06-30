@@ -68,6 +68,40 @@ async function zipDir(srcDir, zipPath) {
     return { count: files.length, bytes: buffer.length };
 }
 
+/**
+ * Zip the project source for AMO's source-code requirement. Uses git's tracked
+ * files, so .gitignore'd secrets (e.g. cookie.env) and build output are never
+ * bundled. It reflects committed files — commit before releasing. With the
+ * build steps in the reviewer notes, this reproduces an exact copy of the add-on.
+ */
+async function zipSource(zipPath) {
+    const dirty = execSync("git status --porcelain", {
+        cwd: root,
+        encoding: "utf-8",
+    }).trim();
+    if (dirty) {
+        console.warn(
+            "⚠ Uncommitted changes — source.zip reflects committed files only.",
+        );
+    }
+
+    const files = execSync("git ls-files", { cwd: root, encoding: "utf-8" })
+        .split("\n")
+        .filter(Boolean);
+
+    const zip = new JSZip();
+    for (const file of files) {
+        zip.file(file, readFileSync(join(root, file)));
+    }
+    const buffer = await zip.generateAsync({
+        type: "nodebuffer",
+        compression: "DEFLATE",
+        compressionOptions: { level: 9 },
+    });
+    writeFileSync(zipPath, buffer);
+    return { count: files.length, bytes: buffer.length };
+}
+
 async function main() {
     rmSync(outDir, { recursive: true, force: true });
     mkdirSync(outDir, { recursive: true });
@@ -94,8 +128,15 @@ async function main() {
         );
     }
 
+    // Source archive for AMO's source-code submission requirement.
+    const sourceZip = join(outDir, "source.zip");
+    const src = await zipSource(sourceZip);
     console.log(
-        `\nPackaged v${version} → release/{chrome,firefox}/ + release/{chrome,firefox}.zip`,
+        `✓ release/source.zip — ${src.count} files, ${(src.bytes / 1024).toFixed(1)} kB`,
+    );
+
+    console.log(
+        `\nPackaged v${version} → release/{chrome,firefox}/ + release/{chrome,firefox}.zip + release/source.zip`,
     );
 }
 
