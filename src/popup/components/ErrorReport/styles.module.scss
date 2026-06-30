@@ -1,0 +1,121 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgb(0 0 0 / 55%);
+    backdrop-filter: blur(2px);
+}
+
+.dialog {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 22rem;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: var(--background);
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 1rem;
+    box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .message {
+        font-size: 0.9rem;
+        color: rgb(from var(--text) r g b / 65%);
+        overflow-wrap: break-word;
+    }
+
+    .ask {
+        font-size: 0.95rem;
+        color: var(--text);
+    }
+
+    .sent {
+        font-size: 0.95rem;
+        color: var(--primary);
+    }
+
+    .failed {
+        font-size: 0.85rem;
+        color: var(--warning);
+    }
+
+    .details {
+        font-size: 0.85rem;
+        color: rgb(from var(--text) r g b / 70%);
+
+        summary {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        pre {
+            margin: 0.5rem 0 0;
+            padding: 0.5rem;
+            max-height: 9rem;
+            overflow: auto;
+            background: rgb(from var(--text) r g b / 5%);
+            border-radius: 6px;
+            font-size: 0.7rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 0.25rem;
+
+        button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition:
+                background 0.15s ease,
+                border-color 0.15s ease,
+                opacity 0.15s ease;
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: default;
+            }
+        }
+
+        .secondary {
+            background: rgb(from var(--text) r g b / 5%);
+            border-color: rgb(from var(--text) r g b / 20%);
+            color: var(--text);
+
+            &:hover:not(:disabled) {
+                background: rgb(from var(--text) r g b / 10%);
+            }
+        }
+
+        .primary {
+            background: var(--primary);
+            color: #fff;
+
+            &:hover:not(:disabled) {
+                background: color-mix(in srgb, var(--primary) 85%, #000);
+            }
+        }
+    }
+}

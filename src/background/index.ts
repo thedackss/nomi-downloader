@@ -1,5 +1,6 @@
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
 import { Log, setDebugLogging } from "../utils/log";
+import { buildReportText } from "../utils/report";
 import { Nomi } from "./nomi/index";
 
 const nomi = new Nomi();
@@ -17,6 +18,19 @@ function updateDownloadStatus(status: DownloadStatus) {
         .sendMessage({
             type: "DOWNLOAD_STATUS_UPDATE",
             status,
+        })
+        .catch(() => {});
+}
+
+/**
+ * Forward a worker-side error to the popup so it can offer to send a report.
+ * The text is built here so the worker's own recent logs are included.
+ */
+function reportError(message: string, error: unknown) {
+    chrome.runtime
+        .sendMessage({
+            type: "ERROR_REPORT",
+            report: { message, text: buildReportText(error, "background") },
         })
         .catch(() => {});
 }
@@ -66,6 +80,7 @@ async function runDownload(
     } catch (error) {
         Log(messages.error, error);
         setIdleStatus(messages.error);
+        reportError(messages.error, error);
     }
 }
 
