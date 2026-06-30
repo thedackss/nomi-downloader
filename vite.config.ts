@@ -49,7 +49,14 @@ type ExtensionManifest = Omit<
     background: { service_worker?: string; scripts?: string[]; type: string };
     permissions: string[];
     browser_specific_settings?: {
-        gecko: { id: string; strict_min_version: string };
+        gecko: {
+            id: string;
+            strict_min_version: string;
+            data_collection_permissions?: {
+                required?: string[];
+                optional?: string[];
+            };
+        };
         gecko_android?: Record<string, never>;
     };
 };
