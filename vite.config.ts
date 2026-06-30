@@ -65,10 +65,8 @@ if (isFirefox) {
         type: "module",
     };
     extensionManifest.browser_specific_settings = {
-        gecko: {
-            id: "nomi-downloader@example.com",
-            strict_min_version: "109.0",
-        },
+        // Single source of truth: the gecko id / min version live in manifest.json.
+        gecko: manifest.browser_specific_settings.gecko,
         // Declare Android support so web-ext / AMO accept it on Firefox mobile.
         gecko_android: {},
     };

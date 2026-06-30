@@ -1,6 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Nomi Downloader",
+    "description": "Export and archive your nomi.ai companions — albums, chats, memories and shared notes — as offline files, right from the popup.",
     "version": "0.4.0",
     "action": { "default_popup": "index.html" },
 
@@ -34,8 +35,8 @@
     },
     "browser_specific_settings": {
         "gecko": {
-            "id": "nomi-downloader@example.com",
-            "strict_min_version": "109.0"
+            "id": "@nomi-downloader",
+            "strict_min_version": "113.0"
         }
     }
 }
