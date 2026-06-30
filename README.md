@@ -66,6 +66,16 @@ export is a self-contained file (or `.zip`) that works fully offline.
   shown as a card at the top of the chat export.
 - **JSON / Markdown** — the group's facts and full chat log as structured data.
 
+### Error reporting
+
+If the extension hits an unexpected error, a prompt asks whether to send a bug
+report — **nothing leaves your browser without your say-so**. Expand **"What gets
+sent"** to see the exact text first: the error and stack trace, the extension
+version, your browser, and the most recent debug-log lines (session cookies and
+tokens are scrubbed out). **Send report** POSTs it to the project's bug endpoint;
+**Not now** dismisses it. Render crashes, uncaught popup errors and failed
+download workflows all funnel into the same prompt.
+
 ### Configuration
 
 A tabbed settings panel (Interface · Downloads · Advanced):
@@ -119,7 +129,8 @@ npm install
 | `npm run dev:firefox`   | Vite dev server with HMR, Firefox target               |
 | `npm run build`         | Standalone production build → `dist/`, Chrome target   |
 | `npm run build:firefox` | Standalone production build → `dist/`, Firefox target  |
-| `npm run lint`          | ESLint                                                  |
+| `npm run release`       | Build both targets → `release/{chrome,firefox}/` + zips|
+| `npm run lint`          | Biome lint + Stylelint (SCSS)                          |
 | `npm test`              | Unit tests (Vitest)                                    |
 | `npm run test:e2e`      | Playwright popup smoke test (builds first, headful)    |
 | `npm run preview`       | Preview a production build                             |
@@ -180,11 +191,13 @@ src/
 │   ├── interfaces/   download/get prop shapes
 │   └── types/        typed nomi.ai API responses (shared.ts = common shapes)
 ├── popup/            React UI shown in the toolbar popup
-│   ├── components/   List, Info, Settings, Header, LoadingSpin
-│   ├── context/      nomis + settings React contexts
+│   ├── components/   List, Info, Settings, Header, LoadingSpin, ErrorReport
+│   ├── context/      nomis, settings, errorReport React contexts
+│   ├── report/       sendReport() — POST a bug report to the bugs endpoint
 │   └── hooks/        useNomi, useSettings, useBackground, useTab
 ├── background/       MV3 service worker
-│   ├── index.ts      message router; maps popup actions → download workflows
+│   ├── index.ts      message router; maps popup actions → download workflows;
+│   │                 forwards worker errors to the popup's report prompt
 │   └── nomi/         chrome.*-specific orchestration:
 │       ├── index.ts            Nomi facade (composes the pieces below)
 │       ├── offscreenClient.ts  zip/blob/render bridge to the offscreen document
@@ -201,7 +214,8 @@ src/
 │       └── constants.ts        chunk sizes, timeouts, pacing
 ├── offscreen/        Offscreen document (runs JSZip / Blob / react-dom/server)
 ├── content/          Content script injected on nomi.ai
-└── utils/            logging, zip, deepMerge
+└── utils/            logging (+ recent-log buffer), zip, deepMerge,
+                      report.ts (bug-report text builder, shared popup+worker)
 ```
 
 Dependency direction: both `popup/` and `background/` depend on the shared
