@@ -1,10 +1,10 @@
 import { getRecentLogs } from "./log";
 
 /**
- * Where bug reports are POSTed. Placeholder domain — replace with the real
- * endpoint, and update the matching entry in manifest.json `host_permissions`.
+ * Where bug reports are POSTed. Must stay in sync with the matching entry in
+ * manifest.json `host_permissions`.
  */
-export const BUGS_ENDPOINT = "https://someapi.tld/nomi-ext/bugs";
+export const BUGS_ENDPOINT = "https://nomi.zar.mx/nomi-ext/bugs";
 
 /** Turn an unknown thrown value into "Name: message\n<stack>". */
 function describeError(error: unknown): string {
