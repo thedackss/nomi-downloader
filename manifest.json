@@ -2,10 +2,10 @@
     "manifest_version": 3,
     "name": "Nomi Downloader",
     "description": "Export and archive your nomi.ai companions — albums, chats, memories and shared notes — as offline files, right from the popup.",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "action": { "default_popup": "index.html" },
 
-    "host_permissions": ["https://*.nomi.ai/*", "https://nomi.zar.mx/*"],
+    "host_permissions": ["https://*.nomi.ai/*"],
     "content_scripts": [
         {
             "matches": ["https://*.nomi.ai/*"],
@@ -18,7 +18,7 @@
         "type": "module"
     },
 
-    "permissions": ["tabs", "downloads", "offscreen", "storage"],
+    "permissions": ["downloads", "offscreen", "storage"],
 
     "web_accessible_resources": [
         {
