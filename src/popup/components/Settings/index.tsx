@@ -12,6 +12,11 @@ export const Settings = () => {
 
     const toggleSettings = () => setMenuOpen(!menuOpen);
 
+    const version =
+        typeof chrome !== "undefined"
+            ? chrome.runtime.getManifest().version
+            : "";
+
     type Tab = "interface" | "downloads" | "advanced";
     const [tab, setTab] = useState<Tab>("interface");
     // Transient confirmation after clearing the incremental download history.
@@ -1043,6 +1048,18 @@ export const Settings = () => {
                         </>
                     )}
                 </ul>
+
+                {version && (
+                    <p
+                        style={{
+                            margin: "0.75rem 0 0",
+                            textAlign: "center",
+                            opacity: 0.6,
+                            fontSize: "0.75rem",
+                        }}>
+                        Nomi Downloader v{version}
+                    </p>
+                )}
             </div>
         </div>
     );
