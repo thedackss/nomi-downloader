@@ -30,6 +30,30 @@
         font-size: 2rem;
     }
 
+    .tip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 1rem;
+        left: 1.25rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        color: var(--primary);
+        opacity: 0.25;
+        z-index: 3;
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
+
+        &:hover,
+        &:focus-visible {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    }
+
     .backButton {
         display: flex;
         align-items: center;
