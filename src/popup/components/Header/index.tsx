@@ -1,11 +1,12 @@
 import { useNomi } from "../../hooks/useNomi";
 import { useSettings } from "../../hooks/useSettings";
 import { Settings } from "../Settings";
+import { RiSettingsLine } from "../Settings/RiSettingsLine";
 import styles from "./styles.module.scss";
 
 export const Header = () => {
     const { Nomis, clearSelection } = useNomi();
-    const { isMobile } = useSettings();
+    const { isMobile, menuOpen, setMenuOpen } = useSettings();
     const hasSelection = Nomis.selected.nomi || Nomis.selected.group;
 
     return (
@@ -45,6 +46,14 @@ export const Header = () => {
                 </button>
             )}
             <h1>Nomi Downloader</h1>
+            <button
+                type="button"
+                aria-label="Toggle settings"
+                className={`${styles.settingsButton}${menuOpen ? ` ${styles.active}` : ""}`}
+                onClick={() => setMenuOpen(!menuOpen)}>
+                <RiSettingsLine />
+                <RiSettingsLine />
+            </button>
             <Settings />
         </header>
     );

@@ -42,7 +42,9 @@ test("popup mounts and renders without uncaught errors", async ({
 
     await page.goto(`chrome-extension://${extensionId}/index.html`);
 
-    await expect(page.getByText("Nomi Downloader")).toBeVisible();
+    await expect(
+        page.getByRole("heading", { name: "Nomi Downloader" }),
+    ).toBeVisible();
 
     const rootChildren = await page.evaluate(
         () => document.getElementById("root")?.children.length ?? 0,
@@ -58,7 +60,7 @@ test("settings panel opens from the gear icon", async ({
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/index.html`);
 
-    await page.locator("svg").first().click();
+    await page.getByRole("button", { name: "Toggle settings" }).click();
 
     await expect(page.getByText("Interface")).toBeVisible();
 });

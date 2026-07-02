@@ -1,488 +1,415 @@
-.settings {
+// The gear button that opens this menu lives in the Header; open/closed
+// state is shared through the settings context.
+.menu {
     display: flex;
     flex-flow: column nowrap;
-    justify-content: center;
-    align-items: flex-end;
-    position: absolute;
-    top: 0;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.8rem;
+    pointer-events: none;
+    position: fixed;
+    bottom: 0;
     left: 0;
+    right: 0;
+    z-index: 2;
+    background: var(--background);
+    border-top: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 1.25rem 1.25rem 0 0;
     padding: 1.5rem;
-    padding-bottom: 0;
     width: 100%;
-    height: 100%;
+    max-height: calc(100% - 5rem);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(100%);
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
 
-    // The gear toggle only — scope to a direct child so the tab buttons and
-    // other in-menu buttons aren't forced into the 2rem icon box.
-    > button {
+    &.visible {
+        pointer-events: all;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        width: 100%;
+        text-align: center;
+        color: rgb(from var(--text) r g b / 60%);
+    }
+
+    p {
+        font-size: 0.9rem;
+    }
+
+    .tabs {
         display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: center;
-        background: transparent;
-        border: none;
-        width: 2rem;
-        height: 2rem;
-        cursor: pointer;
-        position: relative;
-        z-index: 3;
+        gap: 4px;
+        margin-top: 1rem;
+        padding: 4px;
+        background: rgb(from var(--text) r g b / 6%);
+        border-radius: 10px;
 
-        // right: 1.5rem;
-
-        svg {
-            color: rgb(from var(--text) r g b / 20%);
+        button {
+            flex: 1;
+            appearance: none;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            opacity: 0.55;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
             transition:
-                all 0.3s ease,
-                transform 0.75s ease;
-            position: absolute;
-            width: 100%;
-            height: 100%;
+                background 0.15s ease,
+                opacity 0.15s ease;
 
-            &:first-child {
-                opacity: 0;
+            &:hover {
+                opacity: 0.85;
             }
-        }
 
-        @mixin active {
-            svg {
-                transform: rotate(180deg);
-                color: rgb(from var(--primary) r g b / 50%);
-
-                &:first-child {
-                    opacity: 1;
-                }
-
-                &:last-child {
-                    opacity: 0;
-                }
-            }
-        }
-
-        &:hover {
-            @include active;
-        }
-
-        &.active {
-            @include active;
-
-            svg {
-                color: rgb(from var(--primary) r g b / 100%);
-                transform: rotate(360deg);
+            &.activeTab {
+                background: var(--primary);
+                color: #fff;
+                opacity: 1;
             }
         }
     }
 
-    .menu {
+    @mixin field {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid rgb(from var(--text) r g b / 20%);
+        background: rgb(from var(--text) r g b / 5%);
+        color: var(--text);
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-family: inherit;
+
+        &:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+    }
+
+    @mixin action-button {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid rgb(from var(--text) r g b / 20%);
+        background: rgb(from var(--text) r g b / 5%);
+        color: var(--text);
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition:
+            background 0.15s ease,
+            border-color 0.15s ease;
+
+        &:hover {
+            background: rgb(from var(--text) r g b / 10%);
+            border-color: rgb(from var(--text) r g b / 35%);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+    }
+
+    .report {
+        display: flex;
+        gap: 0.5rem;
+        width: 100%;
+        margin-top: 0.5rem;
+
+        button {
+            @include action-button;
+
+            flex: 1;
+
+            &.active {
+                border-color: var(--primary);
+                color: var(--primary);
+            }
+        }
+    }
+
+    .reportForm {
         display: flex;
         flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        gap: 0.8rem;
-        pointer-events: none;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 2;
-        background: var(--background);
-        border-top: 1px solid rgb(255 255 255 / 8%);
-        border-radius: 1.25rem 1.25rem 0 0;
-        padding: 1.5rem;
+        gap: 0.5rem;
         width: 100%;
-        max-height: calc(100% - 5rem);
-        overflow: hidden;
-        opacity: 0;
-        transform: translateY(100%);
-        transition:
-            opacity 0.3s ease,
-            transform 0.3s ease;
 
-        &.visible {
-            pointer-events: all;
-            opacity: 1;
-            transform: translateY(0);
+        textarea {
+            @include field;
+
+            resize: vertical;
+            min-height: 3.5rem;
         }
 
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 500;
-            width: 100%;
-            text-align: center;
-            color: rgb(from var(--text) r g b / 60%);
+        input {
+            @include field;
         }
 
-        p {
-            font-size: 0.9rem;
-        }
-
-        .tabs {
+        .reportActions {
             display: flex;
-            gap: 4px;
-            margin-top: 1rem;
-            padding: 4px;
-            background: rgb(from var(--text) r g b / 6%);
-            border-radius: 10px;
+            align-items: center;
+            gap: 0.75rem;
 
-            button {
+            p {
+                margin: 0;
                 flex: 1;
-                appearance: none;
-                border: 0;
-                background: transparent;
-                color: var(--text);
-                opacity: 0.55;
-                font-size: 0.9rem;
-                font-weight: 600;
-                font-family: inherit;
-                padding: 0.5rem;
-                border-radius: 8px;
-                cursor: pointer;
-                transition:
-                    background 0.15s ease,
-                    opacity 0.15s ease;
-
-                &:hover {
-                    opacity: 0.85;
-                }
-
-                &.activeTab {
-                    background: var(--primary);
-                    color: #fff;
-                    opacity: 1;
-                }
+                opacity: 0.6;
+                font-size: 0.7rem;
+                line-height: 1.3;
             }
-        }
-
-        @mixin field {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid rgb(from var(--text) r g b / 20%);
-            background: rgb(from var(--text) r g b / 5%);
-            color: var(--text);
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-family: inherit;
-
-            &:focus {
-                outline: 2px solid var(--primary);
-                border-color: transparent;
-            }
-        }
-
-        @mixin action-button {
-            padding: 0.4rem 0.8rem;
-            border: 1px solid rgb(from var(--text) r g b / 20%);
-            background: rgb(from var(--text) r g b / 5%);
-            color: var(--text);
-            border-radius: 4px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition:
-                background 0.15s ease,
-                border-color 0.15s ease;
-
-            &:hover {
-                background: rgb(from var(--text) r g b / 10%);
-                border-color: rgb(from var(--text) r g b / 35%);
-            }
-
-            &:focus-visible {
-                outline: 2px solid var(--primary);
-                border-color: transparent;
-            }
-
-            &:disabled {
-                opacity: 0.5;
-                cursor: default;
-            }
-        }
-
-        .report {
-            display: flex;
-            gap: 0.5rem;
-            width: 100%;
-            margin-top: 0.5rem;
 
             button {
                 @include action-button;
-
-                flex: 1;
-
-                &.active {
-                    border-color: var(--primary);
-                    color: var(--primary);
-                }
             }
         }
+    }
 
-        .reportForm {
+    ul {
+        list-style: none;
+        padding: 0.5rem;
+        padding-top: 1rem;
+        margin: 0;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+
+        // Fade options into the panel at the scroll edges (matches the list).
+        --fade: 1.25rem;
+
+        mask-image: linear-gradient(
+            to bottom,
+            transparent 0,
+            #000 var(--fade),
+            #000 calc(100% - var(--fade)),
+            transparent 100%
+        );
+
+        li {
             display: flex;
             flex-flow: column nowrap;
             gap: 0.5rem;
-            width: 100%;
+            margin-bottom: 1rem;
+            position: relative;
+            font-size: 1rem;
 
-            textarea {
-                @include field;
+            label {
+                height: 1.25rem;
+                font-size: 1rem;
+                font-weight: 500;
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: flex-start;
+                align-items: flex-end;
 
-                resize: vertical;
-                min-height: 3.5rem;
+                .beta {
+                    margin-left: 0.5rem;
+                    padding: 0.05rem 0.35rem;
+                    border-radius: 4px;
+                    font-size: 0.6rem;
+                    font-weight: 700;
+                    letter-spacing: 0.05em;
+                    color: var(--primary);
+                    background: rgb(from var(--primary) r g b / 12%);
+                }
+
+                .warning {
+                    margin-left: 0.5rem;
+                    cursor: help;
+
+                    .icon {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 1.4rem;
+                        height: 1.4rem;
+
+                        svg {
+                            width: 100%;
+                            height: 100%;
+                            color: var(--warning);
+                            pointer-events: none;
+                        }
+                    }
+                }
             }
 
-            input {
-                @include field;
-            }
-
-            .reportActions {
+            .row {
                 display: flex;
                 align-items: center;
-                gap: 0.75rem;
+                gap: 1rem;
+                width: 100%;
 
-                p {
-                    margin: 0;
-                    flex: 1;
-                    opacity: 0.6;
-                    font-size: 0.7rem;
-                    line-height: 1.3;
-                }
-
-                button {
-                    @include action-button;
-                }
-            }
-        }
-
-        ul {
-            list-style: none;
-            padding: 0.5rem;
-            padding-top: 1rem;
-            margin: 0;
-            width: 100%;
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow-y: auto;
-
-            // Fade options into the panel at the scroll edges (matches the list).
-            --fade: 1.25rem;
-
-            mask-image: linear-gradient(
-                to bottom,
-                transparent 0,
-                #000 var(--fade),
-                #000 calc(100% - var(--fade)),
-                transparent 100%
-            );
-
-            li {
-                display: flex;
-                flex-flow: column nowrap;
-                gap: 0.5rem;
-                margin-bottom: 1rem;
-                position: relative;
-                font-size: 1rem;
-
-                label {
-                    height: 1.25rem;
-                    font-size: 1rem;
-                    font-weight: 500;
-                    display: flex;
-                    flex-flow: row nowrap;
-                    justify-content: flex-start;
-                    align-items: flex-end;
-
-                    .beta {
-                        margin-left: 0.5rem;
-                        padding: 0.05rem 0.35rem;
-                        border-radius: 4px;
-                        font-size: 0.6rem;
-                        font-weight: 700;
-                        letter-spacing: 0.05em;
-                        color: var(--primary);
-                        background: rgb(from var(--primary) r g b / 12%);
-                    }
-
-                    .warning {
-                        margin-left: 0.5rem;
-                        cursor: help;
-
-                        .icon {
-                            display: inline-flex;
-                            align-items: center;
-                            justify-content: center;
-                            width: 1.4rem;
-                            height: 1.4rem;
-
-                            svg {
-                                width: 100%;
-                                height: 100%;
-                                color: var(--warning);
-                                pointer-events: none;
-                            }
-                        }
-                    }
-                }
-
-                .row {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    width: 100%;
-
-                    input[type="range"] {
-                        flex-grow: 1;
-                        cursor: pointer;
-                        appearance: none;
-                        background: transparent;
-                        height: 6px;
-
-                        // Track
-                        &::-webkit-slider-runnable-track {
-                            width: 100%;
-                            height: 6px;
-                            background: rgb(from var(--text) r g b / 10%);
-                            border-radius: 3px;
-                            border: none;
-                        }
-
-                        // Thumb
-                        &::-webkit-slider-thumb {
-                            appearance: none;
-                            height: 16px;
-                            width: 16px;
-                            border-radius: 50%;
-                            background: var(--primary);
-                            margin-top: -5px;
-                            transition: transform 0.1s ease;
-                            border: 2px solid var(--background);
-                            box-shadow: 0 0 0 1px
-                                rgb(from var(--text) r g b / 10%);
-                        }
-
-                        &:focus {
-                            outline: none;
-
-                            &::-webkit-slider-thumb {
-                                transform: scale(1.1);
-                                box-shadow: 0 0 0 4px
-                                    rgb(from var(--primary) r g b / 20%);
-                            }
-                        }
-                    }
-
-                    input[type="number"] {
-                        width: 4rem;
-                        padding: 0.4rem;
-                        border: 1px solid rgb(from var(--text) r g b / 20%);
-                        background: rgb(from var(--text) r g b / 5%);
-                        color: var(--text);
-                        border-radius: 4px;
-                        text-align: center;
-                        font-size: 0.9rem;
-                        appearance: textfield;
-
-                        &::-webkit-outer-spin-button,
-                        &::-webkit-inner-spin-button {
-                            appearance: none;
-                            margin: 0;
-                        }
-
-                        &:focus {
-                            outline: 2px solid var(--primary);
-                            border-color: transparent;
-                        }
-                    }
-
-                    button {
-                        padding: 0.4rem 0.8rem;
-                        border: 1px solid rgb(from var(--text) r g b / 20%);
-                        background: rgb(from var(--text) r g b / 5%);
-                        color: var(--text);
-                        border-radius: 4px;
-                        font-size: 0.85rem;
-                        cursor: pointer;
-                        white-space: nowrap;
-                        transition:
-                            background 0.15s ease,
-                            border-color 0.15s ease;
-
-                        &:hover {
-                            background: rgb(from var(--text) r g b / 10%);
-                            border-color: rgb(from var(--text) r g b / 35%);
-                        }
-
-                        &:focus-visible {
-                            outline: 2px solid var(--primary);
-                            border-color: transparent;
-                        }
-                    }
-                }
-
-                .switch {
-                    position: relative;
-                    display: inline-block;
-                    width: 40px;
-                    height: 22px;
-                    flex-shrink: 0;
+                input[type="range"] {
+                    flex-grow: 1;
                     cursor: pointer;
+                    appearance: none;
+                    background: transparent;
+                    height: 6px;
 
-                    input {
-                        opacity: 0;
-                        width: 0;
-                        height: 0;
-
-                        &:checked + .slider {
-                            background-color: var(--primary);
-                        }
-
-                        &:focus + .slider {
-                            box-shadow: 0 0 1px var(--primary);
-                        }
-
-                        &:checked + .slider::before {
-                            transform: translateX(18px);
-                        }
+                    // Track
+                    &::-webkit-slider-runnable-track {
+                        width: 100%;
+                        height: 6px;
+                        background: rgb(from var(--text) r g b / 10%);
+                        border-radius: 3px;
+                        border: none;
                     }
 
-                    .slider {
-                        position: absolute;
-                        cursor: pointer;
-                        inset: 0;
-                        background-color: rgb(from var(--text) r g b / 20%);
-                        transition: 0.4s;
-                        border-radius: 34px;
+                    // Thumb
+                    &::-webkit-slider-thumb {
+                        appearance: none;
+                        height: 16px;
+                        width: 16px;
+                        border-radius: 50%;
+                        background: var(--primary);
+                        margin-top: -5px;
+                        transition: transform 0.1s ease;
+                        border: 2px solid var(--background);
+                        box-shadow: 0 0 0 1px rgb(from var(--text) r g b / 10%);
+                    }
 
-                        &::before {
-                            position: absolute;
-                            content: "";
-                            height: 16px;
-                            width: 16px;
-                            left: 3px;
-                            bottom: 3px;
-                            background-color: white;
-                            transition: 0.4s;
-                            border-radius: 50%;
+                    &:focus {
+                        outline: none;
+
+                        &::-webkit-slider-thumb {
+                            transform: scale(1.1);
+                            box-shadow: 0 0 0 4px
+                                rgb(from var(--primary) r g b / 20%);
                         }
                     }
                 }
 
-                select {
-                    width: 100%;
-                    padding: 0.5rem;
+                input[type="number"] {
+                    width: 4rem;
+                    padding: 0.4rem;
                     border: 1px solid rgb(from var(--text) r g b / 20%);
                     background: rgb(from var(--text) r g b / 5%);
                     color: var(--text);
                     border-radius: 4px;
+                    text-align: center;
                     font-size: 0.9rem;
-                    cursor: pointer;
-                    outline: none;
+                    appearance: textfield;
 
-                    option {
-                        background: var(--background);
-                        color: var(--text);
+                    &::-webkit-outer-spin-button,
+                    &::-webkit-inner-spin-button {
+                        appearance: none;
+                        margin: 0;
                     }
 
                     &:focus {
                         outline: 2px solid var(--primary);
                         border-color: transparent;
                     }
+                }
+
+                button {
+                    padding: 0.4rem 0.8rem;
+                    border: 1px solid rgb(from var(--text) r g b / 20%);
+                    background: rgb(from var(--text) r g b / 5%);
+                    color: var(--text);
+                    border-radius: 4px;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    transition:
+                        background 0.15s ease,
+                        border-color 0.15s ease;
+
+                    &:hover {
+                        background: rgb(from var(--text) r g b / 10%);
+                        border-color: rgb(from var(--text) r g b / 35%);
+                    }
+
+                    &:focus-visible {
+                        outline: 2px solid var(--primary);
+                        border-color: transparent;
+                    }
+                }
+            }
+
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 40px;
+                height: 22px;
+                flex-shrink: 0;
+                cursor: pointer;
+
+                input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+
+                    &:checked + .slider {
+                        background-color: var(--primary);
+                    }
+
+                    &:focus + .slider {
+                        box-shadow: 0 0 1px var(--primary);
+                    }
+
+                    &:checked + .slider::before {
+                        transform: translateX(18px);
+                    }
+                }
+
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    inset: 0;
+                    background-color: rgb(from var(--text) r g b / 20%);
+                    transition: 0.4s;
+                    border-radius: 34px;
+
+                    &::before {
+                        position: absolute;
+                        content: "";
+                        height: 16px;
+                        width: 16px;
+                        left: 3px;
+                        bottom: 3px;
+                        background-color: white;
+                        transition: 0.4s;
+                        border-radius: 50%;
+                    }
+                }
+            }
+
+            select {
+                width: 100%;
+                padding: 0.5rem;
+                border: 1px solid rgb(from var(--text) r g b / 20%);
+                background: rgb(from var(--text) r g b / 5%);
+                color: var(--text);
+                border-radius: 4px;
+                font-size: 0.9rem;
+                cursor: pointer;
+                outline: none;
+
+                option {
+                    background: var(--background);
+                    color: var(--text);
+                }
+
+                &:focus {
+                    outline: 2px solid var(--primary);
+                    border-color: transparent;
                 }
             }
         }
