@@ -56,7 +56,11 @@ export class ChatDownloader {
             await this.offscreen.setupDocument();
 
             const nomi = await this.nomiApi.get({ nomiId });
-            const all = await this.nomiApi.getMessages({ nomiId });
+            const all = await this.nomiApi.getMessages({
+                nomiId,
+                onProgress: (found) =>
+                    update(`Scanning messages: ${found} found`),
+            });
 
             if (!all || all.length === 0) {
                 throw new NomiError({

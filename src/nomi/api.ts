@@ -106,7 +106,10 @@ export class NomiApiClient {
         }
     }
 
-    public async getMessages({ nomiId }: NomiExistsProps) {
+    public async getMessages({
+        nomiId,
+        onProgress,
+    }: NomiExistsProps & { onProgress?: (found: number) => void }) {
         Log(`Getting messages for Nomi ID: ${nomiId}`);
 
         const exists = await this.exists({ nomiId });
@@ -129,8 +132,13 @@ export class NomiApiClient {
 
                     messages.push(...data.messages);
                     requests.push(...data.selfies);
+                    onProgress?.(messages.length + requests.length);
 
-                    nextMax = data.nextMax ?? undefined;
+                    const next = data.nextMax ?? undefined;
+                    // Stop on an empty page or a non-advancing cursor so a
+                    // misbehaving API can't spin this loop forever.
+                    if (data.messages.length === 0 || next === nextMax) break;
+                    nextMax = next;
                 }
             } catch (error) {
                 Log(`Error fetching messages for Nomi ID ${nomiId}:`, error);
@@ -154,7 +162,13 @@ export class NomiApiClient {
         }
     }
 
-    public async getGroupMessages({ groupId }: { groupId: number }) {
+    public async getGroupMessages({
+        groupId,
+        onProgress,
+    }: {
+        groupId: number;
+        onProgress?: (found: number) => void;
+    }) {
         Log(`Getting messages for group ID: ${groupId}`);
 
         const messages: GroupMessage[] = [];
@@ -174,8 +188,13 @@ export class NomiApiClient {
 
                 messages.push(...data.messages);
                 requests.push(...data.selfies);
+                onProgress?.(messages.length + requests.length);
 
-                nextMaxDate = data.nextMaxDate ?? undefined;
+                const next = data.nextMaxDate ?? undefined;
+                // Stop on an empty page or a non-advancing cursor so a
+                // misbehaving API can't spin this loop forever.
+                if (data.messages.length === 0 || next === nextMaxDate) break;
+                nextMaxDate = next;
             }
         } catch (error) {
             Log(`Error fetching messages for group ID ${groupId}:`, error);

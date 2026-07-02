@@ -70,7 +70,11 @@ export class GroupChatDownloader {
             // Offscreen renders the HTML (it has a DOM); ensure it exists first.
             await this.offscreen.setupDocument();
 
-            const all = await this.nomiApi.getGroupMessages({ groupId });
+            const all = await this.nomiApi.getGroupMessages({
+                groupId,
+                onProgress: (found) =>
+                    update(`Scanning messages: ${found} found`),
+            });
 
             if (!all || all.length === 0) {
                 throw new NomiError({
