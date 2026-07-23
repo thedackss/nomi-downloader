@@ -8,11 +8,14 @@ import type {
 } from "../../nomi/types/api.nomis.id.chat";
 import type { VoiceCallWithMessages } from "../../nomi/types/api.nomis.id.voiceCalls";
 import { Log } from "../../utils/log";
+import { type BundleFileSink, BundleSink } from "./bundle/sink";
+import { fetchVoiceAudio, voiceAudioPathMap } from "./bundle/voiceAudio";
 import type { ChatItem } from "./chat/types";
 import { chunkBySize } from "./chunk";
 import {
     CHAT_CHUNK_MAX_BYTES_TEXT,
     CHAT_CHUNK_MAX_BYTES_WITH_SELFIES,
+    CHAT_ZIP_MAX_BYTES,
     DOWNLOAD_THROTTLE_MS,
     MESSAGE_BYTES,
     SELFIE_BYTES,
@@ -47,9 +50,11 @@ export class ChatDownloader {
         messagesPerFile = 0,
         maxFileSizeMB = 0,
         incremental = false,
+        includeVoiceAudio = false,
         onProgress,
         prefetched,
         emit,
+        audioSink,
     }: DownloadChatProps & {
         /** Reuse an already-fetched chat feed instead of fetching again. */
         prefetched?: NomiChatFeed;
@@ -58,6 +63,8 @@ export class ChatDownloader {
          * chat_partN.html) instead of downloading it.
          */
         emit?: (filename: string, html: string) => Promise<void>;
+        /** Bundle mode: where voice audio files go (paths under voice/). */
+        audioSink?: BundleFileSink;
     }) {
         const update = (message: string) => onProgress?.(message);
 
@@ -115,6 +122,21 @@ export class ChatDownloader {
                 rangeEnd,
                 maxMessages,
             );
+
+            // Voice audio: map the exported voice messages to their in-zip
+            // audio paths so the HTML's players and the saved files agree.
+            const rangedFeedItems = messages.filter(
+                (item): item is Message | SelfieRequest =>
+                    "sent" in item || "completed" in item,
+            );
+            const voiceMap = includeVoiceAudio
+                ? voiceAudioPathMap(rangedFeedItems)
+                : new Map<string, string>();
+            // Separated mode with audio: package chat + voice/ into one zip.
+            const zipSink =
+                !emit && includeVoiceAudio && voiceMap.size > 0
+                    ? new BundleSink(this.offscreen, CHAT_ZIP_MAX_BYTES)
+                    : undefined;
 
             // Embed the avatar/video as data URIs so the header works offline.
             const { avatar, avatarVideo } = await fetchHeaderMedia(
@@ -186,6 +208,8 @@ export class ChatDownloader {
                             isNomi,
                             text: message.text,
                             sent: message.sent,
+                            isVoice: message.isVoiceMessage || undefined,
+                            audioSrc: voiceMap.get(message.uuid),
                         });
                     } else if ("completed" in element) {
                         if (includeSelfies) {
@@ -219,13 +243,14 @@ export class ChatDownloader {
                     items,
                 });
 
-                if (emit) {
-                    // Bundle mode: hand the file over with a simple in-zip name.
+                if (emit || zipSink) {
+                    // Bundle / chat-zip mode: simple in-zip names.
                     const name =
                         chunks.length > 1
                             ? `chat_part${j + 1}.html`
                             : "chat.html";
-                    await emit(name, chatHtml);
+                    if (emit) await emit(name, chatHtml);
+                    else await zipSink?.addText(name, chatHtml);
                     currentMessageIndex += chunk.length;
                     continue;
                 }
@@ -255,6 +280,39 @@ export class ChatDownloader {
                 );
 
                 currentMessageIndex += chunk.length;
+            }
+
+            // Fetch the voice audio files next to the chat HTML.
+            const put = audioSink ?? zipSink;
+            if (includeVoiceAudio && voiceMap.size > 0 && put) {
+                await fetchVoiceAudio({
+                    nomiId,
+                    items: rangedFeedItems,
+                    put: (path, base64) => put.addFile(path, base64),
+                    offscreen: this.offscreen,
+                    onProgress: update,
+                });
+            }
+
+            // Chat-zip mode: package and save the zip part(s).
+            if (zipSink) {
+                update("Packaging chat zip…");
+                const nomiNameSafe = nomi.name.replace(/ /g, "-");
+                const downloads = await zipSink.finalize(
+                    `${nomiNameSafe}_Chat(${messages.length})_${stringDate}`,
+                );
+                for (const download of downloads) {
+                    const res = await this.offscreen.download(
+                        download.url,
+                        download.filename,
+                        { isBlob: true },
+                        update,
+                    );
+                    if (res.note) saveNote = res.note;
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, DOWNLOAD_THROTTLE_MS),
+                    );
+                }
             }
 
             // Caught up: remember the newest item we just downloaded.

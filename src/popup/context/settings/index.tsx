@@ -36,6 +36,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             // Off by default: the simple download already grabs the album, so
             // embedding selfies in the chat too would just duplicate them.
             includeSelfies: false,
+            includeVoiceAudio: false,
         },
         jsonDownload: {
             rawData: false,

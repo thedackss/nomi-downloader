@@ -877,6 +877,50 @@ export const Settings = () => {
                             </div>
                         </li>
                         <li>
+                            <label htmlFor="set-voice-audio">
+                                Voice audio
+                                <Tooltip text="Saves each voice message's audio with the export. The chat download becomes a zip (chat + voice files) with playback built into the HTML; bundles get a voice folder. Audio files are large.">
+                                    <span className={styles.warning}>
+                                        <span className={styles.icon}>
+                                            <RiInformation2Line />
+                                        </span>
+                                    </span>
+                                </Tooltip>
+                            </label>
+                            <div className={styles.row}>
+                                <label className={styles.switch}>
+                                    <input
+                                        id="set-voice-audio"
+                                        type="checkbox"
+                                        checked={
+                                            Settings.chatDownload
+                                                .includeVoiceAudio
+                                        }
+                                        onChange={(e) =>
+                                            updateSettings({
+                                                chatDownload: {
+                                                    ...Settings.chatDownload,
+                                                    includeVoiceAudio:
+                                                        e.target.checked,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <span className={styles.slider}></span>
+                                </label>
+                                <p
+                                    style={{
+                                        margin: 0,
+                                        opacity: 0.7,
+                                        fontSize: "0.8rem",
+                                    }}>
+                                    {Settings.chatDownload.includeVoiceAudio
+                                        ? "Audio included (zip)"
+                                        : "Transcripts only"}
+                                </p>
+                            </div>
+                        </li>
+                        <li>
                             <h3>Export headers</h3>
                         </li>
                         <li>

@@ -121,6 +121,35 @@ describe("renderChatPayload", () => {
         expect(html).not.toContain('class="info-card"');
     });
 
+    it("marks voice messages and renders a player when audio is exported", () => {
+        const html = renderChatPayload({
+            name: "Veronica",
+            items: [
+                {
+                    kind: "message",
+                    isNomi: true,
+                    text: "spoken reply",
+                    sent: "2026-07-23T01:03:05Z",
+                    isVoice: true,
+                    audioSrc: "voice/voice_1_2026-07-23.flac",
+                },
+                {
+                    kind: "message",
+                    isNomi: false,
+                    text: "spoken but no audio export",
+                    sent: "2026-07-23T01:04:00Z",
+                    isVoice: true,
+                },
+            ],
+        });
+
+        expect(html).toContain("🎙 Voice message");
+        expect(html).toContain('src="voice/voice_1_2026-07-23.flac"');
+        // The second message is flagged but has no player.
+        expect(html.match(/🎙 Voice message/g)).toHaveLength(2);
+        expect(html.match(/<audio/g)).toHaveLength(1);
+    });
+
     it("renders a voice call section with its transcript", () => {
         const html = renderChatPayload({
             name: "Veronica",

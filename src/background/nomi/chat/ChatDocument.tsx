@@ -40,17 +40,40 @@ interface ChatMessageProps {
     date: Date;
     /** Speaker label shown above the bubble (group chats with many Nomis). */
     name?: string;
+    /** Mark the bubble as a spoken (voice) message. */
+    isVoice?: boolean;
+    /** Relative path to the message's audio; renders an inline player. */
+    audioSrc?: string;
 }
 
 /** A chat message: a bubble with its timestamp grouped in a row. */
-export function ChatMessage({ isNomi, text, date, name }: ChatMessageProps) {
+export function ChatMessage({
+    isNomi,
+    text,
+    date,
+    name,
+    isVoice,
+    audioSrc,
+}: ChatMessageProps) {
     const who = isNomi ? "nomi" : "user";
     const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
     return (
         <li className={`row ${who}`}>
             {name ? <span className="name">{name}</span> : null}
+            {isVoice ? (
+                <span className="voice-tag">🎙 Voice message</span>
+            ) : null}
             <div className="bubble">{text}</div>
+            {audioSrc ? (
+                // biome-ignore lint/a11y/useMediaCaption: the spoken text is rendered as the bubble right above the player
+                <audio
+                    className="voice-audio"
+                    controls
+                    preload="none"
+                    src={audioSrc}
+                />
+            ) : null}
             <span className="time">
                 {date.toDateString()} · {time}
             </span>
@@ -220,6 +243,8 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
                     text: item.text,
                     date: new Date(item.sent),
                     name: item.name,
+                    isVoice: item.isVoice,
+                    audioSrc: item.audioSrc,
                 }),
             );
         } else if (item.kind === "selfie") {

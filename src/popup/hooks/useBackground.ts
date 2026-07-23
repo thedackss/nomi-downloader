@@ -118,6 +118,7 @@ export function useBackground() {
         messagesPerFile: Settings.chatDownload.messagesPerFile,
         maxFileSizeMB: Settings.chatDownload.maxFileSizeMB,
         includeSelfies: Settings.chatDownload.includeSelfies,
+        includeVoiceAudio: Settings.chatDownload.includeVoiceAudio,
         incremental: Settings.incremental.enabled,
     };
     const jsonOptions = {

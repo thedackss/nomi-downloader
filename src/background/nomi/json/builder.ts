@@ -35,6 +35,7 @@ function buildChat(name: string, messages: Array<Message | SelfieRequest>) {
             message: m.text,
             sender:
                 m.type === "Nomi" || m.type === "NomiStarter" ? name : "User",
+            ...(m.isVoiceMessage ? { voiceMessage: true } : {}),
         }));
 }
 

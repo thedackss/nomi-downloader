@@ -8,4 +8,7 @@ import type { DownloadChatProps } from "./downloadChat";
  * not apply to bundles.
  */
 export type DownloadBundleProps = Omit<DownloadAlbumProps, "incremental"> &
-    Omit<DownloadChatProps, "incremental">;
+    Omit<DownloadChatProps, "incremental"> & {
+        /** Also download voice message audio (.flac) into voice/. */
+        includeVoiceAudio?: boolean;
+    };

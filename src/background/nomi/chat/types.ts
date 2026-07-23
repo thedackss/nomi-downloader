@@ -10,6 +10,10 @@ export type ChatItem =
           sent: string;
           /** Speaker label, shown above the bubble (used by group chats). */
           name?: string;
+          /** Flag the transcript as a spoken (voice) message. */
+          isVoice?: boolean;
+          /** Relative path to the message's audio file, when exported. */
+          audioSrc?: string;
       }
     | { kind: "selfie"; src: string }
     | { kind: "failed" }

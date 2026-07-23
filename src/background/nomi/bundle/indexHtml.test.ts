@@ -10,6 +10,7 @@ const base = {
     hasJson: true,
     galleryImages: ["album/photo/nomi_1_0_2026-07-01.webp"],
     videos: ["album/video/nomi_1_5_2026-07-02.mp4"],
+    voiceFiles: ["voice/voice_1_2026-07-03.flac"],
 };
 
 describe("buildBundleIndexHtml", () => {
@@ -49,6 +50,17 @@ describe("buildBundleIndexHtml", () => {
         expect(html).toContain('src="album/photo/nomi_1_0_2026-07-01.webp"');
         expect(html).toContain('href="album/video/nomi_1_5_2026-07-02.mp4"');
         expect(html).toContain("Album — 1 images, 1 videos");
+    });
+
+    it("renders voice messages as audio players, and omits the section when empty", () => {
+        const html = buildBundleIndexHtml(base);
+        expect(html).toContain("Voice messages — 1");
+        expect(html).toContain(
+            '<audio controls preload="none" src="voice/voice_1_2026-07-03.flac">',
+        );
+
+        const none = buildBundleIndexHtml({ ...base, voiceFiles: [] });
+        expect(none).not.toContain("Voice messages");
     });
 
     it("escapes the Nomi name", () => {

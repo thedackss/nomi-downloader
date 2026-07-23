@@ -170,6 +170,7 @@ export class GroupChatDownloader {
                             text: message.text,
                             sent: message.sent,
                             name: isNomi ? message.nomiName : undefined,
+                            isVoice: message.isVoiceMessage || undefined,
                         });
                     } else if (includeSelfies) {
                         const request = element as GroupSelfieRequest;

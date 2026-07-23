@@ -147,6 +147,7 @@ function main() {
                     messagesPerFile,
                     maxFileSizeMB,
                     includeSelfies,
+                    includeVoiceAudio,
                     incremental,
                 } = message.data;
                 runDownload(
@@ -160,6 +161,7 @@ function main() {
                         nomi.downloadChat({
                             nomiId,
                             includeSelfies: includeSelfies ?? true,
+                            includeVoiceAudio: includeVoiceAudio ?? false,
                             maxMessages,
                             rangeStart,
                             rangeEnd,
@@ -307,6 +309,7 @@ function main() {
                     messagesPerFile,
                     maxFileSizeMB,
                     includeSelfies,
+                    includeVoiceAudio,
                 } = message.data;
                 runDownload(
                     nomiId,
@@ -327,6 +330,7 @@ function main() {
                             messagesPerFile,
                             maxFileSizeMB,
                             includeSelfies: includeSelfies ?? true,
+                            includeVoiceAudio: includeVoiceAudio ?? false,
                             onProgress,
                         }),
                 );

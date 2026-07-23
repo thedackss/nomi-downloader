@@ -117,7 +117,9 @@ export function buildNomiMarkdown(input: NomiJsonInput): string {
                 message.type === "Nomi" || message.type === "NomiStarter"
                     ? name
                     : "User";
-            out.push(`**${sender}**`);
+            out.push(
+                `**${sender}**${message.isVoiceMessage ? " 🎙 (voice message)" : ""}`,
+            );
             out.push(pre(message.text));
             out.push("");
         }

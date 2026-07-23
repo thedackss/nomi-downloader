@@ -281,11 +281,15 @@ export class Nomi {
                     rangeEnd: props.rangeEnd,
                     messagesPerFile: props.messagesPerFile,
                     maxFileSizeMB: props.maxFileSizeMB,
+                    includeVoiceAudio: props.includeVoiceAudio,
                     onProgress,
                     prefetched: chatData,
                     emit: async (filename, html) => {
                         await sink.addText(filename, html);
                         chatParts.push(filename);
+                    },
+                    audioSink: {
+                        addFile: (path, base64) => sink.addFile(path, base64),
                     },
                 });
             } catch (err) {
@@ -352,6 +356,7 @@ export class Nomi {
         // The hub goes last (it needs the final file list) but is pinned
         // into the first part, next to the docs.
         const paths = sink.entries().map((e) => e.path);
+        const voiceFiles = paths.filter((p) => p.startsWith("voice/"));
         const galleryImages = paths.filter(
             (p) =>
                 p.startsWith("album/") &&
@@ -372,6 +377,7 @@ export class Nomi {
                 hasJson,
                 galleryImages,
                 videos,
+                voiceFiles,
             }),
             true,
         );

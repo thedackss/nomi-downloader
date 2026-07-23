@@ -7,6 +7,8 @@ export const OFFSCREEN_DOCUMENT_PATH = "src/offscreen/index.html";
 export const ALBUM_CHUNK_MAX_BYTES = 750 * MB;
 export const CHAT_CHUNK_MAX_BYTES_WITH_SELFIES = 75_000_000;
 export const CHAT_CHUNK_MAX_BYTES_TEXT = 10_000_000;
+/** Per-zip cap when a chat exports as a zip (HTML + voice audio files). */
+export const CHAT_ZIP_MAX_BYTES = 750 * MB;
 
 /** Rough per-item size estimates, used only to decide chunk boundaries. */
 export const HD_IMAGE_BYTES = 2 * MB;

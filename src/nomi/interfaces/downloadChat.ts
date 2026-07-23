@@ -2,6 +2,11 @@ import type { NomiExistsProps } from "./exists";
 
 export interface DownloadChatProps extends NomiExistsProps {
     includeSelfies?: boolean;
+    /**
+     * Also download each voice message's audio. The chat export becomes a
+     * zip (chat HTML + voice/ files) with inline playback.
+     */
+    includeVoiceAudio?: boolean;
     /** Keep only the last N messages; 0 / undefined = unlimited. */
     maxMessages?: number;
     /**
