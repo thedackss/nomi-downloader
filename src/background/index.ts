@@ -301,7 +301,6 @@ function main() {
                     downloadQuantity,
                     folderization,
                     quality,
-                    imagesPerZip,
                     maxZipSizeMB,
                     prompts,
                     maxMessages,
@@ -312,40 +311,24 @@ function main() {
                 runDownload(
                     nomiId,
                     {
-                        start: "Starting download...",
-                        done: "Download complete!",
+                        start: "Starting bundle download...",
+                        done: "Bundle downloaded!",
                         error: "Error during download",
                     },
-                    async (onProgress) => {
-                        onProgress("Downloading album...");
-                        await nomi.downloadAlbum({
+                    (onProgress) =>
+                        nomi.downloadBundle({
                             nomiId,
                             downloadQuantity,
                             folderization,
                             quality,
-                            imagesPerZip,
                             maxZipSizeMB,
                             prompts,
-                            onProgress,
-                        });
-
-                        onProgress("Downloading chat...");
-                        await nomi.downloadChat({
-                            nomiId,
-                            includeSelfies: includeSelfies ?? true,
                             maxMessages,
                             messagesPerFile,
                             maxFileSizeMB,
+                            includeSelfies: includeSelfies ?? true,
                             onProgress,
-                        });
-
-                        try {
-                            onProgress("Downloading shared notes...");
-                            await nomi.downloadSharedNotes({ nomiId });
-                        } catch (err) {
-                            Log("Shared notes step failed", err);
-                        }
-                    },
+                        }),
                 );
                 break;
             }

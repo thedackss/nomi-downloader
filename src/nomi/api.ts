@@ -33,6 +33,12 @@ import type {
     VoiceCallWithMessages,
 } from "./types/api.nomis.id.voiceCalls";
 
+/** Everything getMessages returns: the timeline items plus voice calls. */
+export interface NomiChatFeed {
+    items: (Message | SelfieRequest)[];
+    voiceCalls: VoiceCallWithMessages[];
+}
+
 /** Read-only access to the nomi.ai API for a single Nomi. */
 export class NomiApiClient {
     private async exists({ nomiId }: NomiExistsProps) {
@@ -114,7 +120,9 @@ export class NomiApiClient {
     public async getMessages({
         nomiId,
         onProgress,
-    }: NomiExistsProps & { onProgress?: (found: number) => void }) {
+    }: NomiExistsProps & {
+        onProgress?: (found: number) => void;
+    }): Promise<NomiChatFeed> {
         Log(`Getting messages for Nomi ID: ${nomiId}`);
 
         const exists = await this.exists({ nomiId });

@@ -1041,7 +1041,7 @@ export const Settings = () => {
                         </li>
                         <li>
                             <label htmlFor="set-advanced-download">
-                                Advanced Download
+                                Separated Downloads
                             </label>
                             <div className={styles.row}>
                                 <label className={styles.switch}>
@@ -1068,7 +1068,7 @@ export const Settings = () => {
                                     }}>
                                     {dl.advanced
                                         ? "Pick which types appear on the button"
-                                        : "One button: album + chat + shared notes"}
+                                        : "One button: everything in a single zip"}
                                 </p>
                             </div>
                         </li>

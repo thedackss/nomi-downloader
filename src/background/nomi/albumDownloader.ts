@@ -4,6 +4,7 @@ import { api } from "../../nomi/http";
 import type { DownloadAlbumProps } from "../../nomi/interfaces/downloadAlbum";
 import type { Media } from "../../nomi/types/api.nomis.id.medias";
 import { Log } from "../../utils/log";
+import type { BundleFileSink } from "./bundle/sink";
 import { chunkBySize } from "./chunk";
 import {
     ALBUM_CHUNK_MAX_BYTES,
@@ -46,7 +47,14 @@ export class AlbumDownloader {
         recentLimit = 0,
         startIndex = 0,
         incremental = false,
-    }: DownloadAlbumProps) {
+        sink,
+    }: DownloadAlbumProps & {
+        /**
+         * Bundle mode: stream files into this sink (which owns zip assembly
+         * and size rollover) instead of building and downloading zips here.
+         */
+        sink?: BundleFileSink;
+    }) {
         const update = (message: string) => onProgress?.(message);
 
         try {
@@ -109,19 +117,34 @@ export class AlbumDownloader {
                 maxZipSizeMB > 0
                     ? maxZipSizeMB * 1024 * 1024
                     : ALBUM_CHUNK_MAX_BYTES;
-            const chunks = chunkBySize(
-                medias,
-                (media) => this.estimateSize(media, quality),
-                maxBytes,
-                maxCount,
-            );
+            // Bundle mode: the sink owns zip assembly and size rollover, so
+            // the whole album streams through as a single pass.
+            const chunks = sink
+                ? [medias]
+                : chunkBySize(
+                      medias,
+                      (media) => this.estimateSize(media, quality),
+                      maxBytes,
+                      maxCount,
+                  );
             const downloads: { url: string; filename: string }[] = [];
 
             for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
                 const chunk = chunks[chunkIndex];
                 const chunkId = `chunk_${chunkIndex}_${Date.now()}`;
 
-                await this.offscreen.call("create-zip", { id: chunkId });
+                if (!sink) {
+                    await this.offscreen.call("create-zip", { id: chunkId });
+                }
+
+                const put = (path: string, content: string) =>
+                    sink
+                        ? sink.addFile(path, content)
+                        : this.offscreen.call("add-file", {
+                              id: chunkId,
+                              path,
+                              content,
+                          });
 
                 const chunkMessage =
                     chunks.length < 2
@@ -191,11 +214,7 @@ export class AlbumDownloader {
                             base64 = await this.offscreen.blobToBase64(data);
                         }
 
-                        await this.offscreen.call("add-file", {
-                            id: chunkId,
-                            path,
-                            content: base64,
-                        });
+                        await put(path, base64);
 
                         // Write a sidecar when asked for one, or as the fallback
                         // when embedding wasn't possible for this format.
@@ -206,11 +225,10 @@ export class AlbumDownloader {
                                 (wantEmbed && !embedded));
 
                         if (promptText && wantSidecar) {
-                            await this.offscreen.call("add-file", {
-                                id: chunkId,
-                                path: path.replace(/\.[^.]+$/, ".txt"),
-                                content: textToBase64(promptText),
-                            });
+                            await put(
+                                path.replace(/\.[^.]+$/, ".txt"),
+                                textToBase64(promptText),
+                            );
                         }
                     } catch (error) {
                         update(
@@ -234,32 +252,34 @@ export class AlbumDownloader {
                     await Promise.all(promises);
                 }
 
-                update(
-                    `${chunkMessage}Packaging ${chunk.length} files into a zip…`,
-                );
-                const response = await this.offscreen.call("generate-zip", {
-                    id: chunkId,
-                });
-
-                if (response.success && response.url) {
-                    downloads.push({
-                        url: response.url,
-                        filename: this.buildFilename({
-                            nomiName,
-                            count: medias.length,
-                            quality,
-                            chunkIndex,
-                            chunkCount: chunks.length,
-                        }),
-                    });
-                } else {
-                    Log(
-                        `Failed to generate zip for chunk ${chunkIndex + 1}`,
-                        response.error,
+                if (!sink) {
+                    update(
+                        `${chunkMessage}Packaging ${chunk.length} files into a zip…`,
                     );
-                }
+                    const response = await this.offscreen.call("generate-zip", {
+                        id: chunkId,
+                    });
 
-                await this.offscreen.call("clear-zip", { id: chunkId });
+                    if (response.success && response.url) {
+                        downloads.push({
+                            url: response.url,
+                            filename: this.buildFilename({
+                                nomiName,
+                                count: medias.length,
+                                quality,
+                                chunkIndex,
+                                chunkCount: chunks.length,
+                            }),
+                        });
+                    } else {
+                        Log(
+                            `Failed to generate zip for chunk ${chunkIndex + 1}`,
+                            response.error,
+                        );
+                    }
+
+                    await this.offscreen.call("clear-zip", { id: chunkId });
+                }
                 Log(
                     `Chunk ${chunkIndex + 1} processed. Found ${medias.length} items.`,
                 );
@@ -289,9 +309,11 @@ export class AlbumDownloader {
                 if (newest) await setLastTimestamp("album", nomiId, newest);
             }
 
-            await new Promise((resolve) =>
-                setTimeout(resolve, ALBUM_FINALIZE_DELAY_MS),
-            );
+            if (!sink) {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, ALBUM_FINALIZE_DELAY_MS),
+                );
+            }
             return saveNote;
         } catch (error) {
             if (error instanceof NomiError) {

@@ -1,4 +1,4 @@
-import type { NomiApiClient } from "../../nomi/api";
+import type { NomiApiClient, NomiChatFeed } from "../../nomi/api";
 import { NomiError } from "../../nomi/errors";
 import { api } from "../../nomi/http";
 import type { DownloadChatProps } from "../../nomi/interfaces/downloadChat";
@@ -48,7 +48,17 @@ export class ChatDownloader {
         maxFileSizeMB = 0,
         incremental = false,
         onProgress,
-    }: DownloadChatProps) {
+        prefetched,
+        emit,
+    }: DownloadChatProps & {
+        /** Reuse an already-fetched chat feed instead of fetching again. */
+        prefetched?: NomiChatFeed;
+        /**
+         * Bundle mode: receive each rendered file (chat.html /
+         * chat_partN.html) instead of downloading it.
+         */
+        emit?: (filename: string, html: string) => Promise<void>;
+    }) {
         const update = (message: string) => onProgress?.(message);
 
         try {
@@ -57,11 +67,13 @@ export class ChatDownloader {
             await this.offscreen.setupDocument();
 
             const nomi = await this.nomiApi.get({ nomiId });
-            const { items, voiceCalls } = await this.nomiApi.getMessages({
-                nomiId,
-                onProgress: (found) =>
-                    update(`Scanning messages: ${found} found`),
-            });
+            const { items, voiceCalls } =
+                prefetched ??
+                (await this.nomiApi.getMessages({
+                    nomiId,
+                    onProgress: (found) =>
+                        update(`Scanning messages: ${found} found`),
+                }));
 
             // Voice calls join the timeline, positioned by their start time.
             const itemTime = (
@@ -206,6 +218,17 @@ export class ChatDownloader {
                     avatarVideo,
                     items,
                 });
+
+                if (emit) {
+                    // Bundle mode: hand the file over with a simple in-zip name.
+                    const name =
+                        chunks.length > 1
+                            ? `chat_part${j + 1}.html`
+                            : "chat.html";
+                    await emit(name, chatHtml);
+                    currentMessageIndex += chunk.length;
+                    continue;
+                }
 
                 // Prefer an offscreen Blob URL (safer for big strings); fall
                 // back to a base64 data URI if offscreen is unavailable.
