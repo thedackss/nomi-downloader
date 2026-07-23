@@ -12,7 +12,20 @@ export type ChatItem =
           name?: string;
       }
     | { kind: "selfie"; src: string }
-    | { kind: "failed" };
+    | { kind: "failed" }
+    | {
+          kind: "voiceCall";
+          started: string;
+          ended?: string;
+          messages: VoiceCallLine[];
+      };
+
+/** One transcript line inside a voice-call section. */
+export interface VoiceCallLine {
+    isNomi: boolean;
+    text: string;
+    created: string;
+}
 
 /** A labeled fact shown in the info card at the top of the chat (group chats). */
 export interface ChatInfoRow {

@@ -59,6 +59,30 @@ const input: NomiJsonInput = {
         } as never,
         { sent: "2026-06-01T12:05:00Z", text: "Hi!", type: "Nomi" } as never,
     ],
+    voiceCalls: [
+        {
+            id: "vc1",
+            started: "2026-06-02T18:00:00Z",
+            ended: "2026-06-02T18:02:30Z",
+            endError: null,
+            retryCount: 0,
+            nomiId: 1,
+            messages: [
+                {
+                    id: "m1",
+                    created: "2026-06-02T18:00:05Z",
+                    type: "User",
+                    text: "Hello?",
+                },
+                {
+                    id: "m2",
+                    created: "2026-06-02T18:00:12Z",
+                    type: "Nomi",
+                    text: "Finally, you called.",
+                },
+            ],
+        },
+    ],
 };
 
 describe("buildNomiMarkdown", () => {
@@ -94,5 +118,12 @@ describe("buildNomiMarkdown", () => {
         // Nomi message ("Hi!") comes before the older user message.
         expect(md.indexOf("**Yuki**")).toBeLessThan(md.indexOf("**User**"));
         expect(md).toContain("Hello &lt;3"); // HTML escaped inside <pre>
+    });
+
+    it("renders voice calls with duration and transcript", () => {
+        expect(md).toContain("# Voice Calls");
+        // 2m30s call → (2:30) in the header.
+        expect(md).toMatch(/## Call — .*\(2:30\)/);
+        expect(md).toContain("Finally, you called.");
     });
 });

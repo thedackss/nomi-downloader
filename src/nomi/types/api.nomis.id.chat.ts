@@ -1,9 +1,28 @@
 export interface ApiNomisMessagesResponse {
     messages: Message[];
     selfies: SelfieRequest[];
-    voiceCalls: unknown[];
+    voiceCalls: VoiceCall[];
     nextMax: string | undefined;
     roleplays: unknown[];
+}
+
+/** A voice call listed in the chat feed; its transcript is a separate fetch. */
+export interface VoiceCall {
+    id: string;
+    started: string;
+    ended: string | null;
+    endError: unknown;
+    retryCount: number;
+    nomiId: number;
+}
+
+/** Stored TTS audio for a voice message ("Completed" = downloadable .flac). */
+export interface SpeechInfo {
+    status: string;
+    updated: string;
+    mimeType: string;
+    version: number;
+    durationInSeconds: number;
 }
 
 export interface Message {
@@ -19,7 +38,7 @@ export interface Message {
     timezone: string;
     text: string;
     aiBackendId?: string;
-    speech: unknown;
+    speech: SpeechInfo | null;
     policyViolations: unknown[];
     attachment?: Attachment;
 }

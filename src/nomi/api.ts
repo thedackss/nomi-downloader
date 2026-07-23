@@ -21,12 +21,17 @@ import type {
     ApiNomisMessagesResponse,
     Message,
     SelfieRequest,
+    VoiceCall,
 } from "./types/api.nomis.id.chat";
 import type {
     APINomisIDMediasResponse,
     Media,
 } from "./types/api.nomis.id.medias";
 import type { ApiSharedNotesResponse } from "./types/api.nomis.id.sharedNotes";
+import type {
+    ApiVoiceCallMessagesResponse,
+    VoiceCallWithMessages,
+} from "./types/api.nomis.id.voiceCalls";
 
 /** Read-only access to the nomi.ai API for a single Nomi. */
 export class NomiApiClient {
@@ -117,6 +122,7 @@ export class NomiApiClient {
         if (exists) {
             const messages: Message[] = [];
             const requests: SelfieRequest[] = [];
+            const calls = new Map<string, VoiceCall>();
 
             let nextMax: string | undefined = "default";
             let url = `/nomis/${nomiId}/chat/messages`;
@@ -132,6 +138,9 @@ export class NomiApiClient {
 
                     messages.push(...data.messages);
                     requests.push(...data.selfies);
+                    for (const call of data.voiceCalls ?? []) {
+                        calls.set(call.id, call);
+                    }
                     onProgress?.(messages.length + requests.length);
 
                     const next = data.nextMax ?? undefined;
@@ -153,13 +162,43 @@ export class NomiApiClient {
                 return dateA.getTime() - dateB.getTime();
             });
 
-            return sorted;
+            const voiceCalls = await this.getVoiceCallTranscripts(nomiId, [
+                ...calls.values(),
+            ]);
+
+            return { items: sorted, voiceCalls };
         } else {
             throw new NomiError({
                 id: nomiId,
                 message: `Nomi with ID ${nomiId} does not exist`,
             });
         }
+    }
+
+    /**
+     * Attach each call's transcript. A failed fetch keeps the call with an
+     * empty transcript so the export still marks that a call happened.
+     */
+    private async getVoiceCallTranscripts(
+        nomiId: number,
+        calls: VoiceCall[],
+    ): Promise<VoiceCallWithMessages[]> {
+        const result: VoiceCallWithMessages[] = [];
+        for (const call of calls) {
+            try {
+                const { data } = await api.get<ApiVoiceCallMessagesResponse>(
+                    `/nomis/${nomiId}/voice-calls/${call.id}/messages`,
+                );
+                result.push({ ...call, messages: data.voiceCallMessages });
+            } catch (error) {
+                Log(`Error fetching voice call ${call.id}:`, error);
+                result.push({ ...call, messages: [] });
+            }
+        }
+        return result.sort(
+            (a, b) =>
+                new Date(a.started).getTime() - new Date(b.started).getTime(),
+        );
     }
 
     public async getGroupMessages({

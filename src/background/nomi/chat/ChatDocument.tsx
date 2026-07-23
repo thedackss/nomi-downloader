@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import css from "./chat.scss?inline";
-import type { ChatInfoRow, ChatRenderPayload } from "./types";
+import type { ChatInfoRow, ChatRenderPayload, VoiceCallLine } from "./types";
 
 /*
  * The exported chat HTML, authored as a component so the design can be
@@ -72,6 +72,54 @@ export function ChatImageFailed() {
     return (
         <li className="row nomi">
             <div className="bubble failed">Image unavailable</div>
+        </li>
+    );
+}
+
+interface ChatVoiceCallProps {
+    started: Date;
+    ended?: Date;
+    messages: VoiceCallLine[];
+}
+
+/** A voice call: a labeled section with its transcript lines. */
+export function ChatVoiceCall({
+    started,
+    ended,
+    messages,
+}: ChatVoiceCallProps) {
+    const time = `${pad(started.getHours())}:${pad(started.getMinutes())}`;
+    let duration: string | null = null;
+    if (ended) {
+        const secs = Math.max(
+            0,
+            Math.round((ended.getTime() - started.getTime()) / 1000),
+        );
+        duration = `${Math.floor(secs / 60)}:${pad(secs % 60)}`;
+    }
+
+    return (
+        <li className="voice-call">
+            <div className="call-header">
+                <span className="call-title">📞 Voice call</span>
+                <span className="call-meta">
+                    {started.toDateString()} · {time}
+                    {duration ? ` · ${duration}` : ""}
+                </span>
+            </div>
+            {messages.length > 0 ? (
+                <ul className="call-lines">
+                    {messages.map((line) => (
+                        <li
+                            key={line.created + line.text.slice(0, 16)}
+                            className={`call-line ${line.isNomi ? "nomi" : "user"}`}>
+                            {line.text}
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className="call-empty">No transcript available</div>
+            )}
         </li>
     );
 }
@@ -176,6 +224,15 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
             );
         } else if (item.kind === "selfie") {
             children.push(createElement(ChatSelfie, { key: i, src: item.src }));
+        } else if (item.kind === "voiceCall") {
+            children.push(
+                createElement(ChatVoiceCall, {
+                    key: i,
+                    started: new Date(item.started),
+                    ended: item.ended ? new Date(item.ended) : undefined,
+                    messages: item.messages,
+                }),
+            );
         } else {
             children.push(createElement(ChatImageFailed, { key: i }));
         }

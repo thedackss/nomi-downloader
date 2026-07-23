@@ -57,6 +57,30 @@ const input: NomiJsonInput = {
             type: "User",
         } as never,
     ],
+    voiceCalls: [
+        {
+            id: "vc1",
+            started: "2026-06-02T18:00:00Z",
+            ended: "2026-06-02T18:02:30Z",
+            endError: null,
+            retryCount: 0,
+            nomiId: 1,
+            messages: [
+                {
+                    id: "m1",
+                    created: "2026-06-02T18:00:05Z",
+                    type: "User",
+                    text: "Hello?",
+                },
+                {
+                    id: "m2",
+                    created: "2026-06-02T18:00:12Z",
+                    type: "Nomi",
+                    text: "Finally, you called.",
+                },
+            ],
+        },
+    ],
 };
 
 describe("buildNomiJson", () => {
@@ -84,6 +108,38 @@ describe("buildNomiJson", () => {
             { date: "2026-06-01T12:05:00Z", message: "Hi!", sender: "User" },
         ]);
         expect(out.raw).toBeUndefined();
+    });
+
+    it("maps voice calls with their transcripts", () => {
+        const out = buildNomiJson(input, false) as {
+            nomi: {
+                voiceCalls: Array<{
+                    started: string;
+                    ended: string | null;
+                    messages: Array<{
+                        date: string;
+                        message: string;
+                        sender: string;
+                    }>;
+                }>;
+            };
+        };
+
+        expect(out.nomi.voiceCalls).toHaveLength(1);
+        const call = out.nomi.voiceCalls[0];
+        expect(call.started).toBe("2026-06-02T18:00:00Z");
+        expect(call.messages).toEqual([
+            {
+                date: "2026-06-02T18:00:05Z",
+                message: "Hello?",
+                sender: "User",
+            },
+            {
+                date: "2026-06-02T18:00:12Z",
+                message: "Finally, you called.",
+                sender: "Yuki",
+            },
+        ]);
     });
 
     it("attaches raw API responses when rawData is enabled", () => {

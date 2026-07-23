@@ -187,14 +187,18 @@ export class Nomi {
             this.api.getMindInfo({ nomiId }),
         ]);
 
-        let messages: Awaited<ReturnType<NomiApiClient["getMessages"]>> = [];
+        type ChatData = Awaited<ReturnType<NomiApiClient["getMessages"]>>;
+        let messages: ChatData["items"] = [];
+        let voiceCalls: ChatData["voiceCalls"] = [];
         try {
-            messages = await this.api.getMessages({ nomiId });
+            const chatData = await this.api.getMessages({ nomiId });
+            messages = chatData.items;
+            voiceCalls = chatData.voiceCalls;
         } catch (err) {
             Log("Failed to fetch messages for export", err);
         }
 
-        return { nomiId, nomi, shared, anchors, mind, messages };
+        return { nomiId, nomi, shared, anchors, mind, messages, voiceCalls };
     }
 
     /** Save export text via a Blob URL (exports can be large). */

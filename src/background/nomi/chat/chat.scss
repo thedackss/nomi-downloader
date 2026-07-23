@@ -121,6 +121,73 @@ body {
             }
         }
 
+        // A voice call rendered as a labeled section in the timeline.
+        .voice-call {
+            align-self: stretch;
+            margin: 14px 0;
+            padding: 14px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+
+            .call-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .call-title {
+                font-weight: 650;
+                color: var(--accent);
+            }
+
+            .call-meta {
+                font-size: 0.8rem;
+                color: var(--muted);
+            }
+
+            .call-lines {
+                list-style: none;
+                display: flex;
+                flex-flow: column nowrap;
+                gap: 6px;
+                margin-top: 10px;
+                padding: 0;
+            }
+
+            .call-line {
+                max-width: 85%;
+                padding: 7px 12px;
+                border-radius: 12px;
+                font-size: 0.9rem;
+                white-space: pre-line;
+                overflow-wrap: anywhere;
+
+                &.user {
+                    align-self: flex-end;
+                    background: var(--user-bubble);
+                    color: #fff;
+                    border-bottom-right-radius: 4px;
+                }
+
+                &.nomi {
+                    align-self: flex-start;
+                    background: rgb(255 255 255 / 4%);
+                    border: 1px solid var(--border);
+                    border-bottom-left-radius: 4px;
+                }
+            }
+
+            .call-empty {
+                margin-top: 8px;
+                font-size: 0.85rem;
+                color: var(--muted);
+                font-style: italic;
+            }
+        }
+
         .row {
             display: flex;
             flex-flow: column nowrap;

@@ -6,6 +6,7 @@ import type {
     Message,
     SelfieRequest,
 } from "../../nomi/types/api.nomis.id.chat";
+import type { VoiceCallWithMessages } from "../../nomi/types/api.nomis.id.voiceCalls";
 import { Log } from "../../utils/log";
 import type { ChatItem } from "./chat/types";
 import { chunkBySize } from "./chunk";
@@ -56,22 +57,33 @@ export class ChatDownloader {
             await this.offscreen.setupDocument();
 
             const nomi = await this.nomiApi.get({ nomiId });
-            const all = await this.nomiApi.getMessages({
+            const { items, voiceCalls } = await this.nomiApi.getMessages({
                 nomiId,
                 onProgress: (found) =>
                     update(`Scanning messages: ${found} found`),
             });
 
-            if (!all || all.length === 0) {
+            // Voice calls join the timeline, positioned by their start time.
+            const itemTime = (
+                item: Message | SelfieRequest | VoiceCallWithMessages,
+            ) =>
+                "sent" in item
+                    ? item.sent
+                    : "completed" in item
+                      ? item.completed
+                      : item.started;
+            const all = [...items, ...voiceCalls].sort(
+                (a, b) =>
+                    new Date(itemTime(a)).getTime() -
+                    new Date(itemTime(b)).getTime(),
+            );
+
+            if (all.length === 0) {
                 throw new NomiError({
                     id: nomiId,
                     message: `No messages found for Nomi with ID ${nomiId}`,
                 });
             }
-
-            // BETA: keep only items newer than the last successful download.
-            const itemTime = (item: Message | SelfieRequest) =>
-                "sent" in item ? item.sent : item.completed;
             const lastTs = incremental
                 ? await getLastTimestamp("chat", nomiId)
                 : undefined;
@@ -136,7 +148,6 @@ export class ChatDownloader {
 
                 for (let i = 0; i < chunk.length; i++) {
                     const element = chunk[i];
-                    const isMessage = "sent" in element;
 
                     const percentage = (
                         ((messagesCount + 1) / messages.length) *
@@ -153,7 +164,7 @@ export class ChatDownloader {
                     lastPercent = percentage;
                     messagesCount++;
 
-                    if (isMessage) {
+                    if ("sent" in element) {
                         const message = element as Message;
                         const isNomi =
                             message.type === "Nomi" ||
@@ -164,9 +175,23 @@ export class ChatDownloader {
                             text: message.text,
                             sent: message.sent,
                         });
-                    } else if (includeSelfies) {
-                        const request = element as SelfieRequest;
-                        items.push(...(await this.fetchSelfies(request)));
+                    } else if ("completed" in element) {
+                        if (includeSelfies) {
+                            const request = element as SelfieRequest;
+                            items.push(...(await this.fetchSelfies(request)));
+                        }
+                    } else {
+                        const call = element as VoiceCallWithMessages;
+                        items.push({
+                            kind: "voiceCall",
+                            started: call.started,
+                            ended: call.ended ?? undefined,
+                            messages: call.messages.map((m) => ({
+                                isNomi: m.type !== "User",
+                                text: m.text,
+                                created: m.created,
+                            })),
+                        });
                     }
                 }
 
@@ -229,11 +254,14 @@ export class ChatDownloader {
     }
 
     private estimateItemSize(
-        item: Message | SelfieRequest,
+        item: Message | SelfieRequest | VoiceCallWithMessages,
         includeSelfies?: boolean,
     ): number {
         if ("sent" in item) return MESSAGE_BYTES;
-        return includeSelfies ? item.selfies.length * SELFIE_BYTES : 0;
+        if ("completed" in item) {
+            return includeSelfies ? item.selfies.length * SELFIE_BYTES : 0;
+        }
+        return Math.max(1, item.messages.length) * MESSAGE_BYTES;
     }
 
     private async fetchSelfies(request: SelfieRequest): Promise<ChatItem[]> {

@@ -121,6 +121,53 @@ describe("renderChatPayload", () => {
         expect(html).not.toContain('class="info-card"');
     });
 
+    it("renders a voice call section with its transcript", () => {
+        const html = renderChatPayload({
+            name: "Veronica",
+            items: [
+                {
+                    kind: "voiceCall",
+                    started: "2026-07-23T00:58:05Z",
+                    ended: "2026-07-23T01:00:35Z",
+                    messages: [
+                        {
+                            isNomi: false,
+                            text: "Hello?",
+                            created: "2026-07-23T00:58:09Z",
+                        },
+                        {
+                            isNomi: true,
+                            text: "Finally, you called.",
+                            created: "2026-07-23T00:58:49Z",
+                        },
+                    ],
+                },
+            ],
+        });
+
+        expect(html).toContain('class="voice-call"');
+        expect(html).toContain("📞 Voice call");
+        expect(html).toContain("· 2:30"); // duration from started→ended
+        expect(html).toContain("Finally, you called.");
+        expect(html).toContain('class="call-line nomi"');
+        expect(html).toContain('class="call-line user"');
+    });
+
+    it("renders an empty-transcript note when a call has no lines", () => {
+        const html = renderChatPayload({
+            name: "Veronica",
+            items: [
+                {
+                    kind: "voiceCall",
+                    started: "2026-07-23T00:58:05Z",
+                    messages: [],
+                },
+            ],
+        });
+
+        expect(html).toContain("No transcript available");
+    });
+
     it("renders an info card at the top when info rows are given", () => {
         const html = renderChatPayload({
             name: "My Group",

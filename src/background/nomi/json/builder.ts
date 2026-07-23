@@ -11,6 +11,7 @@ import type {
     SelfieRequest,
 } from "../../../nomi/types/api.nomis.id.chat";
 import type { ApiSharedNotesResponse } from "../../../nomi/types/api.nomis.id.sharedNotes";
+import type { VoiceCallWithMessages } from "../../../nomi/types/api.nomis.id.voiceCalls";
 import { buildMindMapPayload, type MindInfoData } from "../mindmap/builder";
 import { buildAnchorRefs } from "../sharednotes/builder";
 
@@ -21,6 +22,7 @@ export interface NomiJsonInput {
     anchors: ApiAnchorLooksResponse | null;
     mind: MindInfoData | null;
     messages: Array<Message | SelfieRequest>;
+    voiceCalls: VoiceCallWithMessages[];
 }
 
 const str = (value: string | null | undefined) => value ?? "";
@@ -36,6 +38,18 @@ function buildChat(name: string, messages: Array<Message | SelfieRequest>) {
         }));
 }
 
+function buildVoiceCalls(name: string, calls: VoiceCallWithMessages[]) {
+    return calls.map((call) => ({
+        started: call.started,
+        ended: call.ended,
+        messages: call.messages.map((m) => ({
+            date: m.created,
+            message: m.text,
+            sender: m.type === "User" ? "User" : name,
+        })),
+    }));
+}
+
 function buildMindMap(name: string, mind: MindInfoData | null) {
     if (!mind) return null;
     const { nodes, edges, entries } = buildMindMapPayload(
@@ -47,7 +61,7 @@ function buildMindMap(name: string, mind: MindInfoData | null) {
 }
 
 export function buildNomiJson(input: NomiJsonInput, rawData: boolean) {
-    const { nomiId, nomi, shared, anchors, mind, messages } = input;
+    const { nomiId, nomi, shared, anchors, mind, messages, voiceCalls } = input;
     const name = nomi.name;
 
     const structured = {
@@ -82,6 +96,7 @@ export function buildNomiJson(input: NomiJsonInput, rawData: boolean) {
             },
             mindMap: buildMindMap(name, mind),
             chat: buildChat(name, messages),
+            voiceCalls: buildVoiceCalls(name, voiceCalls),
         },
     };
 
@@ -95,6 +110,7 @@ export function buildNomiJson(input: NomiJsonInput, rawData: boolean) {
             anchorLooks: anchors,
             mindMap: mind,
             messages,
+            voiceCalls,
         },
     };
 }

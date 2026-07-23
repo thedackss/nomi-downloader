@@ -25,7 +25,7 @@ function pre(text: string): string {
 }
 
 export function buildNomiMarkdown(input: NomiJsonInput): string {
-    const { nomiId, nomi, shared, anchors, mind, messages } = input;
+    const { nomiId, nomi, shared, anchors, mind, messages, voiceCalls } = input;
     const name = nomi.name;
     const out: string[] = [];
 
@@ -119,6 +119,35 @@ export function buildNomiMarkdown(input: NomiJsonInput): string {
                     : "User";
             out.push(`**${sender}**`);
             out.push(pre(message.text));
+            out.push("");
+        }
+    }
+
+    if (voiceCalls.length > 0) {
+        out.push("# Voice Calls");
+        for (const call of voiceCalls) {
+            const started = new Date(call.started);
+            let header = `## Call — ${started.toDateString()}`;
+            if (call.ended) {
+                const secs = Math.max(
+                    0,
+                    Math.round(
+                        (new Date(call.ended).getTime() - started.getTime()) /
+                            1000,
+                    ),
+                );
+                const mins = Math.floor(secs / 60);
+                header += ` (${mins}:${String(secs % 60).padStart(2, "0")})`;
+            }
+            out.push(header);
+            if (call.messages.length === 0) {
+                out.push("_No transcript available._");
+            }
+            for (const line of call.messages) {
+                out.push(`**${line.type === "User" ? "User" : name}**`);
+                out.push(pre(line.text));
+                out.push("");
+            }
             out.push("");
         }
     }
