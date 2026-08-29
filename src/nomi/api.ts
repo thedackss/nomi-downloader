@@ -39,6 +39,18 @@ export interface NomiChatFeed {
     voiceCalls: VoiceCallWithMessages[];
 }
 
+/**
+ * True once a page of messages reaches the incremental cutoff. Pages arrive
+ * newest → oldest, so the first page containing anything at or older than the
+ * cutoff is the last one worth fetching.
+ */
+export function reachesCutoff(messages: Message[], cutoffMs: number): boolean {
+    return messages.some((message) => {
+        const ms = new Date(message.sent).getTime();
+        return !Number.isNaN(ms) && ms <= cutoffMs;
+    });
+}
+
 /** Read-only access to the nomi.ai API for a single Nomi. */
 export class NomiApiClient {
     private async exists({ nomiId }: NomiExistsProps) {
@@ -120,8 +132,16 @@ export class NomiApiClient {
     public async getMessages({
         nomiId,
         onProgress,
+        since,
     }: NomiExistsProps & {
         onProgress?: (found: number) => void;
+        /**
+         * Incremental fetch: stop paginating once a page reaches messages at
+         * or older than this ISO timestamp. Pages run newest → oldest, so by
+         * then every newer message has been collected. The final page straddles
+         * the cutoff, so callers still filter what they get back.
+         */
+        since?: string;
     }): Promise<NomiChatFeed> {
         Log(`Getting messages for Nomi ID: ${nomiId}`);
 
@@ -131,6 +151,9 @@ export class NomiApiClient {
             const messages: Message[] = [];
             const requests: SelfieRequest[] = [];
             const calls = new Map<string, VoiceCall>();
+
+            const cutoff = since ? new Date(since).getTime() : Number.NaN;
+            const hasCutoff = !Number.isNaN(cutoff);
 
             let nextMax: string | undefined = "default";
             let url = `/nomis/${nomiId}/chat/messages`;
@@ -150,6 +173,14 @@ export class NomiApiClient {
                         calls.set(call.id, call);
                     }
                     onProgress?.(messages.length + requests.length);
+
+                    // Incremental: this page already reaches past the cutoff,
+                    // so everything newer is in hand — stop instead of walking
+                    // the rest of the history.
+                    if (hasCutoff && reachesCutoff(data.messages, cutoff)) {
+                        Log(`Incremental: stopped paginating at ${since}`);
+                        break;
+                    }
 
                     const next = data.nextMax ?? undefined;
                     // Stop on an empty page or a non-advancing cursor so a

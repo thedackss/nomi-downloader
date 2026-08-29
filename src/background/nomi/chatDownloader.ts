@@ -76,10 +76,16 @@ export class ChatDownloader {
             await this.offscreen.setupDocument();
 
             const nomi = await this.nomiApi.get({ nomiId });
+            // Resolve the incremental cutoff first so the fetch can stop early
+            // instead of paging the whole history just to discard it below.
+            const lastTs = incremental
+                ? await getLastTimestamp("chat", nomiId)
+                : undefined;
             const { items, voiceCalls } =
                 prefetched ??
                 (await this.nomiApi.getMessages({
                     nomiId,
+                    since: lastTs,
                     onProgress: (found) =>
                         update(`Scanning messages: ${found} found`),
                 }));
@@ -105,9 +111,7 @@ export class ChatDownloader {
                     message: `No messages found for Nomi with ID ${nomiId}`,
                 });
             }
-            const lastTs = incremental
-                ? await getLastTimestamp("chat", nomiId)
-                : undefined;
+            // The page straddling the cutoff still carries older items.
             const fresh = incremental
                 ? filterNewerThan(all, itemTime, lastTs)
                 : all;
