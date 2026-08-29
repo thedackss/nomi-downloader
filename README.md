@@ -1,7 +1,7 @@
 # Nomi Downloader
 
 Export and archive everything you do with your [nomi.ai](https://beta.nomi.ai)
-companions — albums, chats, memories and more — straight from a browser popup.
+companions (albums, chats, memories and more) straight from a browser popup.
 
 A cross-browser extension (Chrome & Firefox, Manifest V3) built with
 React + TypeScript + Vite, using [`@crxjs/vite-plugin`](https://crxjs.dev/) for
@@ -12,7 +12,7 @@ bundling and HMR.
 - 🦊 [Firefox Add-ons](https://addons.mozilla.org/en-GB/firefox/addon/nomi-downloader/)
 - 🟦 [Chrome Web Store](https://chromewebstore.google.com/detail/dglkpknkpjcfdbbmgidognlnanlocfem)
 
-> Uses your **existing browser session** with nomi.ai (via `host_permissions`) —
+> Uses your **existing browser session** with nomi.ai (via `host_permissions`);
 > there's no separate login. Just be signed in to nomi.ai in the same browser.
 
 ## Store description
@@ -33,43 +33,43 @@ export is a self-contained file (or `.zip`) that works fully offline.
 
 ### Single Nomi
 
-- **Album** — every selfie, art image, edited photo and video, packed into one or
+- **Album**: every selfie, art image, edited photo and video, packed into one or
   more `.zip` files. Split by a configurable per-zip size (and optionally an image
   count), optionally organized into per-type folders, in HD (`.png`) or SD (`.webp`).
-  Optionally limit to a photo range — the most recent N, and/or starting at photo #N.
-- **Prompt files** — optionally save the generation prompt for Art, edited photos
+  Optionally limit to a photo range: the most recent N, and/or starting at photo #N.
+- **Prompt files**: optionally save the generation prompt for Art, edited photos
   and videos alongside each image, as a sidecar `.txt`, embedded in the image
   metadata (PNG), or both.
-- **Chat** — the full conversation as a standalone, styled `.html` file, with
+- **Chat**: the full conversation as a standalone, styled `.html` file, with
   selfies inlined or text-only. Long chats split across multiple files by a
   configurable message count and/or file size. Optionally export only the most
   recent N messages, or an explicit message range.
-- **Mind Map** — the Nomi's memory graph and terms as an interactive `.html` file
+- **Mind Map**: the Nomi's memory graph and terms as an interactive `.html` file
   (force-directed graph + a browsable table of entries).
-- **Shared Notes** — backstory, roleplay, appearance and other shared notes,
+- **Shared Notes**: backstory, roleplay, appearance and other shared notes,
   plus image/anchor settings, as an `.html` file.
-- **Profile picture in headers** — the chat, mind map and shared notes HTML
+- **Profile picture in headers**: the chat, mind map and shared notes HTML
   headers show the Nomi's avatar; for a video profile they use the video preview
   by default, or embed the playing video when "Animate header" is enabled.
-- **JSON** — all of the above as structured data in one `.json` file, ideal for
+- **JSON**: all of the above as structured data in one `.json` file, ideal for
   feeding to another tool or AI. An optional **raw data** toggle attaches the
   untouched API responses too.
-- **Markdown** — the same structured data as a readable `.md` document.
-- **Download All / one-click** — grab album + chat + shared notes in a single
+- **Markdown**: the same structured data as a readable `.md` document.
+- **Download All / one-click**: grab album + chat + shared notes in a single
   click, or (in advanced mode) pick exactly which type the button downloads.
 
 ### Group chats
 
-- **Chat** — the group conversation as a standalone `.html` file, with each
+- **Chat**: the group conversation as a standalone `.html` file, with each
   speaker's messages clearly labeled, selfies inlined or text-only.
-- **Group info** — the group's facts (type, created date, image style, members)
+- **Group info**: the group's facts (type, created date, image style, members)
   shown as a card at the top of the chat export.
-- **JSON / Markdown** — the group's facts and full chat log as structured data.
+- **JSON / Markdown**: the group's facts and full chat log as structured data.
 
 ### Error reporting
 
 If the extension hits an unexpected error, a prompt asks whether to send a bug
-report — **nothing leaves your browser without your say-so**. Expand **"What gets
+report; **nothing leaves your browser without your say-so**. Expand **"What gets
 sent"** to see the exact text first: the error and stack trace, the extension
 version, your browser, and the most recent debug-log lines (session cookies and
 tokens are scrubbed out). **Send report** POSTs it to the project's bug endpoint;
@@ -80,33 +80,33 @@ download workflows all funnel into the same prompt.
 
 A tabbed settings panel (Interface · Downloads · Advanced):
 
-- **Image quality** — HD (`.png`) or SD (`.webp`).
-- **Images per zip** — cap how many images each `.zip` holds (0 = auto, split by
+- **Image quality**: HD (`.png`) or SD (`.webp`).
+- **Images per zip**: cap how many images each `.zip` holds (0 = auto, split by
   size only).
-- **Max zip size (MB)** — per-zip size cap that drives album splitting (0 = the
+- **Max zip size (MB)**: per-zip size cap that drives album splitting (0 = the
   built-in safe default). Raise it to split into fewer, larger zips.
-- **Organize into folders** — sort album media into per-type subfolders.
-- **Concurrent downloads** — how many media items to fetch in parallel.
-- **Most recent photos / Start at photo #** — limit the album to the most recent N
+- **Organize into folders**: sort album media into per-type subfolders.
+- **Concurrent downloads**: how many media items to fetch in parallel.
+- **Most recent photos / Start at photo #**: limit the album to the most recent N
   photos and/or skip to photo #N (oldest = #1); the two compose.
-- **Max messages** — export only the most recent N chat messages (0 = all).
-- **Message range** — export an explicit range (from #X to #Y, oldest = #1);
+- **Max messages**: export only the most recent N chat messages (0 = all).
+- **Message range**: export an explicit range (from #X to #Y, oldest = #1);
   overrides Max messages when set.
-- **Messages per file** — split the chat export every N messages (0 = no count cap).
-- **Max file size (MB)** — per-file size cap for chat exports (0 = the built-in
+- **Messages per file**: split the chat export every N messages (0 = no count cap).
+- **Max file size (MB)**: per-file size cap for chat exports (0 = the built-in
   safe default). Raise it to split into fewer, larger files.
-- **Include selfies in chat** — embed images in the chat HTML, or keep it text-only.
-- **Incremental download (BETA)** — opt-in (off by default). Album, chat and group
+- **Include selfies in chat**: embed images in the chat HTML, or keep it text-only.
+- **Incremental download (BETA)**: opt-in (off by default). Album, chat and group
   downloads fetch only content newer than your last successful download, tracked
   per Nomi/group. A **Reset history** button forgets everything and downloads in
   full again.
-- **Animate header** — when a Nomi's profile is a video, embed the playing video in
+- **Animate header**: when a Nomi's profile is a video, embed the playing video in
   the chat / mind map / shared notes HTML headers instead of a still frame.
-- **Prompt files** — off / sidecar `.txt` / image metadata / both.
-- **Raw data** — include the untouched API responses in JSON exports.
-- **Advanced download mode** — per-type toggles that turn the download button into
+- **Prompt files**: off / sidecar `.txt` / image metadata / both.
+- **Raw data**: include the untouched API responses in JSON exports.
+- **Advanced download mode**: per-type toggles that turn the download button into
   a selector, so you choose precisely which export each click produces.
-- **Interface** — layout (auto/mobile/desktop), Nomi icon shape & size, a daily
+- **Interface**: layout (auto/mobile/desktop), Nomi icon shape & size, a daily
   usage stats panel, and a debug logging toggle. On mobile the selected Nomi or
   group's picture is shown on its info screen (the list is hidden when one pane).
 
@@ -136,7 +136,7 @@ npm install
 | `npm run preview`       | Preview a production build                             |
 
 > There is a single `dist/` folder that is overwritten per target. Build the target you
-> intend to load — last build wins.
+> intend to load; last build wins.
 
 ## Loading the extension
 
@@ -193,7 +193,7 @@ src/
 ├── popup/            React UI shown in the toolbar popup
 │   ├── components/   List, Info, Settings, Header, LoadingSpin, ErrorReport
 │   ├── context/      nomis, settings, errorReport React contexts
-│   ├── report/       sendReport() — POST a bug report to the bugs endpoint
+│   ├── report/       sendReport(): POST a bug report to the bugs endpoint
 │   └── hooks/        useNomi, useSettings, useBackground, useTab
 ├── background/       MV3 service worker
 │   ├── index.ts      message router; maps popup actions → download workflows;
@@ -228,10 +228,10 @@ the **offscreen** document) and reports progress back to the popup, finishing wi
 
 ## Testing
 
-- **`npm test`** — Vitest unit tests for the pure helpers and builders (`getNomiMedia`,
+- **`npm test`**: Vitest unit tests for the pure helpers and builders (`getNomiMedia`,
   `deepMerge`, `chunkBySize`, the JSON/Markdown builders, prompt metadata, HTML render).
   No browser needed.
-- **`npm run test:e2e`** — builds the extension, then loads it in a real (headful) Chromium
+- **`npm run test:e2e`**: builds the extension, then loads it in a real (headful) Chromium
   via Playwright and asserts the popup mounts, renders, and opens settings without errors.
   Browser extensions can't load in headless Chromium, so the script wraps Playwright in
   `xvfb-run` for headless servers. First run needs the browser + system deps:
@@ -249,7 +249,7 @@ The project is often developed on a headless Linux server via VSCode Remote-SSH,
 browser runs on a separate desktop. Two things to know:
 
 - **`npm run build`** produces a self-contained `dist/` with no dev-server dependency. Copy
-  or network-share `dist/` to the desktop and load it unpacked. This is the reliable path —
+  or network-share `dist/` to the desktop and load it unpacked. This is the reliable path;
   it works regardless of the server.
 - **`npm run dev`** is different: the loaded extension connects back to the Vite dev server
   at `localhost:5173` (see [`vite.config.ts`](vite.config.ts)) for modules and HMR. For this
@@ -258,7 +258,7 @@ browser runs on a separate desktop. Two things to know:
   Then the desktop browser's `localhost:5173` tunnels to the server's Vite and HMR works.
 
 If the popup is blank or the console reports errors about `localhost:5173`, the port forward
-isn't active — fall back to `npm run build`.
+isn't active; fall back to `npm run build`.
 
 To deliver `dist/` to the desktop, a mapped network drive (SMB) pointing at the project
 folder is convenient: the browser always sees the current build, and the CRXJS entry stubs

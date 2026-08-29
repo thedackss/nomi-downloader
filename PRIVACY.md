@@ -1,12 +1,12 @@
-# Privacy Policy — Nomi Downloader
+# Nomi Downloader Privacy Policy
 
 _Last updated: 2026-06-30_
 
 ## Summary
 
 Nomi Downloader runs entirely in your browser. It uses your existing nomi.ai
-session to export **your own** content — albums, chats, memories and shared
-notes — to files on your device. It contains no analytics or tracking, and
+session to export **your own** content (albums, chats, memories and shared
+notes) to files on your device. It contains no analytics or tracking, and
 sends nothing to any server during normal use.
 
 ## Your content stays on your device
@@ -41,11 +41,11 @@ for any other purpose.
 
 ## Permissions
 
-- **Access to nomi.ai** — to read your content for export, using your existing
+- **Access to nomi.ai**: to read your content for export, using your existing
   login session.
-- **Access to nomi.zar.mx** — only to deliver an error report you choose to send.
-- **downloads** — to save exported files to your device.
-- **tabs, storage, offscreen** — to operate the popup, remember your settings,
+- **Access to nomi.zar.mx**: only to deliver an error report you choose to send.
+- **downloads**: to save exported files to your device.
+- **tabs, storage, offscreen**: to operate the popup, remember your settings,
   and build the zip / HTML files locally.
 
 ## Contact

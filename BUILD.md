@@ -14,7 +14,7 @@ Vite (Rollup + esbuild), which is why the source is provided.
     nvm install 24
     nvm use 24
     ```
-- **npm:** ships with Node.js (built with **11.13.0**) — no separate install.
+- **npm:** ships with Node.js (built with **11.13.0**); no separate install.
 - No other system tools are required; the build is pure Node/npm.
 
 ## Step-by-step build
