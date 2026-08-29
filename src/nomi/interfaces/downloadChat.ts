@@ -7,6 +7,13 @@ export interface DownloadChatProps extends NomiExistsProps {
      * zip (chat HTML + voice/ files) with inline playback.
      */
     includeVoiceAudio?: boolean;
+    /** Keep only the most recent N voice audios; 0 / undefined = all. */
+    voiceAudioRecentLimit?: number;
+    /**
+     * Per-zip size cap (MB) when the chat exports as a zip; overflow rolls
+     * into _PartN zips. 0 / undefined = the built-in safe default.
+     */
+    maxZipSizeMB?: number;
     /** Keep only the last N messages; 0 / undefined = unlimited. */
     maxMessages?: number;
     /**

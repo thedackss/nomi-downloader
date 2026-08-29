@@ -146,8 +146,10 @@ function main() {
                     rangeEnd,
                     messagesPerFile,
                     maxFileSizeMB,
+                    maxZipSizeMB,
                     includeSelfies,
                     includeVoiceAudio,
+                    voiceAudioRecentLimit,
                     incremental,
                 } = message.data;
                 runDownload(
@@ -162,11 +164,13 @@ function main() {
                             nomiId,
                             includeSelfies: includeSelfies ?? true,
                             includeVoiceAudio: includeVoiceAudio ?? false,
+                            voiceAudioRecentLimit,
                             maxMessages,
                             rangeStart,
                             rangeEnd,
                             messagesPerFile,
                             maxFileSizeMB,
+                            maxZipSizeMB,
                             incremental,
                             onProgress,
                         }),
@@ -310,6 +314,7 @@ function main() {
                     maxFileSizeMB,
                     includeSelfies,
                     includeVoiceAudio,
+                    voiceAudioRecentLimit,
                 } = message.data;
                 runDownload(
                     nomiId,
@@ -331,6 +336,7 @@ function main() {
                             maxFileSizeMB,
                             includeSelfies: includeSelfies ?? true,
                             includeVoiceAudio: includeVoiceAudio ?? false,
+                            voiceAudioRecentLimit,
                             onProgress,
                         }),
                 );

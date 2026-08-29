@@ -49,8 +49,10 @@ export class ChatDownloader {
         rangeEnd = 0,
         messagesPerFile = 0,
         maxFileSizeMB = 0,
+        maxZipSizeMB = 0,
         incremental = false,
         includeVoiceAudio = false,
+        voiceAudioRecentLimit = 0,
         onProgress,
         prefetched,
         emit,
@@ -130,12 +132,17 @@ export class ChatDownloader {
                     "sent" in item || "completed" in item,
             );
             const voiceMap = includeVoiceAudio
-                ? voiceAudioPathMap(rangedFeedItems)
+                ? voiceAudioPathMap(rangedFeedItems, voiceAudioRecentLimit)
                 : new Map<string, string>();
             // Separated mode with audio: package chat + voice/ into one zip.
+            // Honors the user's per-zip size cap; overflow rolls into _PartN.
+            const zipMaxBytes =
+                maxZipSizeMB > 0
+                    ? maxZipSizeMB * 1024 * 1024
+                    : CHAT_ZIP_MAX_BYTES;
             const zipSink =
                 !emit && includeVoiceAudio && voiceMap.size > 0
-                    ? new BundleSink(this.offscreen, CHAT_ZIP_MAX_BYTES)
+                    ? new BundleSink(this.offscreen, zipMaxBytes)
                     : undefined;
 
             // Embed the avatar/video as data URIs so the header works offline.
@@ -291,6 +298,7 @@ export class ChatDownloader {
                     put: (path, base64) => put.addFile(path, base64),
                     offscreen: this.offscreen,
                     onProgress: update,
+                    recentLimit: voiceAudioRecentLimit,
                 });
             }
 

@@ -112,6 +112,26 @@ export const ChatSection = () => {
                         }
                     />
                 </Row>
+                <Row
+                    label="Most recent voice audio"
+                    tooltip="0 = all. Set a number to save only the most recent N voice messages' audio. Transcripts always stay complete."
+                    htmlFor="set-voice-recent-limit"
+                    disabled={!chat.includeVoiceAudio}
+                    hint={
+                        chat.voiceAudioRecentLimit > 0
+                            ? `Last ${chat.voiceAudioRecentLimit} audios`
+                            : "All voice audio"
+                    }>
+                    <NumberInput
+                        id="set-voice-recent-limit"
+                        step={10}
+                        disabled={!chat.includeVoiceAudio}
+                        value={chat.voiceAudioRecentLimit}
+                        onChange={(voiceAudioRecentLimit) =>
+                            update({ voiceAudioRecentLimit })
+                        }
+                    />
+                </Row>
             </Group>
         </>
     );

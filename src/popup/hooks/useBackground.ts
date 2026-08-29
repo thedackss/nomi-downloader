@@ -30,7 +30,8 @@ export function useBackground() {
         chrome.runtime
             .sendMessage({ type: "GET_DOWNLOAD_STATUS" })
             .then((status: DownloadStatus | undefined) => {
-                if (!cancelled && status) setDownloadStatus(status);
+                if (cancelled || !status) return;
+                setDownloadStatus(status);
             })
             .catch(() => {});
         return () => {
@@ -119,6 +120,9 @@ export function useBackground() {
         maxFileSizeMB: Settings.chatDownload.maxFileSizeMB,
         includeSelfies: Settings.chatDownload.includeSelfies,
         includeVoiceAudio: Settings.chatDownload.includeVoiceAudio,
+        voiceAudioRecentLimit: Settings.chatDownload.voiceAudioRecentLimit,
+        // The chat zip (with voice audio) splits at the same cap as albums.
+        maxZipSizeMB: Settings.albumDownload.maxZipSizeMB,
         incremental: Settings.incremental.enabled,
     };
     const jsonOptions = {

@@ -7,16 +7,22 @@ import { Log } from "../../../utils/log";
 import { MEDIA_DOWNLOAD_TIMEOUT_MS } from "../constants";
 import type { OffscreenClient } from "../offscreenClient";
 
-/** Voice messages whose audio is stored server-side and downloadable. */
+/**
+ * Voice messages whose audio is stored server-side and downloadable.
+ * `recentLimit` keeps only the most recent N (0 = all) — like the album's
+ * "most recent photos" cap, since audio files are large.
+ */
 export function voiceMessagesWithAudio(
     items: (Message | SelfieRequest)[],
+    recentLimit = 0,
 ): Message[] {
-    return items.filter(
+    const messages = items.filter(
         (item): item is Message =>
             "sent" in item &&
             item.isVoiceMessage &&
             item.speech?.status === "Completed",
     );
+    return recentLimit > 0 ? messages.slice(-recentLimit) : messages;
 }
 
 /**
@@ -48,9 +54,10 @@ export function voiceAudioPath(
  */
 export function voiceAudioPathMap(
     items: (Message | SelfieRequest)[],
+    recentLimit = 0,
 ): Map<string, string> {
     const map = new Map<string, string>();
-    voiceMessagesWithAudio(items).forEach((message, i) => {
+    voiceMessagesWithAudio(items, recentLimit).forEach((message, i) => {
         map.set(
             message.uuid,
             voiceAudioPath(i, message.sent, message.speech?.mimeType),
@@ -70,15 +77,18 @@ export async function fetchVoiceAudio({
     put,
     offscreen,
     onProgress,
+    recentLimit = 0,
 }: {
     nomiId: number;
     items: (Message | SelfieRequest)[];
     put: (path: string, base64: string) => Promise<unknown>;
     offscreen: OffscreenClient;
     onProgress?: (message: string) => void;
+    /** Keep only the most recent N audios; 0 = all. */
+    recentLimit?: number;
 }): Promise<string[]> {
-    const messages = voiceMessagesWithAudio(items);
-    const paths = voiceAudioPathMap(items);
+    const messages = voiceMessagesWithAudio(items, recentLimit);
+    const paths = voiceAudioPathMap(items, recentLimit);
     const added: string[] = [];
 
     for (let i = 0; i < messages.length; i++) {

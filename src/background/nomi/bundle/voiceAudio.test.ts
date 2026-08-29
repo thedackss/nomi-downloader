@@ -64,4 +64,14 @@ describe("voiceAudioPathMap", () => {
         expect(map.get("v1")).toBe("voice/voice_1_2026-07-23.flac");
         expect(map.has("v2")).toBe(false);
     });
+
+    it("keeps only the most recent N when a recent limit is set", () => {
+        const older = voice("v1", "Completed");
+        const newer = voice("v2", "Completed");
+        const map = voiceAudioPathMap([older, newer], 1);
+
+        expect(map.has("v1")).toBe(false);
+        expect(map.get("v2")).toBe("voice/voice_1_2026-07-23.flac");
+        expect(voiceMessagesWithAudio([older, newer], 1)).toEqual([newer]);
+    });
 });

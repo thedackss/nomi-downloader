@@ -282,6 +282,7 @@ export class Nomi {
                     messagesPerFile: props.messagesPerFile,
                     maxFileSizeMB: props.maxFileSizeMB,
                     includeVoiceAudio: props.includeVoiceAudio,
+                    voiceAudioRecentLimit: props.voiceAudioRecentLimit,
                     onProgress,
                     prefetched: chatData,
                     emit: async (filename, html) => {

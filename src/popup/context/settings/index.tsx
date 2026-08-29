@@ -39,6 +39,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             // embedding selfies in the chat too would just duplicate them.
             includeSelfies: false,
             includeVoiceAudio: false,
+            voiceAudioRecentLimit: 0,
         },
         jsonDownload: {
             rawData: false,

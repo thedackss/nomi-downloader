@@ -76,8 +76,10 @@ export interface Settings {
         maxFileSizeMB: number;
         /** Embed selfie images in the exported chat HTML. */
         includeSelfies: boolean;
-        /** Bundle only: download voice message audio (.flac) into voice/. */
+        /** Download voice message audio with chat/bundle exports. */
         includeVoiceAudio: boolean;
+        /** Keep only the most recent N voice audios; 0 = all. */
+        voiceAudioRecentLimit: number;
     };
     jsonDownload: {
         /** Also include the full, unprocessed Nomi API responses. */
