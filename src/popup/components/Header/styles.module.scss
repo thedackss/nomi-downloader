@@ -72,6 +72,10 @@
         @include icon;
 
         right: var(--padding);
+
+        // Above the settings page overlay (z-index 2) so the gear keeps
+        // working as the close button while the page is open.
+        z-index: 3;
         background: transparent;
         border: none;
         cursor: pointer;

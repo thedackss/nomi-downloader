@@ -1,26 +1,69 @@
-// The gear button that opens this menu lives in the Header; open/closed
-// state is shared through the settings context.
-.menu {
+// The full-popup settings page. The gear in the Header sits above this
+// overlay (z-index 3) and toggles it; open/closed state lives in the
+// settings context.
+
+@mixin field {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid rgb(from var(--text) r g b / 20%);
+    background: rgb(from var(--text) r g b / 5%);
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+
+    &:focus {
+        outline: 2px solid var(--primary);
+        border-color: transparent;
+    }
+}
+
+@mixin action-button {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid rgb(from var(--text) r g b / 20%);
+    background: rgb(from var(--text) r g b / 5%);
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+
+    &:hover {
+        background: rgb(from var(--text) r g b / 10%);
+        border-color: rgb(from var(--text) r g b / 35%);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--primary);
+        border-color: transparent;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+.page {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
     display: flex;
     flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 0.8rem;
+    background:
+        radial-gradient(
+            700px 340px at 50% -6%,
+            rgb(168 85 247 / 10%),
+            transparent 60%
+        ),
+        var(--background);
     pointer-events: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-    background: var(--background);
-    border-top: 1px solid rgb(255 255 255 / 8%);
-    border-radius: 1.25rem 1.25rem 0 0;
-    padding: 1.5rem;
-    width: 100%;
-    max-height: calc(100% - 5rem);
-    overflow: hidden;
     opacity: 0;
-    transform: translateY(100%);
+    transform: translateY(1.5rem);
     transition:
         opacity 0.3s ease,
         transform 0.3s ease;
@@ -30,65 +73,270 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.pageHeader {
+    flex-shrink: 0;
+    height: 5rem;
+    display: flex;
+    align-items: flex-end;
+
+    // The right side leaves room for the Header's floating gear button.
+    padding: 0 5.5rem 0 2.5rem;
 
     h2 {
-        font-size: 1.5rem;
-        font-weight: 500;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        background: var(--gradient);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .version {
+        margin-left: auto;
+        padding-bottom: 0.45rem;
+        font-size: 0.8rem;
+        opacity: 0.5;
+    }
+}
+
+.body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-flow: row nowrap;
+
+    :global(.mobile) & {
+        flex-flow: column nowrap;
+    }
+}
+
+.nav {
+    flex-shrink: 0;
+    width: 10.5rem;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.25rem;
+    padding: 1.25rem 1rem 1.25rem 1.5rem;
+    border-right: 1px solid var(--border);
+
+    button {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        opacity: 0.55;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-align: left;
+        padding: 0.55rem 0.9rem;
+        border-radius: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition:
+            background 0.15s ease,
+            opacity 0.15s ease;
+
+        &:hover {
+            opacity: 0.85;
+            background: rgb(from var(--text) r g b / 6%);
+        }
+
+        &.activeNav {
+            opacity: 1;
+            color: var(--primary);
+            background: rgb(from var(--primary) r g b / 12%);
+        }
+    }
+
+    // On mobile the rail collapses into a row of chips under the title.
+    :global(.mobile) & {
         width: 100%;
-        text-align: center;
-        color: rgb(from var(--text) r g b / 60%);
-    }
+        flex-flow: row nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 0.75rem 1.25rem;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
 
-    p {
-        font-size: 0.9rem;
-    }
-
-    .tabs {
-        display: flex;
-        gap: 4px;
-        margin-top: 1rem;
-        padding: 4px;
-        background: rgb(from var(--text) r g b / 6%);
-        border-radius: 10px;
+        &::-webkit-scrollbar {
+            display: none;
+        }
 
         button {
-            flex: 1;
+            text-align: center;
+        }
+    }
+}
+
+.content {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 1rem 2.5rem 1.5rem 1.75rem;
+
+    // Fade rows out at the scroll edges (matches the Nomi list).
+    --fade: 1.25rem;
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+    );
+
+    :global(.mobile) & {
+        padding: 0.75rem 1.5rem 1.25rem;
+    }
+}
+
+.group {
+    margin-top: 1.75rem;
+
+    h3 {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: rgb(from var(--text) r g b / 50%);
+    }
+}
+
+.beta {
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--primary);
+    background: rgb(from var(--primary) r g b / 12%);
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgb(from var(--text) r g b / 6%);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+
+    &.disabled {
+        opacity: 0.4;
+    }
+}
+
+.rowInfo {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.2rem;
+    min-width: 0;
+
+    label {
+        display: flex;
+        align-items: center;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .hint {
+        font-size: 0.8rem;
+        opacity: 0.6;
+    }
+}
+
+.warning {
+    margin-left: 0.5rem;
+    cursor: help;
+
+    .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            color: var(--warning);
+            pointer-events: none;
+        }
+    }
+}
+
+.rowControl {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    input[type="range"] {
+        width: 7rem;
+        cursor: pointer;
+        appearance: none;
+        background: transparent;
+        height: 6px;
+
+        // Track
+        &::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: rgb(from var(--text) r g b / 10%);
+            border-radius: 3px;
+            border: none;
+        }
+
+        // Thumb
+        &::-webkit-slider-thumb {
             appearance: none;
-            border: 0;
-            background: transparent;
-            color: var(--text);
-            opacity: 0.55;
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: inherit;
-            padding: 0.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition:
-                background 0.15s ease,
-                opacity 0.15s ease;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin-top: -5px;
+            transition: transform 0.1s ease;
+            border: 2px solid var(--background);
+            box-shadow: 0 0 0 1px rgb(from var(--text) r g b / 10%);
+        }
 
-            &:hover {
-                opacity: 0.85;
-            }
+        &:focus {
+            outline: none;
 
-            &.activeTab {
-                background: var(--primary);
-                color: #fff;
-                opacity: 1;
+            &::-webkit-slider-thumb {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 4px rgb(from var(--primary) r g b / 20%);
             }
         }
     }
 
-    @mixin field {
-        width: 100%;
-        padding: 0.5rem;
+    input[type="number"] {
+        width: 4.5rem;
+        padding: 0.45rem;
         border: 1px solid rgb(from var(--text) r g b / 20%);
         background: rgb(from var(--text) r g b / 5%);
         color: var(--text);
-        border-radius: 4px;
-        font-size: 0.85rem;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 0.9rem;
         font-family: inherit;
+        appearance: textfield;
+
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            appearance: none;
+            margin: 0;
+        }
 
         &:focus {
             outline: 2px solid var(--primary);
@@ -96,322 +344,201 @@
         }
     }
 
-    @mixin action-button {
-        padding: 0.4rem 0.8rem;
+    select {
+        width: 9.5rem;
+        padding: 0.45rem 0.5rem;
         border: 1px solid rgb(from var(--text) r g b / 20%);
         background: rgb(from var(--text) r g b / 5%);
         color: var(--text);
-        border-radius: 4px;
-        font-size: 0.85rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-family: inherit;
         cursor: pointer;
-        white-space: nowrap;
-        transition:
-            background 0.15s ease,
-            border-color 0.15s ease;
+        outline: none;
 
-        &:hover {
-            background: rgb(from var(--text) r g b / 10%);
-            border-color: rgb(from var(--text) r g b / 35%);
+        option {
+            background: var(--background);
+            color: var(--text);
         }
 
-        &:focus-visible {
+        &:focus {
             outline: 2px solid var(--primary);
             border-color: transparent;
         }
+    }
 
-        &:disabled {
-            opacity: 0.5;
-            cursor: default;
+    button {
+        @include action-button;
+    }
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+    cursor: pointer;
+
+    input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        &:focus + .slider {
+            box-shadow: 0 0 1px var(--primary);
+        }
+
+        &:checked + .slider::before {
+            transform: translateX(18px);
         }
     }
 
-    .report {
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: rgb(from var(--text) r g b / 20%);
+        transition: 0.4s;
+        border-radius: 34px;
+
+        &::before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+    }
+}
+
+// Help section: log/report actions and the report form.
+.helpIntro {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.75;
+    line-height: 1.4;
+}
+
+.report {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 24rem;
+
+    button {
+        @include action-button;
+
+        flex: 1;
+
+        &.active {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    }
+}
+
+.reportForm {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 24rem;
+    margin-top: 0.75rem;
+
+    textarea {
+        @include field;
+
+        resize: vertical;
+        min-height: 3.5rem;
+    }
+
+    input {
+        @include field;
+    }
+
+    // Pre-send verification: make the user double-check their contact info.
+    .confirmNote {
+        margin: 0;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgb(from var(--warning) r g b / 40%);
+        background: rgb(from var(--warning) r g b / 8%);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        line-height: 1.4;
+
+        strong {
+            color: var(--warning);
+        }
+    }
+
+    .reportActions {
         display: flex;
-        gap: 0.5rem;
-        width: 100%;
-        margin-top: 0.5rem;
+        align-items: center;
+        gap: 0.75rem;
+
+        p {
+            margin: 0;
+            flex: 1;
+            opacity: 0.6;
+            font-size: 0.7rem;
+            line-height: 1.3;
+        }
 
         button {
             @include action-button;
-
-            flex: 1;
-
-            &.active {
-                border-color: var(--primary);
-                color: var(--primary);
-            }
         }
     }
+}
 
-    .reportForm {
-        display: flex;
-        flex-flow: column nowrap;
-        gap: 0.5rem;
-        width: 100%;
+.helpFooter {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(from var(--text) r g b / 6%);
+    font-size: 0.8rem;
 
-        textarea {
-            @include field;
+    // Dim the plain text via color (not container opacity) so the update
+    // badge can stand out at full strength.
+    color: rgb(from var(--text) r g b / 60%);
 
-            resize: vertical;
-            min-height: 3.5rem;
-        }
-
-        input {
-            @include field;
-        }
-
-        .reportActions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-
-            p {
-                margin: 0;
-                flex: 1;
-                opacity: 0.6;
-                font-size: 0.7rem;
-                line-height: 1.3;
-            }
-
-            button {
-                @include action-button;
-            }
-        }
+    p {
+        margin: 0 0 0.25rem;
     }
 
-    ul {
-        list-style: none;
-        padding: 0.5rem;
-        padding-top: 1rem;
-        margin: 0;
-        width: 100%;
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
+    a {
+        color: var(--primary);
+    }
+}
 
-        // Fade options into the panel at the scroll edges (matches the list).
-        --fade: 1.25rem;
+.versionLine {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
 
-        mask-image: linear-gradient(
-            to bottom,
-            transparent 0,
-            #000 var(--fade),
-            #000 calc(100% - var(--fade)),
-            transparent 100%
-        );
+.upToDate {
+    color: #3ecf8e;
+    font-weight: 600;
+}
 
-        li {
-            display: flex;
-            flex-flow: column nowrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            position: relative;
-            font-size: 1rem;
+// "Update available" pill, drawing the eye with the accent gradient.
+.updateBadge {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff !important;
+    background: var(--gradient);
+    text-decoration: none;
 
-            label {
-                height: 1.25rem;
-                font-size: 1rem;
-                font-weight: 500;
-                display: flex;
-                flex-flow: row nowrap;
-                justify-content: flex-start;
-                align-items: flex-end;
-
-                .beta {
-                    margin-left: 0.5rem;
-                    padding: 0.05rem 0.35rem;
-                    border-radius: 4px;
-                    font-size: 0.6rem;
-                    font-weight: 700;
-                    letter-spacing: 0.05em;
-                    color: var(--primary);
-                    background: rgb(from var(--primary) r g b / 12%);
-                }
-
-                .warning {
-                    margin-left: 0.5rem;
-                    cursor: help;
-
-                    .icon {
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 1.4rem;
-                        height: 1.4rem;
-
-                        svg {
-                            width: 100%;
-                            height: 100%;
-                            color: var(--warning);
-                            pointer-events: none;
-                        }
-                    }
-                }
-            }
-
-            .row {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                width: 100%;
-
-                input[type="range"] {
-                    flex-grow: 1;
-                    cursor: pointer;
-                    appearance: none;
-                    background: transparent;
-                    height: 6px;
-
-                    // Track
-                    &::-webkit-slider-runnable-track {
-                        width: 100%;
-                        height: 6px;
-                        background: rgb(from var(--text) r g b / 10%);
-                        border-radius: 3px;
-                        border: none;
-                    }
-
-                    // Thumb
-                    &::-webkit-slider-thumb {
-                        appearance: none;
-                        height: 16px;
-                        width: 16px;
-                        border-radius: 50%;
-                        background: var(--primary);
-                        margin-top: -5px;
-                        transition: transform 0.1s ease;
-                        border: 2px solid var(--background);
-                        box-shadow: 0 0 0 1px rgb(from var(--text) r g b / 10%);
-                    }
-
-                    &:focus {
-                        outline: none;
-
-                        &::-webkit-slider-thumb {
-                            transform: scale(1.1);
-                            box-shadow: 0 0 0 4px
-                                rgb(from var(--primary) r g b / 20%);
-                        }
-                    }
-                }
-
-                input[type="number"] {
-                    width: 4rem;
-                    padding: 0.4rem;
-                    border: 1px solid rgb(from var(--text) r g b / 20%);
-                    background: rgb(from var(--text) r g b / 5%);
-                    color: var(--text);
-                    border-radius: 4px;
-                    text-align: center;
-                    font-size: 0.9rem;
-                    appearance: textfield;
-
-                    &::-webkit-outer-spin-button,
-                    &::-webkit-inner-spin-button {
-                        appearance: none;
-                        margin: 0;
-                    }
-
-                    &:focus {
-                        outline: 2px solid var(--primary);
-                        border-color: transparent;
-                    }
-                }
-
-                button {
-                    padding: 0.4rem 0.8rem;
-                    border: 1px solid rgb(from var(--text) r g b / 20%);
-                    background: rgb(from var(--text) r g b / 5%);
-                    color: var(--text);
-                    border-radius: 4px;
-                    font-size: 0.85rem;
-                    cursor: pointer;
-                    white-space: nowrap;
-                    transition:
-                        background 0.15s ease,
-                        border-color 0.15s ease;
-
-                    &:hover {
-                        background: rgb(from var(--text) r g b / 10%);
-                        border-color: rgb(from var(--text) r g b / 35%);
-                    }
-
-                    &:focus-visible {
-                        outline: 2px solid var(--primary);
-                        border-color: transparent;
-                    }
-                }
-            }
-
-            .switch {
-                position: relative;
-                display: inline-block;
-                width: 40px;
-                height: 22px;
-                flex-shrink: 0;
-                cursor: pointer;
-
-                input {
-                    opacity: 0;
-                    width: 0;
-                    height: 0;
-
-                    &:checked + .slider {
-                        background-color: var(--primary);
-                    }
-
-                    &:focus + .slider {
-                        box-shadow: 0 0 1px var(--primary);
-                    }
-
-                    &:checked + .slider::before {
-                        transform: translateX(18px);
-                    }
-                }
-
-                .slider {
-                    position: absolute;
-                    cursor: pointer;
-                    inset: 0;
-                    background-color: rgb(from var(--text) r g b / 20%);
-                    transition: 0.4s;
-                    border-radius: 34px;
-
-                    &::before {
-                        position: absolute;
-                        content: "";
-                        height: 16px;
-                        width: 16px;
-                        left: 3px;
-                        bottom: 3px;
-                        background-color: white;
-                        transition: 0.4s;
-                        border-radius: 50%;
-                    }
-                }
-            }
-
-            select {
-                width: 100%;
-                padding: 0.5rem;
-                border: 1px solid rgb(from var(--text) r g b / 20%);
-                background: rgb(from var(--text) r g b / 5%);
-                color: var(--text);
-                border-radius: 4px;
-                font-size: 0.9rem;
-                cursor: pointer;
-                outline: none;
-
-                option {
-                    background: var(--background);
-                    color: var(--text);
-                }
-
-                &:focus {
-                    outline: 2px solid var(--primary);
-                    border-color: transparent;
-                }
-            }
-        }
+    &:hover {
+        filter: brightness(1.1);
     }
 }
