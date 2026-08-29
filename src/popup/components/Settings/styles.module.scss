@@ -231,8 +231,13 @@
         border-bottom: 0;
     }
 
+    // Dim with color, not opacity: opacity would compound onto children and
+    // fade the info tooltip's bubble into unreadability on disabled rows.
     &.disabled {
-        opacity: 0.4;
+        .rowInfo label,
+        .rowInfo .hint {
+            color: rgb(from var(--text) r g b / 40%);
+        }
     }
 }
 
@@ -446,6 +451,255 @@
     }
 }
 
+// The user's bug reports (Tickets section): chips that open a modal thread.
+.tickets {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 26rem;
+}
+
+.ticketChip {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    background: rgb(from var(--text) r g b / 3%);
+    border: 1px solid rgb(from var(--text) r g b / 10%);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+        border-color: rgb(from var(--primary) r g b / 50%);
+        background: rgb(from var(--primary) r g b / 6%);
+    }
+}
+
+.ticketChipText {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ticketCount {
+    display: inline-block;
+    min-width: 1.1rem;
+    margin-right: 0.4rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.ticketStatus {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgb(from var(--text) r g b / 25%);
+    color: rgb(from var(--text) r g b / 60%);
+
+    &.status_replied {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    &.status_resolved {
+        color: #4ade80;
+        border-color: rgb(74 222 128 / 60%);
+    }
+}
+
+.ticketDate {
+    font-size: 0.7rem;
+    color: rgb(from var(--text) r g b / 50%);
+    white-space: nowrap;
+}
+
+// Modal: the full conversation on one report.
+.ticketOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 75%);
+    backdrop-filter: blur(5px);
+}
+
+.ticketModal {
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-4%);
+    width: min(30rem, calc(100vw - 2rem));
+    max-height: min(34rem, calc(100vh - 2rem));
+    background: var(--background);
+    border: 1px solid rgb(from var(--text) r g b / 12%);
+    border-radius: 14px;
+    padding: 0.9rem 1rem 1rem;
+    box-shadow: 0 18px 50px rgb(0 0 0 / 60%);
+
+    header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.6rem;
+
+        .ticketDate {
+            flex: 1;
+        }
+    }
+}
+
+.ticketClose {
+    background: none;
+    border: none;
+    color: rgb(from var(--text) r g b / 60%);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+
+    &:hover {
+        background: rgb(from var(--text) r g b / 10%);
+        color: var(--text);
+    }
+}
+
+.ticketThread {
+    flex: 1;
+    min-height: 6rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.25rem 0.6rem 0.25rem 0.1rem;
+}
+
+.bubble {
+    max-width: 85%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+
+    p {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    span {
+        display: block;
+        margin-top: 0.2rem;
+        font-size: 0.62rem;
+        opacity: 0.65;
+    }
+}
+
+.fromUser {
+    align-self: flex-end;
+    background: rgb(from var(--primary) r g b / 22%);
+    border: 1px solid rgb(from var(--primary) r g b / 35%);
+    border-bottom-right-radius: 4px;
+}
+
+.fromDev {
+    align-self: flex-start;
+    background: rgb(from var(--text) r g b / 6%);
+    border: 1px solid rgb(from var(--text) r g b / 10%);
+    border-bottom-left-radius: 4px;
+}
+
+.ticketLogs {
+    margin-top: 0.6rem;
+
+    summary {
+        font-size: 0.75rem;
+        color: rgb(from var(--text) r g b / 60%);
+        cursor: pointer;
+
+        &:hover {
+            color: var(--text);
+        }
+    }
+
+    pre {
+        margin-top: 0.4rem;
+        max-height: 9rem;
+        overflow: auto;
+        padding: 0.6rem;
+        background: rgb(from var(--text) r g b / 4%);
+        border: 1px solid rgb(from var(--text) r g b / 10%);
+        border-radius: 8px;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+}
+
+.sendNote {
+    margin: 0.5rem 0 0;
+    font-size: 0.72rem;
+    color: var(--warning);
+}
+
+.ticketReplyBox {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+
+    textarea {
+        flex: 1;
+        resize: none;
+        padding: 0.5rem 0.7rem;
+        border-radius: 10px;
+        border: 1px solid rgb(from var(--text) r g b / 15%);
+        background: rgb(from var(--text) r g b / 4%);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.85rem;
+
+        &:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+    }
+
+    button {
+        align-self: flex-end;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 10px;
+        background: var(--gradient);
+        color: #fff;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:disabled {
+            filter: brightness(0.6);
+            cursor: default;
+        }
+    }
+}
+
 .reportForm {
     display: flex;
     flex-flow: column nowrap;
@@ -461,8 +715,38 @@
         min-height: 3.5rem;
     }
 
-    input {
+    input:not([type="checkbox"]) {
         @include field;
+    }
+
+    // "Link this report to my account" consent; the checkbox must not pick
+    // up the text-field styling above.
+    .consentRow {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        padding: 0.5rem 0.65rem;
+        border: 1px solid rgb(from var(--primary) r g b / 25%);
+        background: rgb(from var(--primary) r g b / 6%);
+        border-radius: 8px;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        color: rgb(from var(--text) r g b / 85%);
+        cursor: pointer;
+
+        input {
+            width: 0.9rem;
+            height: 0.9rem;
+            margin-top: 0.15rem;
+            accent-color: var(--primary);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
     }
 
     // Pre-send verification: make the user double-check their contact info.
@@ -541,4 +825,16 @@
     &:hover {
         filter: brightness(1.1);
     }
+}
+
+// Unread-reply indicator on the Tickets nav item.
+.navDot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 0.45rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px rgb(from var(--accent) r g b / 80%);
+    vertical-align: middle;
 }

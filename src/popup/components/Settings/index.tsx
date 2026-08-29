@@ -1,4 +1,5 @@
 import { type FC, useState } from "react";
+import { useReplies } from "../../hooks/useReplies";
 import { useSettings } from "../../hooks/useSettings";
 import { AdvancedSection } from "./sections/AdvancedSection";
 import { AlbumSection } from "./sections/AlbumSection";
@@ -6,6 +7,7 @@ import { ChatSection } from "./sections/ChatSection";
 import { ExportsSection } from "./sections/ExportsSection";
 import { HelpSection } from "./sections/HelpSection";
 import { InterfaceSection } from "./sections/InterfaceSection";
+import { TicketsSection } from "./sections/TicketsSection";
 import styles from "./styles.module.scss";
 
 type SectionId =
@@ -14,6 +16,7 @@ type SectionId =
     | "chat"
     | "exports"
     | "advanced"
+    | "tickets"
     | "help";
 
 const SECTIONS: Array<{ id: SectionId; label: string; Component: FC }> = [
@@ -22,6 +25,7 @@ const SECTIONS: Array<{ id: SectionId; label: string; Component: FC }> = [
     { id: "chat", label: "Chat", Component: ChatSection },
     { id: "exports", label: "Exports", Component: ExportsSection },
     { id: "advanced", label: "Advanced", Component: AdvancedSection },
+    { id: "tickets", label: "Tickets", Component: TicketsSection },
     { id: "help", label: "Help", Component: HelpSection },
 ];
 
@@ -32,6 +36,8 @@ const SECTIONS: Array<{ id: SectionId; label: string; Component: FC }> = [
  */
 export const Settings = () => {
     const { menuOpen } = useSettings();
+    // Unread developer replies put a dot on the Tickets nav item.
+    const { unseen } = useReplies();
     const [active, setActive] = useState<SectionId>("interface");
     const current = SECTIONS.find((s) => s.id === active) ?? SECTIONS[0];
 
@@ -58,6 +64,9 @@ export const Settings = () => {
                             }
                             onClick={() => setActive(s.id)}>
                             {s.label}
+                            {s.id === "tickets" && unseen > 0 && (
+                                <span className={styles.navDot} />
+                            )}
                         </button>
                     ))}
                 </nav>

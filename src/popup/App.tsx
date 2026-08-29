@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Header } from "./components/Header";
 import { Info } from "./components/Info";
 import { List } from "./components/List";
+import { ReplyBanner } from "./components/ReplyBanner";
 import { UpdateBanner } from "./components/UpdateBanner";
 import { useNomi } from "./hooks/useNomi";
 import { useSettings } from "./hooks/useSettings";
@@ -48,6 +49,7 @@ function App() {
     return (
         <div className={isMobile ? "mobile" : "desktop"}>
             <UpdateBanner />
+            <ReplyBanner />
             <Header />
             <div className="main-container">
                 {isMobile ? (

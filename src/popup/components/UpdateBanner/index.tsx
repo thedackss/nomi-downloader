@@ -6,6 +6,7 @@ import {
     STORE_URL,
     type UpdateResult,
 } from "../../../utils/version";
+import { useSettings } from "../../hooks/useSettings";
 import { useUpdateCheck } from "../../hooks/useUpdateCheck";
 import styles from "./styles.module.scss";
 
@@ -18,11 +19,15 @@ import styles from "./styles.module.scss";
  */
 export const UpdateBanner = () => {
     const update = useUpdateCheck();
+    // While the settings page is open its fixed overlay ignores the banner's
+    // flow, so the header icons would drift; the update badge in Help covers
+    // the same news.
+    const { menuOpen } = useSettings();
     const [dismissed, setDismissed] = useState(false);
     const [result, setResult] = useState<UpdateResult | null>(null);
     const [busy, setBusy] = useState(false);
 
-    if (!update?.outdated || dismissed) return null;
+    if (!update?.outdated || dismissed || menuOpen) return null;
 
     async function onUpdate() {
         setBusy(true);

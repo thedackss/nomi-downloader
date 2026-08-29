@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { NomiApiClient } from "../../../../nomi/api";
 import { buildLogsText, buildUserReportText } from "../../../../utils/report";
+import { SITE_URL } from "../../../../utils/site";
 import { MANUAL_UPDATE_HINT, STORE_URL } from "../../../../utils/version";
 import { useUpdateCheck } from "../../../hooks/useUpdateCheck";
 import { sendReport } from "../../../report/sendReport";
@@ -21,6 +22,10 @@ export const HelpSection = () => {
     const [reportName, setReportName] = useState("");
     const [reportEmail, setReportEmail] = useState("");
     const [reportDiscord, setReportDiscord] = useState("");
+    // The account email (from /me) links the report to this user so a reply
+    // can reach the extension. Off = the report is send-and-forget.
+    const [accountEmail, setAccountEmail] = useState("");
+    const [includeEmail, setIncludeEmail] = useState(true);
     // Before sending, ask the user to double-check their contact info; the
     // first "Send" click flips this on, the second actually sends.
     const [confirming, setConfirming] = useState(false);
@@ -58,6 +63,7 @@ export const HelpSection = () => {
             .then((me) => {
                 setReportName((prev) => prev || me.profile.name);
                 setReportEmail((prev) => prev || me.email);
+                setAccountEmail(me.email);
             })
             .catch(() => {});
     }
@@ -74,7 +80,10 @@ export const HelpSection = () => {
             reportName,
             reportDiscord,
         );
-        const ok = await sendReport(text);
+        const ok = await sendReport(text, {
+            accountEmail: includeEmail ? accountEmail : undefined,
+            summary: reportText,
+        });
         setSendState(ok ? "sent" : "failed");
         if (ok) {
             setTimeout(() => {
@@ -144,9 +153,44 @@ export const HelpSection = () => {
                             setConfirming(false);
                         }}
                     />
+                    {accountEmail && (
+                        <label className={styles.consentRow}>
+                            <input
+                                type="checkbox"
+                                checked={includeEmail}
+                                onChange={(e) => {
+                                    setIncludeEmail(e.target.checked);
+                                    setConfirming(false);
+                                }}
+                            />
+                            <span>
+                                Link this report to my account (
+                                <strong>{accountEmail}</strong>) so the reply
+                                can appear right here in the extension.
+                            </span>
+                        </label>
+                    )}
                     {confirming && (
                         <p className={styles.confirmNote}>
-                            {email || discord ? (
+                            {includeEmail && accountEmail ? (
+                                <>
+                                    The reply will appear here in the extension
+                                    {email && (
+                                        <>
+                                            {" and by email at "}
+                                            <strong>{email}</strong>
+                                        </>
+                                    )}
+                                    {discord && (
+                                        <>
+                                            {" or on Discord as "}
+                                            <strong>@{discord}</strong>
+                                        </>
+                                    )}
+                                    . A typo in those means only the
+                                    in-extension reply works.
+                                </>
+                            ) : email || discord ? (
                                 <>
                                     Double-check your contact info — support
                                     will reach you
@@ -167,8 +211,9 @@ export const HelpSection = () => {
                                 </>
                             ) : (
                                 <>
-                                    No email or Discord given — we won't be able
-                                    to reply to this report.
+                                    Without your account email, Discord or a
+                                    reply address, it won't be possible to
+                                    answer this report at all.
                                 </>
                             )}
                         </p>
@@ -223,7 +268,7 @@ export const HelpSection = () => {
                 <p>
                     Enjoying the extension?{" "}
                     <a
-                        href="https://nomi.zar.mx/tip"
+                        href={`${SITE_URL}/tip`}
                         target="_blank"
                         rel="noreferrer">
                         Send a tip ♥

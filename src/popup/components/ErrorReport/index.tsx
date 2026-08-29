@@ -16,7 +16,7 @@ export const ErrorReportModal = ({ report, onClose }: Props) => {
 
     async function handleSend() {
         setSendState("sending");
-        const ok = await sendReport(report.text);
+        const ok = await sendReport(report.text, { summary: report.message });
         setSendState(ok ? "sent" : "failed");
         if (ok) setTimeout(onClose, 1500);
     }
