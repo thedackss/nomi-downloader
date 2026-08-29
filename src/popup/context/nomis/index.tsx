@@ -14,6 +14,7 @@ const NomisProvider: FC<ReactElement> = ({ children }) => {
             nomi: null,
             group: null,
         },
+        loadError: null,
     };
 
     const [Nomis, setNomis] = useState<Nomis>(Default);

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useCallback, useContext } from "react";
 import { api } from "../../nomi/http";
 import type {
@@ -42,19 +43,31 @@ export const useNomi = () => {
             const list = data.nomis as Nomi[];
 
             setNomis((prev: Nomis) => ({
+                ...prev,
                 list: {
                     nomi: list,
                     group: prev.list.group,
                 },
-                selected: prev.selected,
+                loadError: null,
             }));
 
             return list;
         } catch (error) {
-            Log("Error fetching Nomis:");
-            if (error instanceof Error) {
-                console.log(error.message);
-            }
+            Log("Error fetching Nomis:", error);
+
+            // Tell the UI why, so it can show a "log in" or "offline" card
+            // instead of spinning forever.
+            const kind: Nomis["loadError"] =
+                axios.isAxiosError(error) &&
+                (error.response?.status === 401 ||
+                    error.response?.status === 403)
+                    ? "auth"
+                    : "network";
+            setNomis((prev: Nomis) => ({
+                ...prev,
+                list: { nomi: [], group: prev.list.group ?? [] },
+                loadError: kind,
+            }));
 
             return [];
         }
@@ -85,19 +98,23 @@ export const useNomi = () => {
             const list = data.groupChats;
 
             setNomis((prev: Nomis) => ({
+                ...prev,
                 list: {
                     nomi: prev.list.nomi,
                     group: list,
                 },
-                selected: prev.selected,
             }));
 
             return list;
         } catch (error) {
-            Log("Error fetching Groups:");
-            if (error instanceof Error) {
-                console.log(error.message);
-            }
+            Log("Error fetching Groups:", error);
+
+            // Settle the list so the spinner can stop; fetchNomis (which runs
+            // after) owns the loadError diagnosis.
+            setNomis((prev: Nomis) => ({
+                ...prev,
+                list: { nomi: prev.list.nomi, group: [] },
+            }));
 
             return [];
         }
@@ -123,7 +140,7 @@ export const useNomi = () => {
     const selectNomi = useCallback(
         (nomi: Nomi) => {
             setNomis((prev: Nomis) => ({
-                list: prev.list,
+                ...prev,
                 selected: {
                     nomi: nomi,
                     group: null,
@@ -136,7 +153,7 @@ export const useNomi = () => {
     const selectGroup = useCallback(
         (group: GroupChat) => {
             setNomis((prev: Nomis) => ({
-                list: prev.list,
+                ...prev,
                 selected: {
                     nomi: null,
                     group: group,
@@ -167,7 +184,7 @@ export const useNomi = () => {
 
     const clearSelection = useCallback(() => {
         setNomis((prev: Nomis) => ({
-            list: prev.list,
+            ...prev,
             selected: {
                 nomi: null,
                 group: null,

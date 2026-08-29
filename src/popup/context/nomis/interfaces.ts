@@ -11,6 +11,12 @@ export interface Nomis {
         nomi: Nomi[] | null;
         group: GroupChat[] | null;
     };
+    /**
+     * Why the lists couldn't load: "auth" = not logged in to nomi.ai,
+     * "network" = nomi.ai unreachable. Cleared on a successful fetch.
+     * Without it a logged-out user saw only an endless loading spinner.
+     */
+    loadError: "auth" | "network" | null;
 }
 
 export type NomiContextType = {

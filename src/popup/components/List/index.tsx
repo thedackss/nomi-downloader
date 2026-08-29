@@ -9,12 +9,16 @@ export const List = () => {
     const { Nomis } = useNomi();
     const { menuOpen } = useSettings();
 
+    // loadError renders the full-popup ConnectionState instead of this list;
+    // the guard just makes sure the spinner can never outlive a failed load.
+    const loading =
+        (Nomis.list.group === null || Nomis.list.nomi === null) &&
+        !Nomis.loadError;
+
     return (
         <ul
             className={`${styles.nomiList}${menuOpen ? ` ${styles.noScroll}` : ""}`}>
-            <LoadingSpin
-                visible={Nomis.list.group === null || Nomis.list.nomi === null}
-            />
+            <LoadingSpin visible={loading} />
             <GroupList />
             <NomiList />
         </ul>

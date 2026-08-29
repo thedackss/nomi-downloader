@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ConnectionState } from "./components/ConnectionState";
 import { Header } from "./components/Header";
 import { Info } from "./components/Info";
 import { List } from "./components/List";
@@ -52,7 +53,9 @@ function App() {
             <ReplyBanner />
             <Header />
             <div className="main-container">
-                {isMobile ? (
+                {Nomis.loadError ? (
+                    <ConnectionState />
+                ) : isMobile ? (
                     hasSelection ? (
                         <Info />
                     ) : (
