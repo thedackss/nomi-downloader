@@ -115,9 +115,12 @@ export function getUpdateCheck(): Promise<VersionCheck | null> {
 export async function checkForUpdate(): Promise<VersionCheck | null> {
     const current = chrome.runtime.getManifest().version;
     try {
-        const res = await fetch(VERSION_ENDPOINT, {
-            headers: { Accept: "application/json" },
-        });
+        // `v` carries only the installed version so the server can keep an
+        // anonymous per-version daily counter — no identifiers of any kind.
+        const res = await fetch(
+            `${VERSION_ENDPOINT}?v=${encodeURIComponent(current)}`,
+            { headers: { Accept: "application/json" } },
+        );
         if (!res.ok) {
             Log("Version check failed", res.status);
             return null;
