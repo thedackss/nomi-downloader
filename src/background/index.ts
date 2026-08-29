@@ -75,6 +75,18 @@ async function runDownload(
 
     setNomiStatus(messages.start);
 
+    // Chrome may kill an idle MV3 service worker after ~30s even with plain
+    // fetches in flight, silently aborting long exports with no error shown.
+    // Touching an extension API resets the idle timer, so tick one for the
+    // whole download. (No-op on Firefox, where the background is a page.)
+    const heartbeat = setInterval(() => {
+        try {
+            chrome.runtime.getPlatformInfo().catch(() => {});
+        } catch {
+            // API unavailable (tests); nothing to keep alive.
+        }
+    }, 20_000);
+
     try {
         // Work may return a closing message (e.g. a fallback notice) to show
         // instead of the generic "done" status.
@@ -86,6 +98,8 @@ async function runDownload(
         Log(messages.error, error);
         setIdleStatus(messages.error);
         reportError(messages.error, error);
+    } finally {
+        clearInterval(heartbeat);
     }
 }
 
