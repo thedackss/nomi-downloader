@@ -39,6 +39,33 @@ export interface NomiChatFeed {
     voiceCalls: VoiceCallWithMessages[];
 }
 
+const RETRY_ATTEMPTS = 3;
+
+/**
+ * GET with retries and backoff. Long exports fire hundreds of sequential
+ * requests, so a single rate-limit blip or timeout used to sink the whole
+ * run; retrying absorbs the transient ones.
+ */
+async function getRetry<T>(url: string, timeoutMs?: number): Promise<T> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
+        try {
+            const { data } = await api.get<T>(
+                url,
+                timeoutMs ? { timeout: timeoutMs } : undefined,
+            );
+            return data;
+        } catch (error) {
+            lastError = error;
+            if (attempt < RETRY_ATTEMPTS - 1) {
+                const delay = 800 * 2 ** attempt + Math.random() * 400;
+                await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+        }
+    }
+    throw lastError;
+}
+
 /**
  * True once a page of messages reaches the incremental cutoff. Pages arrive
  * newest → oldest, so the first page containing anything at or older than the
@@ -164,8 +191,7 @@ export class NomiApiClient {
                         url = `/nomis/${nomiId}/chat/messages?max=${nextMax}`;
                     }
 
-                    const { data } =
-                        await api.get<ApiNomisMessagesResponse>(url);
+                    const data = await getRetry<ApiNomisMessagesResponse>(url);
 
                     messages.push(...data.messages);
                     requests.push(...data.selfies);
@@ -189,7 +215,14 @@ export class NomiApiClient {
                     nextMax = next;
                 }
             } catch (error) {
+                // A mid-pagination failure (after retries) used to be
+                // swallowed here, exporting a silently truncated chat; fail
+                // honestly instead so the user sees an error, not a bad file.
                 Log(`Error fetching messages for Nomi ID ${nomiId}:`, error);
+                throw new NomiError({
+                    id: nomiId,
+                    message: `Chat fetch failed after ${messages.length} messages`,
+                });
             }
 
             const sorted = [...messages, ...requests].sort((a, b) => {
@@ -225,7 +258,7 @@ export class NomiApiClient {
         const result: VoiceCallWithMessages[] = [];
         for (const call of calls) {
             try {
-                const { data } = await api.get<ApiVoiceCallMessagesResponse>(
+                const data = await getRetry<ApiVoiceCallMessagesResponse>(
                     `/nomis/${nomiId}/voice-calls/${call.id}/messages`,
                 );
                 result.push({ ...call, messages: data.voiceCallMessages });
@@ -262,7 +295,7 @@ export class NomiApiClient {
                     url = `/group-chats/${groupId}/messages?maxDate=${nextMaxDate}`;
                 }
 
-                const { data } = await api.get<ApiGroupMessagesResponse>(url);
+                const data = await getRetry<ApiGroupMessagesResponse>(url);
 
                 messages.push(...data.messages);
                 requests.push(...data.selfies);
