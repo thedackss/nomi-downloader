@@ -5,8 +5,9 @@ import styles from "./styles.module.scss";
 
 /**
  * Full-popup state shown instead of the list/info panes when the companion
- * lists can't load: logged out of nomi.ai, or nomi.ai unreachable. Replaces
- * what used to be an endless loading spinner.
+ * lists can't load: logged out of nomi.ai, the nomi.ai permission revoked
+ * (Firefox host permissions are user-revocable), or nomi.ai unreachable.
+ * Replaces what used to be an endless loading spinner.
  */
 export const ConnectionState = () => {
     const { Nomis, fetchNomis, fetchGroups } = useNomi();
@@ -17,6 +18,19 @@ export const ConnectionState = () => {
         await fetchGroups();
         await fetchNomis();
         setRetrying(false);
+    }
+
+    // Must run directly in the click handler: permissions.request needs the
+    // user gesture. On grant, the lists load right away.
+    async function grantAccess() {
+        try {
+            const granted = await chrome.permissions.request({
+                origins: ["https://*.nomi.ai/*"],
+            });
+            if (granted) await retry();
+        } catch {
+            // Request refused or unavailable; the card stays for another try.
+        }
     }
 
     if (retrying) {
@@ -46,6 +60,25 @@ export const ConnectionState = () => {
                             </a>
                             <button type="button" onClick={retry}>
                                 Check again
+                            </button>
+                        </div>
+                    </>
+                ) : Nomis.loadError === "permission" ? (
+                    <>
+                        <p className={styles.title}>
+                            Allow access to nomi.ai
+                        </p>
+                        <p className={styles.hint}>
+                            The extension needs permission to read your own
+                            nomi.ai data — it looks like that access was
+                            turned off in the browser's add-on settings.
+                        </p>
+                        <div className={styles.actions}>
+                            <button
+                                type="button"
+                                className={styles.primary}
+                                onClick={grantAccess}>
+                                Grant access
                             </button>
                         </div>
                     </>

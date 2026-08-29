@@ -55,14 +55,26 @@ export const useNomi = () => {
         } catch (error) {
             Log("Error fetching Nomis:", error);
 
-            // Tell the UI why, so it can show a "log in" or "offline" card
-            // instead of spinning forever.
-            const kind: Nomis["loadError"] =
+            // Tell the UI why, so it can show a "log in", "grant access" or
+            // "offline" card instead of spinning forever.
+            let kind: Nomis["loadError"] =
                 axios.isAxiosError(error) &&
                 (error.response?.status === 401 ||
                     error.response?.status === 403)
                     ? "auth"
                     : "network";
+            if (kind === "network") {
+                // Firefox lets users revoke the nomi.ai host permission at
+                // any time; without it the fetch fails like a network error.
+                try {
+                    const granted = await chrome.permissions.contains({
+                        origins: ["https://*.nomi.ai/*"],
+                    });
+                    if (!granted) kind = "permission";
+                } catch {
+                    // permissions API unavailable; keep "network".
+                }
+            }
             setNomis((prev: Nomis) => ({
                 ...prev,
                 list: { nomi: [], group: prev.list.group ?? [] },

@@ -64,4 +64,11 @@
     button:hover {
         filter: brightness(1.15);
     }
+
+    // Gradient look for a button that is the card's main action.
+    button.primary {
+        color: #fff;
+        background: linear-gradient(135deg, #a855f7, #7c3aed);
+        border: none;
+    }
 }

@@ -13,10 +13,12 @@ export interface Nomis {
     };
     /**
      * Why the lists couldn't load: "auth" = not logged in to nomi.ai,
-     * "network" = nomi.ai unreachable. Cleared on a successful fetch.
-     * Without it a logged-out user saw only an endless loading spinner.
+     * "permission" = the user revoked the nomi.ai host permission (Firefox
+     * treats MV3 host permissions as user-revocable), "network" = nomi.ai
+     * unreachable. Cleared on a successful fetch. Without it a logged-out
+     * user saw only an endless loading spinner.
      */
-    loadError: "auth" | "network" | null;
+    loadError: "auth" | "permission" | "network" | null;
 }
 
 export type NomiContextType = {
