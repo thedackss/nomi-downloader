@@ -212,11 +212,13 @@ export class OffscreenClient {
     }
 
     /**
-     * Save a file. On Firefox the background can't reliably start a download
-     * (on Android it silently does nothing), so the save is triggered from the
-     * nomi.ai page's content script — like the published version — which makes
-     * the download actually fire. Falls back to a background anchor (desktop)
-     * and then the downloads API (Chrome). Blob URLs are revoked afterward.
+     * Save a file. The downloads API is tried first wherever it exists and
+     * its outcome is VERIFIED (it hands back an id we can watch), because on
+     * Firefox Android the click-an-anchor fallbacks "succeed" silently while
+     * saving nothing — a user on Fenix reported exports that claimed success
+     * with no file to show. Unverifiable paths (page save, anchor) remain as
+     * desktop fallbacks only; on Android a failed save now honestly opens the
+     * file in a tab instead of lying. Blob URLs are revoked afterward.
      */
     async download(
         url: string,
@@ -228,26 +230,53 @@ export class OffscreenClient {
         let openedTab = false;
         let note: string | undefined;
 
-        // Firefox (background is a DOM page): trigger the save from the page.
-        // Chrome's service worker has no document and uses the downloads API.
+        // Firefox (background is a DOM page); Chrome's worker skips to the
+        // downloads API below.
         if (typeof document !== "undefined") {
             report?.("Saving file…");
-            if (await this.saveViaPage(url, filename)) {
-                Log(`Saved "${filename}" via the page`);
+            // Verified save through the downloads API, when it exists.
+            if (await this.verifiedApiDownload(url, filename, saveAs)) {
+                Log(`Saved "${filename}" via the downloads API (verified)`);
                 report?.("Saved to your downloads");
                 this.scheduleRevoke(url, isBlob, false);
                 return { ok: true, openedTab: false };
             }
-            // Desktop fallback: a background-page anchor still works there.
+            const isAndroid =
+                typeof navigator !== "undefined" &&
+                /Android/i.test(navigator.userAgent);
+            if (!isAndroid) {
+                // Desktop-only fallbacks: neither can report failure, but on
+                // desktop they reliably work; on Android they silently no-op,
+                // which must not be reported as success.
+                if (await this.saveViaPage(url, filename)) {
+                    Log(`Saved "${filename}" via the page`);
+                    report?.("Saved to your downloads");
+                    this.scheduleRevoke(url, isBlob, false);
+                    return { ok: true, openedTab: false };
+                }
+                try {
+                    this.anchorDownload(url, filename);
+                    Log(`Saved "${filename}" via background anchor`);
+                    report?.("Saved to your downloads");
+                    this.scheduleRevoke(url, isBlob, false);
+                    return { ok: true, openedTab: false };
+                } catch (err) {
+                    Log("Background anchor download failed", err);
+                }
+            }
+            // Fall through to the tab fallback below, honestly.
             try {
-                this.anchorDownload(url, filename);
-                Log(`Saved "${filename}" via background anchor`);
-                report?.("Saved to your downloads");
-                this.scheduleRevoke(url, isBlob, false);
-                return { ok: true, openedTab: false };
-            } catch (err) {
-                Log("Background anchor download failed", err);
+                await chrome.tabs.create({ url });
+                openedTab = true;
+                note = `Couldn't save directly — the file opened in a tab; save it from the browser menu`;
+                report?.(note);
+            } catch (tabErr) {
+                Log("Failed to open the download in a tab", tabErr);
+                note = "Download failed";
+                report?.(note);
             }
+            this.scheduleRevoke(url, isBlob, openedTab);
+            return { ok: false, openedTab, note };
         }
 
         try {
@@ -276,6 +305,48 @@ export class OffscreenClient {
         this.scheduleRevoke(url, isBlob, openedTab);
 
         return { ok: !openedTab, openedTab, note };
+    }
+
+    /**
+     * Start a download through the downloads API and wait until it verifiably
+     * starts (bytes flowing, or already complete). Resolves false when the
+     * API is missing, throws, or the download reports "interrupted" or never
+     * starts — the silent-failure mode on Firefox Android.
+     */
+    private async verifiedApiDownload(
+        url: string,
+        filename: string,
+        saveAs: boolean,
+    ): Promise<boolean> {
+        if (typeof chrome === "undefined" || !chrome.downloads?.download) {
+            return false;
+        }
+        try {
+            const id = await chrome.downloads.download({
+                url,
+                filename,
+                saveAs,
+            });
+            // Poll briefly: complete or visibly progressing counts as started.
+            for (let attempt = 0; attempt < 10; attempt++) {
+                await new Promise((r) => setTimeout(r, 300));
+                const [item] = await chrome.downloads.search({ id });
+                if (!item) continue;
+                if (item.state === "complete") return true;
+                if (item.state === "interrupted") {
+                    Log(`Download interrupted: ${item.error ?? "unknown"}`);
+                    return false;
+                }
+                if (item.state === "in_progress" && item.bytesReceived > 0) {
+                    return true;
+                }
+            }
+            Log("Download never started (no bytes after 3s)");
+            return false;
+        } catch (err) {
+            Log("downloads API save failed", err);
+            return false;
+        }
     }
 
     /**
