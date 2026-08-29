@@ -101,6 +101,9 @@ export default defineConfig({
             // the uncompiled .ts module in a production build.
             input: {
                 "src/offscreen/index": path.resolve("src/offscreen/index.html"),
+                // Fallback saver tab: triggers a tab-level anchor download
+                // where the downloads API can't save (Firefox on Android).
+                "src/saver/index": path.resolve("src/saver/index.html"),
             },
             output: {
                 entryFileNames: "assets/[name].js",

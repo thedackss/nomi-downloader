@@ -37,6 +37,13 @@ export interface DownloadResult {
  * dispatches to the in-process zipService instead.
  */
 export class OffscreenClient {
+    /**
+     * Set once downloads.download() hangs past its deadline (Firefox on
+     * Android with extension blob URLs). Later saves skip the API and its
+     * wait, going straight to the saver-tab fallback.
+     */
+    private downloadsApiHung = false;
+
     async setupDocument(): Promise<void> {
         if (typeof chrome === "undefined" || !chrome.offscreen) return;
         // The Firefox build has no offscreen API, so __IS_FIREFOX__ lets this
@@ -264,11 +271,13 @@ export class OffscreenClient {
                     Log("Background anchor download failed", err);
                 }
             }
-            // Fall through to the tab fallback below, honestly.
+            // Fall through to the saver-tab fallback below, honestly.
             try {
-                await chrome.tabs.create({ url });
+                await chrome.tabs.create({
+                    url: this.saverPageUrl(url, filename),
+                });
                 openedTab = true;
-                note = `Couldn't save directly — the file opened in a tab; save it from the browser menu`;
+                note = `Couldn't save directly — use the Save button in the opened tab`;
                 report?.(note);
             } catch (tabErr) {
                 Log("Failed to open the download in a tab", tabErr);
@@ -291,9 +300,11 @@ export class OffscreenClient {
             const reason = err instanceof Error ? err.message : "save failed";
             Log(`Save failed (${reason}); opening "${filename}" in a tab`);
             try {
-                await chrome.tabs.create({ url });
+                await chrome.tabs.create({
+                    url: this.saverPageUrl(url, filename),
+                });
                 openedTab = true;
-                note = `Opened in a tab (couldn't save directly) — save it from the browser menu`;
+                note = `Couldn't save directly — use the Save button in the opened tab`;
                 report?.(note);
             } catch (tabErr) {
                 Log("Failed to open the download in a tab", tabErr);
@@ -321,12 +332,30 @@ export class OffscreenClient {
         if (typeof chrome === "undefined" || !chrome.downloads?.download) {
             return false;
         }
+        if (this.downloadsApiHung) return false;
         try {
-            const id = await chrome.downloads.download({
-                url,
-                filename,
-                saveAs,
-            });
+            const isAndroid =
+                typeof navigator !== "undefined" &&
+                /Android/i.test(navigator.userAgent);
+            // Fenix has no save-as dialog; asking for one can leave the
+            // downloads.download() promise pending forever ("Saving file…"
+            // stuck). Ask only on desktop, and give the call a deadline so a
+            // hung promise degrades into the honest fallbacks instead.
+            const request: chrome.downloads.DownloadOptions = isAndroid
+                ? { url, filename }
+                : { url, filename, saveAs };
+            let deadline: ReturnType<typeof setTimeout> | undefined;
+            const id = await Promise.race([
+                chrome.downloads.download(request),
+                new Promise<never>((_, reject) => {
+                    deadline = setTimeout(() => {
+                        this.downloadsApiHung = true;
+                        reject(
+                            new Error("downloads.download() never responded"),
+                        );
+                    }, 10_000);
+                }),
+            ]).finally(() => clearTimeout(deadline));
             // Poll briefly: complete or visibly progressing counts as started.
             for (let attempt = 0; attempt < 10; attempt++) {
                 await new Promise((r) => setTimeout(r, 300));
@@ -386,6 +415,20 @@ export class OffscreenClient {
             Log("Page save failed", err);
             return false;
         }
+    }
+
+    /**
+     * The bundled saver page, parameterized with the file. A tab-level anchor
+     * click is how ordinary websites download, so it works where the
+     * downloads API doesn't (Firefox on Android) and keeps the real filename,
+     * unlike opening the raw blob URL (which renders html/md inline and saves
+     * zips under the blob's UUID name).
+     */
+    private saverPageUrl(url: string, filename: string): string {
+        return (
+            chrome.runtime.getURL("src/saver/index.html") +
+            `#name=${encodeURIComponent(filename)}&url=${encodeURIComponent(url)}`
+        );
     }
 
     /** Trigger a download through a DOM anchor so the filename is honored and
