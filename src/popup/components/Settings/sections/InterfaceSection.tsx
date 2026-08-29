@@ -55,6 +55,26 @@ export const InterfaceSection = () => {
                 </select>
             </Row>
             <Row
+                label="Text size"
+                htmlFor="set-text-size"
+                hint="Scales all text in the popup.">
+                <select
+                    id="set-text-size"
+                    value={Settings.textSize}
+                    onChange={(e) =>
+                        updateSettings({
+                            textSize: e.target.value as
+                                | "normal"
+                                | "large"
+                                | "xlarge",
+                        })
+                    }>
+                    <option value="normal">Normal</option>
+                    <option value="large">Large</option>
+                    <option value="xlarge">Extra large</option>
+                </select>
+            </Row>
+            <Row
                 label="Show stats"
                 htmlFor="set-show-stats"
                 hint={Settings.showStats ? "Daily usage shown" : "Hidden"}>

@@ -97,6 +97,8 @@ export interface Settings {
         enabled: boolean;
     };
     /** Show a daily-usage stats panel under the header. */
+    /** Scales all popup text (rem-based); "normal" = browser default. */
+    textSize: "normal" | "large" | "xlarge";
     showStats: boolean;
     /** Verbose logging in the console for troubleshooting. */
     debug: boolean;
