@@ -1,6 +1,6 @@
 # Nomi Downloader Privacy Policy
 
-_Last updated: 2026-06-30_
+_Last updated: 2026-08-29_
 
 ## Summary
 
@@ -17,7 +17,7 @@ uploaded anywhere** by the extension.
 
 ## Error reports (opt-in)
 
-The only data that can leave your browser is a **bug report**, and only when you
+The only personal data that can leave your browser is a **bug report**, and only when you
 explicitly choose to send one.
 
 When the extension hits an unexpected error, it shows a dialog. You can expand
@@ -39,11 +39,20 @@ Reports are sent to the developer via `https://nomi.zar.mx` and are used solely
 to diagnose and fix bugs. They are not sold, shared with advertisers, or used
 for any other purpose.
 
+## Update check
+
+When you open the popup, the extension asks `https://nomi.zar.mx/api/version`
+for the latest published version number, so it can tell you when an update is
+available. The request carries **no personal data**: no identifiers, no account
+information, nothing about your Nomis. The response is a version number and
+nothing else.
+
 ## Permissions
 
 - **Access to nomi.ai**: to read your content for export, using your existing
   login session.
-- **Access to nomi.zar.mx**: only to deliver an error report you choose to send.
+- **Access to nomi.zar.mx**: to deliver an error report you choose to send,
+  and to check the latest published version.
 - **downloads**: to save exported files to your device.
 - **tabs, storage, offscreen**: to operate the popup, remember your settings,
   and build the zip / HTML files locally.
