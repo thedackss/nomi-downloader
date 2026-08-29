@@ -4,7 +4,10 @@ export interface ApiMeResponse {
     name: string;
     email: string;
     image: string;
+    /** Stable public account id; used (opt-in) to key synced stats. */
+    publicId?: string;
     profile: {
+        publicId?: string;
         name: string;
         nomiCount: number;
         activeNomiCount: number;

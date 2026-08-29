@@ -3,6 +3,7 @@ import { NomiApiClient } from "../../../nomi/api";
 import type { DailyUsageCounts } from "../../../nomi/types/api.me.dailyUsage";
 import { Log } from "../../../utils/log";
 import { useSettings } from "../../hooks/useSettings";
+import { recordToday, syncToday } from "../../stats/statsSync";
 import styles from "./styles.module.scss";
 
 interface StatsData {
@@ -34,6 +35,7 @@ export const Stats = () => {
     const [data, setData] = useState<StatsData | null>(null);
 
     const enabled = Settings.showStats;
+    const sync = Settings.statsSync;
 
     useEffect(() => {
         if (!enabled) return;
@@ -46,7 +48,18 @@ export const Stats = () => {
                     api.getUserInfo(),
                     api.getDailyUsage(),
                 ]);
-                if (!cancelled) setData(summarize(me.profile.name, usage));
+                if (cancelled) return;
+                const summary = summarize(me.profile.name, usage);
+                setData(summary);
+                const counts = {
+                    sent: summary.sent,
+                    received: summary.received,
+                    selfies: summary.selfies,
+                };
+                // Local history always; the server only with the opt-in.
+                recordToday(counts);
+                const publicId = me.publicId ?? me.profile.publicId;
+                if (sync && publicId) syncToday(publicId, counts);
             } catch (error) {
                 Log("Failed to load stats", error);
             }
@@ -55,7 +68,7 @@ export const Stats = () => {
         return () => {
             cancelled = true;
         };
-    }, [enabled]);
+    }, [enabled, sync]);
 
     if (!enabled || !data) return null;
 

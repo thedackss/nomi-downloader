@@ -84,6 +84,23 @@ export const InterfaceSection = () => {
                     onChange={(showStats) => updateSettings({ showStats })}
                 />
             </Row>
+            <Row
+                label="Sync stats"
+                tooltip="Sends your daily counters (messages sent/received, selfies) to nomi.zar.mx, keyed by your account's public id, so your history survives reinstalls. Counters only, never content. Off = nothing is ever sent."
+                htmlFor="set-stats-sync"
+                disabled={!Settings.showStats}
+                hint={
+                    Settings.statsSync
+                        ? "Counters synced to nomi.zar.mx"
+                        : "Stats stay on this device"
+                }>
+                <Switch
+                    id="set-stats-sync"
+                    checked={Settings.statsSync}
+                    disabled={!Settings.showStats}
+                    onChange={(statsSync) => updateSettings({ statsSync })}
+                />
+            </Row>
         </>
     );
 };

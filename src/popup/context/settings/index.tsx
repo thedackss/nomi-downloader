@@ -50,6 +50,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
         },
         textSize: "normal",
         showStats: false,
+        statsSync: false,
         debug: false,
     };
 

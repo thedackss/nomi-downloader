@@ -100,6 +100,11 @@ export interface Settings {
     /** Scales all popup text (rem-based); "normal" = browser default. */
     textSize: "normal" | "large" | "xlarge";
     showStats: boolean;
+    /**
+     * Opt-in: sync the daily usage counters to nomi.zar.mx keyed by the
+     * account's publicId, so history survives reinstalls. Off by default.
+     */
+    statsSync: boolean;
     /** Verbose logging in the console for troubleshooting. */
     debug: boolean;
 }
