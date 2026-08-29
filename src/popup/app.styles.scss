@@ -36,12 +36,15 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background: color-mix(in srgb, var(--accent) 5%, transparent 10%);
+        // Mixed with the solid background (not transparent) and bright
+        // enough to clear the purple glow behind the Nomi list, which is the
+        // popup's most saturated surface.
+        background: color-mix(in srgb, var(--accent) 70%, var(--background));
         border-radius: var(--scroll-size);
         transition: background 0.2s ease-in-out;
 
         &:hover {
-            background: color-mix(in srgb, var(--accent) 10%, transparent 10%);
+            background: var(--accent);
         }
     }
 
