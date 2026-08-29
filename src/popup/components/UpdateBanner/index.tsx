@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+    CHANGELOG_URL,
     MANUAL_UPDATE_HINT,
     requestChromeUpdate,
     STORE_URL,
@@ -52,7 +53,7 @@ export const UpdateBanner = () => {
             {__IS_FIREFOX__ ? (
                 <a
                     className={styles.action}
-                    href={STORE_URL}
+                    href={CHANGELOG_URL}
                     target="_blank"
                     rel="noreferrer"
                     title={MANUAL_UPDATE_HINT}>
