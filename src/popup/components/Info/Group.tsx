@@ -12,6 +12,7 @@ interface GroupInfoProps {
 export const GroupInfo = ({ group }: GroupInfoProps) => {
     const {
         downloadStatus,
+        notice,
         downloadGroupChat,
         downloadGroupJson,
         downloadGroupMarkdown,
@@ -97,6 +98,9 @@ export const GroupInfo = ({ group }: GroupInfoProps) => {
                         <p>{message}</p>
                     </h3>
                 </LoadingSpin>
+                {!downloadStatus.inProgress && notice && (
+                    <p className={styles.notice}>{notice}</p>
+                )}
                 {!dl.advanced ? (
                     <div className={styles.splitButton}>
                         <button

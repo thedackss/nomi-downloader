@@ -15,6 +15,7 @@ interface NomiInfoProps {
 export const NomiInfo = ({ nomi }: NomiInfoProps) => {
     const {
         downloadStatus,
+        notice,
         downloadSimple,
         downloadAlbum,
         downloadChat,
@@ -145,6 +146,9 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                         <p>{message}</p>
                     </h3>
                 </LoadingSpin>
+                {!downloadStatus.inProgress && notice && (
+                    <p className={styles.notice}>{notice}</p>
+                )}
                 {!dl.advanced ? (
                     <div className={styles.splitButton}>
                         <button

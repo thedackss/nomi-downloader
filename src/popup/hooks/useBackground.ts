@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DownloadStatus } from "../components/Info/interfaces";
 import { useNomi } from "./useNomi";
 import { useSettings } from "./useSettings";
@@ -24,6 +24,18 @@ export function useBackground() {
     const [downloadStatus, setDownloadStatus] =
         useState<DownloadStatus>(INITIAL_STATUS);
 
+    // The closing message ("Chat downloaded!", "No new messages since your
+    // last download.") would otherwise vanish with the progress spinner, so a
+    // run that writes no file looks like nothing happened. Hold onto it briefly.
+    const [notice, setNotice] = useState<string | null>(null);
+    const wasInProgress = useRef(false);
+
+    useEffect(() => {
+        if (!notice) return;
+        const timer = setTimeout(() => setNotice(null), 6000);
+        return () => clearTimeout(timer);
+    }, [notice]);
+
     // Pick up any download already running when this mounts.
     useEffect(() => {
         let cancelled = false;
@@ -31,6 +43,9 @@ export function useBackground() {
             .sendMessage({ type: "GET_DOWNLOAD_STATUS" })
             .then((status: DownloadStatus | undefined) => {
                 if (cancelled || !status) return;
+                // Track it as running so its closing message still surfaces
+                // when the popup was opened mid-download.
+                wasInProgress.current = status.inProgress;
                 setDownloadStatus(status);
             })
             .catch(() => {});
@@ -46,7 +61,14 @@ export function useBackground() {
             status?: DownloadStatus;
         }) => {
             if (message?.type === "DOWNLOAD_STATUS_UPDATE" && message.status) {
-                setDownloadStatus(message.status);
+                const next = message.status;
+                // Just finished: keep the closing message on screen, since the
+                // spinner (and its message) hides the moment work ends.
+                if (wasInProgress.current && !next.inProgress && next.message) {
+                    setNotice(next.message);
+                }
+                wasInProgress.current = next.inProgress;
+                setDownloadStatus(next);
             }
         };
         chrome.runtime.onMessage.addListener(handleMessage);
@@ -69,6 +91,8 @@ export function useBackground() {
             },
         });
         // Optimistic update; the background broadcasts real progress.
+        setNotice(null);
+        wasInProgress.current = true;
         setDownloadStatus({
             inProgress: true,
             message,
@@ -93,6 +117,8 @@ export function useBackground() {
             },
         });
         // Optimistic update; the background broadcasts real progress.
+        setNotice(null);
+        wasInProgress.current = true;
         setDownloadStatus({
             inProgress: true,
             message,
@@ -142,6 +168,8 @@ export function useBackground() {
 
     return {
         downloadStatus,
+        /** Closing message of the last finished download; clears after a moment. */
+        notice,
         // Non-advanced one-click download: album + chat + shared notes.
         downloadSimple: () =>
             startDownload("DOWNLOAD_SIMPLE", "Starting download...", {

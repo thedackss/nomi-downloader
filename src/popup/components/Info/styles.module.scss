@@ -130,6 +130,16 @@
         padding-top: 1.5rem;
         position: relative;
 
+        // Outcome of the last finished download (e.g. "No new messages since
+        // your last download."), so a run that writes no file still says so.
+        .notice {
+            width: 100%;
+            margin: 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgb(from var(--text) r g b / 75%);
+        }
+
         &.inProgress {
             .splitButton {
                 box-shadow: none !important;
