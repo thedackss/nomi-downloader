@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { NomiApiClient } from "../../../../nomi/api";
 import { buildLogsText, buildUserReportText } from "../../../../utils/report";
+import { MANUAL_UPDATE_HINT, STORE_URL } from "../../../../utils/version";
+import { useUpdateCheck } from "../../../hooks/useUpdateCheck";
 import { sendReport } from "../../../report/sendReport";
 import styles from "../styles.module.scss";
 
@@ -25,6 +27,10 @@ export const HelpSection = () => {
     const [sendState, setSendState] = useState<
         "idle" | "sending" | "sent" | "failed"
     >("idle");
+
+    // Shared with the main-view banner (one request per popup); null = unknown
+    // (offline or the check failed), in which case we show nothing extra.
+    const update = useUpdateCheck();
 
     async function copyLogs() {
         try {
@@ -141,6 +147,20 @@ export const HelpSection = () => {
                 {version && (
                     <p className={styles.versionLine}>
                         Nomi Downloader v{version}
+                        {update?.outdated ? (
+                            <a
+                                className={styles.updateBadge}
+                                href={STORE_URL}
+                                target="_blank"
+                                rel="noreferrer"
+                                title={MANUAL_UPDATE_HINT}>
+                                v{update.latest} available
+                            </a>
+                        ) : update ? (
+                            <span className={styles.upToDate}>
+                                ✓ Up to date
+                            </span>
+                        ) : null}
                     </p>
                 )}
                 <p>

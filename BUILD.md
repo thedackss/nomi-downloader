@@ -45,6 +45,9 @@ Vite (Rollup + esbuild), which is why the source is provided.
   in-process zipping/rendering.
 - Third-party libraries, all from the public npm registry with versions pinned
   in `package-lock.json`: **React**, **react-dom**, **JSZip**, **axios**.
-- The only network request to a non-nomi.ai server is an opt-in, user-confirmed
-  error report POSTed to `https://nomi.zar.mx/bugs`; see `src/utils/report.ts`
-  and `PRIVACY.md`.
+- Network requests to a non-nomi.ai server go only to `nomi.zar.mx`: an opt-in,
+  user-confirmed error report POSTed to `https://nomi.zar.mx/bugs` (see
+  `src/utils/report.ts` and `PRIVACY.md`), and an update check that GETs
+  `https://nomi.zar.mx/api/version` to compare the installed version against the
+  latest published one (see `src/utils/version.ts`). No personal data is sent
+  with the version check.
