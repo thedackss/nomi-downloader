@@ -96,7 +96,6 @@ export interface Settings {
     incremental: {
         enabled: boolean;
     };
-    layout: "auto" | "mobile" | "desktop";
     /** Show a daily-usage stats panel under the header. */
     showStats: boolean;
     /** Verbose logging in the console for troubleshooting. */

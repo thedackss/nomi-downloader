@@ -106,7 +106,7 @@ A tabbed settings panel (Interface · Downloads · Advanced):
 - **Raw data**: include the untouched API responses in JSON exports.
 - **Advanced download mode**: per-type toggles that turn the download button into
   a selector, so you choose precisely which export each click produces.
-- **Interface**: layout (auto/mobile/desktop), Nomi icon shape & size, a daily
+- **Interface**: Nomi icon shape & size, a daily
   usage stats panel, and a debug logging toggle. On mobile the selected Nomi or
   group's picture is shown on its info screen (the list is hidden when one pane).
 

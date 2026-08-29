@@ -48,7 +48,6 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
         incremental: {
             enabled: false,
         },
-        layout: "auto",
         showStats: false,
         debug: false,
     };

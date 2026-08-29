@@ -58,12 +58,11 @@ export const useSettings = () => {
         localStorage.setItem("config", JSON.stringify(mergedSettings));
     };
 
-    const isMobile =
-        Settings.layout === "mobile"
-            ? true
-            : Settings.layout === "desktop"
-              ? false
-              : window.innerHeight >= window.innerWidth;
+    // Portrait viewport = the mobile layout (Firefox Android renders the
+    // popup as a full page). A manual override used to exist, but forcing
+    // "mobile" inside a desktop popup collapses it: the popup sizes itself
+    // from content, and dvw/dvh-sized content has nothing to size against.
+    const isMobile = window.innerHeight >= window.innerWidth;
 
     return {
         Settings,

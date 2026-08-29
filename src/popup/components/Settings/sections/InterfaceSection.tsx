@@ -7,26 +7,6 @@ export const InterfaceSection = () => {
     return (
         <>
             <Row
-                label="Layout"
-                htmlFor="set-layout"
-                hint="Auto follows the window shape.">
-                <select
-                    id="set-layout"
-                    value={Settings.layout}
-                    onChange={(e) =>
-                        updateSettings({
-                            layout: e.target.value as
-                                | "auto"
-                                | "mobile"
-                                | "desktop",
-                        })
-                    }>
-                    <option value="auto">Auto (detect)</option>
-                    <option value="mobile">Mobile</option>
-                    <option value="desktop">Desktop</option>
-                </select>
-            </Row>
-            <Row
                 label="Icon shape"
                 htmlFor="set-icon-shape"
                 hint="How Nomi avatars are framed in the list.">
