@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Nomi Downloader",
     "description": "Back up your nomi.ai companions: save albums, chats, voice, mind maps and shared notes as offline HTML, Markdown and JSON files.",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "action": { "default_popup": "index.html" },
 
     "host_permissions": ["https://*.nomi.ai/*"],
