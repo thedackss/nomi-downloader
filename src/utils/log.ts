@@ -6,8 +6,17 @@ const recentLogs: string[] = [];
 
 // Only the popup and the background worker log; each context persists its
 // buffer so a report can merge both (and survive service-worker restarts).
-const CONTEXT = typeof document === "undefined" ? "background" : "popup";
+// The heuristic covers Chrome (worker has no document); Firefox's background
+// IS a DOM page, so it must call setLogContext("background") explicitly or
+// both contexts write to the same buffer and clobber each other.
+let context: "popup" | "background" =
+    typeof document === "undefined" ? "background" : "popup";
 const STORAGE_PREFIX = "recentLogs.";
+
+/** Declare which context this is (the Firefox background page must). */
+export function setLogContext(ctx: "popup" | "background") {
+    context = ctx;
+}
 
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -22,7 +31,7 @@ function persistLogs() {
     clearTimeout(persistTimer);
     persistTimer = setTimeout(() => {
         store
-            .set({ [STORAGE_PREFIX + CONTEXT]: [...recentLogs] })
+            .set({ [STORAGE_PREFIX + context]: [...recentLogs] })
             .catch(() => {});
     }, 250);
 }
@@ -37,7 +46,7 @@ export function Log(...data: unknown[]) {
 
     // Always keep a trimmed copy for bug reports, even when not printing.
     recentLogs.push(
-        `${new Date().toISOString()} [${CONTEXT}] ${stringifyArgs(data)}`,
+        `${new Date().toISOString()} [${context}] ${stringifyArgs(data)}`,
     );
     if (recentLogs.length > RECENT_LIMIT) recentLogs.shift();
     persistLogs();
@@ -61,7 +70,7 @@ export async function getMergedLogs(): Promise<string> {
     const store = sessionStore();
     if (!store) return getRecentLogs();
 
-    const other = CONTEXT === "popup" ? "background" : "popup";
+    const other = context === "popup" ? "background" : "popup";
     try {
         const key = STORAGE_PREFIX + other;
         const stored = (await store.get(key))[key] as string[] | undefined;

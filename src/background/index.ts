@@ -1,7 +1,12 @@
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
-import { Log, setDebugLogging } from "../utils/log";
+import { Log, setDebugLogging, setLogContext } from "../utils/log";
 import { buildReportText } from "../utils/report";
 import { Nomi } from "./nomi/index";
+
+// On Firefox the background is a DOM page, so the log module's
+// typeof-document heuristic would label these lines "popup" and clobber the
+// popup's buffer; declare the context before anything logs.
+setLogContext("background");
 
 const nomi = new Nomi();
 
