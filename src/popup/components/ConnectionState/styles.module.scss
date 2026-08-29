@@ -72,3 +72,15 @@
         border: none;
     }
 }
+
+.helpLink {
+    margin-top: 0.9rem;
+    font-size: 0.8rem;
+    color: var(--muted, #888d9b);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--accent, #a855f7);
+        text-decoration: underline;
+    }
+}

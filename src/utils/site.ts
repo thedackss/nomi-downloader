@@ -6,3 +6,6 @@
  */
 export const SITE_URL: string =
     import.meta.env.VITE_SITE_URL ?? "https://nomi.zar.mx";
+
+/** The user guide on the extension's site. */
+export const HELP_URL = `${SITE_URL}/help`;

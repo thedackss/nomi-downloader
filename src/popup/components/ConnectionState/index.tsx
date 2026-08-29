@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNomi } from "../../hooks/useNomi";
+import { HELP_URL } from "../../../utils/site";
 import { LoadingSpin } from "../LoadingSpin";
 import styles from "./styles.module.scss";
 
@@ -96,6 +97,13 @@ export const ConnectionState = () => {
                         </div>
                     </>
                 )}
+                <a
+                    className={styles.helpLink}
+                    href={HELP_URL}
+                    target="_blank"
+                    rel="noopener">
+                    Need help? Open the guide
+                </a>
             </div>
         </div>
     );
