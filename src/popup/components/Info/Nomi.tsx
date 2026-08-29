@@ -48,7 +48,9 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
     ];
     const downloadOptions = allOptions.filter((o) => dl[o.key]);
 
-    const [mindMapActive, setMindMapActive] = useState(false);
+    // Starts true so the Mind Map button never shows a false "no mind map"
+    // while the check is in flight (or if it fails).
+    const [mindMapActive, setMindMapActive] = useState(true);
     // The selection is remembered in settings (as the type key) and the option
     // resolved fresh each render — storing the option object would capture a
     // stale download closure (and thus stale settings) until the popup is
@@ -62,12 +64,15 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
     useEffect(() => {
         let cancelled = false;
         async function main() {
+            // Lightweight presence check (a handful of requests). The old
+            // full getMindInfo fetch here hammered the API with one request
+            // per memory term and wrongly reported big mind maps as absent.
             const api = new NomiApiClient();
-            const data = await api.getMindInfo({ nomiId: nomi.id });
+            const active = await api.hasMindMap({ nomiId: nomi.id });
 
-            if (!cancelled) setMindMapActive(!!data);
+            if (!cancelled) setMindMapActive(active);
         }
-        main();
+        main().catch(() => {});
         return () => {
             cancelled = true;
         };

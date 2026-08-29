@@ -513,4 +513,34 @@ export class NomiApiClient {
             };
         }
     }
+
+    /**
+     * Cheap "does a mind map exist" check for the popup: the graph plus the
+     * three term-list heads (four requests), never the per-term details. On
+     * fetch failure it answers true so the button stays usable; an actual
+     * download will surface a real error instead of a wrong "no mind map".
+     */
+    public async hasMindMap({ nomiId }: NomiExistsProps): Promise<boolean> {
+        const base = `mind-maps/nomis/${nomiId}`;
+        try {
+            const graph = await getRetry<ApiMindMapsGraphResponse>(
+                `${base}/graph`,
+                GRAPH_TIMEOUT_MS,
+            );
+            if (graph.nodes.length > 0 || graph.edges.length > 0) return true;
+
+            for (const category of MIND_CATEGORIES) {
+                const list = await getRetry<ApiMindMapsTermsResponse>(
+                    `${base}/memory-terms?category=${category}`,
+                );
+                if (list.totalCount > 0 || list.memoryTerms.length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            Log("Mind map presence check failed; assuming one exists", error);
+            return true;
+        }
+    }
 }
