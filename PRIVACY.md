@@ -81,4 +81,4 @@ server keeps only anonymous daily totals per version.
 
 ## Contact
 
-Questions or requests: dacks@zar.mx
+Questions or requests: nomi@zar.mx
