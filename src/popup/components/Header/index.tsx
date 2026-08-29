@@ -1,3 +1,4 @@
+import { SITE_URL } from "../../../utils/site";
 import { useNomi } from "../../hooks/useNomi";
 import { useSettings } from "../../hooks/useSettings";
 import { Settings } from "../Settings";
@@ -14,7 +15,7 @@ export const Header = () => {
             {!(isMobile && hasSelection) && (
                 <a
                     className={styles.tip}
-                    href="https://nomi.zar.mx/tip"
+                    href={`${SITE_URL}/tip`}
                     target="_blank"
                     rel="noreferrer"
                     title="Enjoying the extension? Send a tip">

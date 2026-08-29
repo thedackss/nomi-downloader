@@ -1,15 +1,16 @@
 import { Log } from "./log";
+import { SITE_URL } from "./site";
 
 /** GET endpoint returning the latest published version as `{ version }`. */
-export const VERSION_ENDPOINT = "https://nomi.zar.mx/api/version";
+export const VERSION_ENDPOINT = `${SITE_URL}/api/version`;
 
 /** The store listing for this build target. */
 export const STORE_URL = __IS_FIREFOX__
-    ? "https://nomi.zar.mx/firefox"
-    : "https://nomi.zar.mx/chrome";
+    ? `${SITE_URL}/firefox`
+    : `${SITE_URL}/chrome`;
 
 /** The published release notes, shown as "What's new". */
-export const CHANGELOG_URL = "https://nomi.zar.mx/changelog";
+export const CHANGELOG_URL = `${SITE_URL}/changelog`;
 
 /**
  * How to force an update now. Neither store has an "update" button — browsers

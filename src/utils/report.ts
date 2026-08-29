@@ -1,11 +1,12 @@
 import { getMergedLogs, getRecentLogs } from "./log";
+import { SITE_URL } from "./site";
 
 /**
  * Where bug reports are POSTed. Cross-origin from the extension, so the API
  * allows the chrome-/moz-extension origins via CORS (it's not in
  * host_permissions).
  */
-export const BUGS_ENDPOINT = "https://nomi.zar.mx/api/bugs";
+export const BUGS_ENDPOINT = `${SITE_URL}/api/bugs`;
 
 /** Turn an unknown thrown value into "Name: message\n<stack>". */
 function describeError(error: unknown): string {
