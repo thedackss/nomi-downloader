@@ -47,7 +47,10 @@ Vite (Rollup + esbuild), which is why the source is provided.
   in `package-lock.json`: **React**, **react-dom**, **JSZip**, **axios**.
 - Network requests to a non-nomi.ai server go only to `nomi.zar.mx`: an opt-in,
   user-confirmed error report POSTed to `https://nomi.zar.mx/api/bugs` (see
-  `src/utils/report.ts` and `PRIVACY.md`), and an update check that GETs
-  `https://nomi.zar.mx/api/version` to compare the installed version against the
-  latest published one (see `src/utils/version.ts`). No personal data is sent
-  with the version check.
+  `src/utils/report.ts` and `PRIVACY.md`); a GET to
+  `https://nomi.zar.mx/api/bugs/replies` for developer replies to reports this
+  install sent (only ever called after a report exists); an update check that
+  GETs `https://nomi.zar.mx/api/version?v=<installed version>` (no personal
+  data; see `src/utils/version.ts`); and, only when the user enables the
+  off-by-default "Sync stats" setting, daily usage counters POSTed to
+  `https://nomi.zar.mx/api/stats` (see `src/popup/stats/statsSync.ts`).
