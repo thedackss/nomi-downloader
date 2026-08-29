@@ -20,6 +20,10 @@ export const HelpSection = () => {
     const [reportText, setReportText] = useState("");
     const [reportName, setReportName] = useState("");
     const [reportEmail, setReportEmail] = useState("");
+    const [reportDiscord, setReportDiscord] = useState("");
+    // Before sending, ask the user to double-check their contact info; the
+    // first "Send" click flips this on, the second actually sends.
+    const [confirming, setConfirming] = useState(false);
     const emailFetched = useRef(false);
     const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
         "idle",
@@ -44,6 +48,7 @@ export const HelpSection = () => {
 
     function toggleReportForm() {
         setReportOpen(!reportOpen);
+        setConfirming(false);
         if (reportOpen || emailFetched.current) return;
         emailFetched.current = true;
         // Prefill the name and reply-to email from the account; ignore
@@ -58,11 +63,16 @@ export const HelpSection = () => {
     }
 
     async function submitReport() {
+        if (!confirming) {
+            setConfirming(true);
+            return;
+        }
         setSendState("sending");
         const text = await buildUserReportText(
             reportText,
             reportEmail,
             reportName,
+            reportDiscord,
         );
         const ok = await sendReport(text);
         setSendState(ok ? "sent" : "failed");
@@ -71,9 +81,13 @@ export const HelpSection = () => {
                 setReportOpen(false);
                 setReportText("");
                 setSendState("idle");
+                setConfirming(false);
             }, 1500);
         }
     }
+
+    const email = reportEmail.trim();
+    const discord = reportDiscord.trim();
 
     return (
         <>
@@ -116,8 +130,49 @@ export const HelpSection = () => {
                         type="email"
                         placeholder="Email for a reply (optional)"
                         value={reportEmail}
-                        onChange={(e) => setReportEmail(e.target.value)}
+                        onChange={(e) => {
+                            setReportEmail(e.target.value);
+                            setConfirming(false);
+                        }}
                     />
+                    <input
+                        type="text"
+                        placeholder="Discord username (optional)"
+                        value={reportDiscord}
+                        onChange={(e) => {
+                            setReportDiscord(e.target.value);
+                            setConfirming(false);
+                        }}
+                    />
+                    {confirming && (
+                        <p className={styles.confirmNote}>
+                            {email || discord ? (
+                                <>
+                                    Double-check your contact info — support
+                                    will reach you
+                                    {email && (
+                                        <>
+                                            {" at "}
+                                            <strong>{email}</strong>
+                                        </>
+                                    )}
+                                    {email && discord && " or"}
+                                    {discord && (
+                                        <>
+                                            {" on Discord as "}
+                                            <strong>@{discord}</strong>
+                                        </>
+                                    )}
+                                    . A typo means no reply.
+                                </>
+                            ) : (
+                                <>
+                                    No email or Discord given — we won't be able
+                                    to reply to this report.
+                                </>
+                            )}
+                        </p>
+                    )}
                     <div className={styles.reportActions}>
                         <p>
                             Sends your description, name, contact info and
@@ -137,7 +192,9 @@ export const HelpSection = () => {
                                   ? "Sent — thanks!"
                                   : sendState === "failed"
                                     ? "Retry"
-                                    : "Send report"}
+                                    : confirming
+                                      ? "Confirm & send"
+                                      : "Send report"}
                         </button>
                     </div>
                 </div>

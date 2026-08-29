@@ -78,18 +78,20 @@ function reportHeader(kind: string): string[] {
 }
 
 /**
- * Build a user-initiated report: their name, reply-to email and description
+ * Build a user-initiated report: their name, contact info and description
  * first (so they survive any truncation), then the merged popup + worker logs.
  */
 export async function buildUserReportText(
     description: string,
     email: string,
     name: string,
+    discord = "",
 ): Promise<string> {
     const report = [
         ...reportHeader("user report"),
         `From: ${name.trim() || "(not provided)"}`,
         `Reply-to: ${email.trim() || "(not provided)"}`,
+        `Discord: ${discord.trim() || "(not provided)"}`,
         ``,
         `Description:`,
         description.trim() || "(none)",
