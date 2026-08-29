@@ -13,6 +13,7 @@ import type { ApiDailyUsageResponse } from "./types/api.me.dailyUsage";
 import type { ApiMindMapsGraphResponse } from "./types/api.mindMaps.nomis.id.graph";
 import type {
     ApiMindMapsTermsResponse,
+    MemoryTerm,
     MemoryTermItem,
 } from "./types/api.mindMaps.nomis.id.memoryTerms";
 import type { ApiNomisIdResponse } from "./types/api.nomis.id";
@@ -65,6 +66,35 @@ async function getRetry<T>(url: string, timeoutMs?: number): Promise<T> {
     }
     throw lastError;
 }
+
+/** Map with at most `limit` calls in flight, preserving order. */
+async function mapLimit<T, R>(
+    items: T[],
+    limit: number,
+    fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+    const results = new Array<R>(items.length);
+    let next = 0;
+    const workers = Array.from(
+        { length: Math.min(limit, items.length) },
+        async () => {
+            while (next < items.length) {
+                const i = next++;
+                results[i] = await fn(items[i]);
+            }
+        },
+    );
+    await Promise.all(workers);
+    return results;
+}
+
+const MIND_CATEGORIES = ["Entity", "Keyword", "Goal"];
+
+/** Old graphs can be big; give the graph endpoint more room than the default. */
+const GRAPH_TIMEOUT_MS = 30_000;
+
+/** Parallel memory-term detail fetches; low to stay clear of rate limits. */
+const TERM_CONCURRENCY = 4;
 
 /**
  * True once a page of messages reaches the incremental cutoff. Pages arrive
@@ -361,55 +391,126 @@ export class NomiApiClient {
         }
     }
 
-    public async getMindInfo({ nomiId }: NomiExistsProps) {
+    /**
+     * The full mind map: graph plus every memory term's dossier. Big maps mean
+     * hundreds of term requests, so everything is retried, term lists are
+     * walked through all their pages (page 1 alone used to silently truncate
+     * old Nomis), and a term whose detail fetch keeps failing falls back to
+     * its list entry instead of sinking the whole map. Returns null only when
+     * the map is genuinely empty; throws when nothing could be fetched at all,
+     * so callers can tell "no mind map" from "the fetch failed".
+     */
+    public async getMindInfo({
+        nomiId,
+        onProgress,
+    }: NomiExistsProps & { onProgress?: (message: string) => void }) {
+        const base = `mind-maps/nomis/${nomiId}`;
+        const memoryUrl = `${base}/memory-terms`;
+
+        let graph: ApiMindMapsGraphResponse = { nodes: [], edges: [] };
+        let graphOk = false;
         try {
-            const categories = ["Entity", "Keyword", "Goal"];
-            const base = `mind-maps/nomis/${nomiId}`;
-            const memoryUrl = `${base}/memory-terms`;
-            const graphUrl = `${base}/graph`;
-
-            const Terms: { category: string; items: MemoryTermItem[] }[] = [];
-
-            const { data: Graph } = await api.get<ApiMindMapsGraphResponse>(
-                `${graphUrl}`,
+            graph = await getRetry<ApiMindMapsGraphResponse>(
+                `${base}/graph`,
+                GRAPH_TIMEOUT_MS,
             );
-
-            for (let i = 0; i < categories.length; i++) {
-                const category = categories[i];
-
-                const url = `${memoryUrl}?category=${category}`;
-
-                const { data } = await api.get<ApiMindMapsTermsResponse>(url);
-
-                Terms.push({ category, items: [] });
-
-                for (const term of data.memoryTerms) {
-                    const { data } = await api.get<MemoryTermItem>(
-                        `${memoryUrl}/${term.uuid}`,
-                    );
-                    Terms[i].items.push(data);
-                }
-            }
-
-            if (
-                Graph.nodes.length === 0 &&
-                Graph.edges.length === 0 &&
-                Terms.every((t) => t.items.length === 0)
-            ) {
-                return null;
-            }
-
-            return {
-                graph: Graph,
-                terms: Terms,
-            };
+            graphOk = true;
         } catch (error) {
-            if (error instanceof NomiError) {
-                Log(`NomiError: ${error.message}`);
-            } else {
-                Log("Unexpected error during mind info download:", error);
+            Log("Mind map graph fetch failed", error);
+        }
+
+        const Terms: { category: string; items: MemoryTermItem[] }[] = [];
+        let listsOk = false;
+        let fetched = 0;
+
+        for (const category of MIND_CATEGORIES) {
+            let terms: MemoryTerm[] = [];
+            try {
+                terms = await this.getAllTerms(memoryUrl, category);
+                listsOk = true;
+            } catch (error) {
+                Log(`Mind map ${category} term list fetch failed`, error);
             }
+
+            const items = await mapLimit(terms, TERM_CONCURRENCY, (term) => {
+                fetched++;
+                if (fetched % 20 === 0) {
+                    onProgress?.(`Fetching mind map: ${fetched} terms…`);
+                }
+                return this.getTermDetail(memoryUrl, term);
+            });
+            Terms.push({ category, items });
+        }
+
+        if (!graphOk && !listsOk) {
+            throw new NomiError({
+                id: nomiId,
+                message: `Failed to fetch the mind map for Nomi ${nomiId}`,
+            });
+        }
+
+        if (
+            graph.nodes.length === 0 &&
+            graph.edges.length === 0 &&
+            Terms.every((t) => t.items.length === 0)
+        ) {
             return null;
+        }
+
+        return { graph, terms: Terms };
+    }
+
+    /** Every term in a category, following the list's pagination. */
+    private async getAllTerms(
+        memoryUrl: string,
+        category: string,
+    ): Promise<MemoryTerm[]> {
+        const listUrl = `${memoryUrl}?category=${category}`;
+        const first = await getRetry<ApiMindMapsTermsResponse>(listUrl);
+
+        const terms = [...first.memoryTerms];
+        const seen = new Set(terms.map((t) => t.uuid));
+
+        for (let page = first.page + 1; page <= first.totalPages; page++) {
+            const next = await getRetry<ApiMindMapsTermsResponse>(
+                `${listUrl}&page=${page}`,
+            );
+            // Only-new guard: if the page param were ignored the same page
+            // would come back forever; unseen terms are the loop's fuel.
+            const fresh = next.memoryTerms.filter((t) => !seen.has(t.uuid));
+            if (fresh.length === 0) break;
+            for (const t of fresh) seen.add(t.uuid);
+            terms.push(...fresh);
+        }
+
+        return terms;
+    }
+
+    /**
+     * One term's full detail (the dossier). When it keeps failing, degrade to
+     * the list entry with an empty dossier: a slightly thinner term beats
+     * reporting the whole Nomi as having no mind map.
+     */
+    private async getTermDetail(
+        memoryUrl: string,
+        term: MemoryTerm,
+    ): Promise<MemoryTermItem> {
+        try {
+            return await getRetry<MemoryTermItem>(`${memoryUrl}/${term.uuid}`);
+        } catch (error) {
+            Log(
+                `Mind map term ${term.uuid} fetch failed; using summary`,
+                error,
+            );
+            return {
+                ...term,
+                category: String(term.category),
+                priority: String(term.priority),
+                state: String(term.state),
+                created: String(term.created),
+                aiEdited: String(term.aiEdited),
+                dossier: "",
+            };
         }
     }
 }
