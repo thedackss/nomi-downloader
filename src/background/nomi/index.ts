@@ -40,6 +40,9 @@ import {
 } from "./sharednotes/builder";
 import type { AnchorLook, SharedNotesRenderPayload } from "./sharednotes/types";
 
+/** Status callback surfaced in the popup while a download runs. */
+type ProgressFn = (message: string) => void;
+
 /**
  * Facade over the Nomi data API, offscreen/zip bridge, and the album/chat
  * download workflows. Keeps a single entry point for the background worker.
@@ -70,8 +73,11 @@ export class Nomi {
      * offscreen Blob URL (the rendered HTML inlines CSS + the avatar and is too
      * big for a reliable data: URL).
      */
-    async downloadMindMap({ nomiId }: NomiExistsProps): Promise<boolean> {
-        const rendered = await this.renderMindMapHtml(nomiId);
+    async downloadMindMap({
+        nomiId,
+        onProgress,
+    }: NomiExistsProps & { onProgress?: ProgressFn }): Promise<boolean> {
+        const rendered = await this.renderMindMapHtml(nomiId, onProgress);
         if (!rendered) return false;
 
         const { url, isBlob } = await this.toDownloadUrl(rendered.html);
@@ -93,8 +99,13 @@ export class Nomi {
     /** Render the mind map HTML, or null when the Nomi has none yet. */
     private async renderMindMapHtml(
         nomiId: number,
+        onProgress?: ProgressFn,
+        prefetchedMind?: NomiJsonInput["mind"],
     ): Promise<{ html: string; name: string } | null> {
-        const data = await this.api.getMindInfo({ nomiId });
+        const data =
+            prefetchedMind !== undefined
+                ? prefetchedMind
+                : await this.api.getMindInfo({ nomiId, onProgress });
         if (!data) return null;
 
         await this.offscreen.setupDocument();
@@ -187,10 +198,15 @@ export class Nomi {
      * API responses are attached too. Saved via a Blob URL (can be large).
      */
     async downloadJson(
-        { nomiId }: NomiExistsProps,
+        { nomiId, onProgress }: NomiExistsProps & { onProgress?: ProgressFn },
         rawData = false,
     ): Promise<void> {
-        const input = await this.gatherNomiData(nomiId);
+        const input = await this.gatherNomiData(
+            nomiId,
+            undefined,
+            undefined,
+            onProgress,
+        );
         const json = buildNomiJson(input, rawData);
         await this.saveExport(
             input.nomi.name,
@@ -204,8 +220,16 @@ export class Nomi {
      * Build and save a Nomi's full data as a Markdown document (the same data
      * as the JSON export, without raw responses).
      */
-    async downloadMarkdown({ nomiId }: NomiExistsProps): Promise<void> {
-        const input = await this.gatherNomiData(nomiId);
+    async downloadMarkdown({
+        nomiId,
+        onProgress,
+    }: NomiExistsProps & { onProgress?: ProgressFn }): Promise<void> {
+        const input = await this.gatherNomiData(
+            nomiId,
+            undefined,
+            undefined,
+            onProgress,
+        );
         const markdown = buildNomiMarkdown(input);
         await this.saveExport(input.nomi.name, markdown, "text/markdown", "md");
     }
@@ -224,13 +248,19 @@ export class Nomi {
         rangeStart = 0,
         rangeEnd = 0,
         incremental = false,
+        onProgress,
     }: ChatMarkdownProps): Promise<string | undefined> {
         // Resolve the cutoff first so the fetch itself can stop early instead
         // of paging through the whole history just to discard it below.
         const lastTs = incremental
             ? await getLastTimestamp("chatMarkdown", nomiId)
             : undefined;
-        const input = await this.gatherNomiData(nomiId, undefined, lastTs);
+        const input = await this.gatherNomiData(
+            nomiId,
+            undefined,
+            lastTs,
+            onProgress,
+        );
 
         const itemTime = (item: NomiJsonInput["messages"][number]) =>
             "sent" in item ? item.sent : item.completed;
@@ -276,27 +306,43 @@ export class Nomi {
         nomiId: number,
         prefetchedChat?: NomiChatFeed,
         since?: string,
+        onProgress?: ProgressFn,
+        prefetchedMind?: NomiJsonInput["mind"],
     ): Promise<NomiJsonInput> {
         const [nomi, shared, anchors, mind] = await Promise.all([
             this.api.get({ nomiId }),
             this.api.getSharedNotes({ nomiId }),
             this.api.getAnchorLooks({ nomiId }),
-            this.api.getMindInfo({ nomiId }),
+            // A failed mind map fetch shouldn't sink the whole export; the
+            // rest of the data is still worth having.
+            prefetchedMind !== undefined
+                ? Promise.resolve(prefetchedMind)
+                : this.api.getMindInfo({ nomiId, onProgress }).catch((err) => {
+                      Log("Mind map fetch failed for export", err);
+                      return null;
+                  }),
         ]);
 
-        let messages: NomiChatFeed["items"] = [];
-        let voiceCalls: NomiChatFeed["voiceCalls"] = [];
-        try {
-            const chatData =
-                prefetchedChat ??
-                (await this.api.getMessages({ nomiId, since }));
-            messages = chatData.items;
-            voiceCalls = chatData.voiceCalls;
-        } catch (err) {
-            Log("Failed to fetch messages for export", err);
-        }
+        // Chat failures propagate: a mostly-empty "full export" that looks
+        // complete is worse than an honest error.
+        const chatData =
+            prefetchedChat ??
+            (await this.api.getMessages({
+                nomiId,
+                since,
+                onProgress: (found) =>
+                    onProgress?.(`Scanning messages: ${found} found`),
+            }));
 
-        return { nomiId, nomi, shared, anchors, mind, messages, voiceCalls };
+        return {
+            nomiId,
+            nomi,
+            shared,
+            anchors,
+            mind,
+            messages: chatData.items,
+            voiceCalls: chatData.voiceCalls,
+        };
     }
 
     /**
@@ -385,8 +431,23 @@ export class Nomi {
 
         update("Rendering mind map…");
         let hasMindMap = false;
+        // Fetched once and reused for both mind-map.html and data.json — a
+        // big mind map is by far the most expensive dataset here.
+        let mindData: NomiJsonInput["mind"] = null;
         try {
-            const rendered = await this.renderMindMapHtml(nomiId);
+            mindData = await this.api.getMindInfo({
+                nomiId,
+                onProgress: update,
+            });
+        } catch (err) {
+            Log("Bundle: mind map fetch failed", err);
+        }
+        try {
+            const rendered = await this.renderMindMapHtml(
+                nomiId,
+                update,
+                mindData,
+            );
             if (rendered) {
                 await sink.addText("mind-map.html", rendered.html);
                 hasMindMap = true;
@@ -398,7 +459,13 @@ export class Nomi {
         update("Building data.json…");
         let hasJson = false;
         try {
-            const input = await this.gatherNomiData(nomiId, chatData);
+            const input = await this.gatherNomiData(
+                nomiId,
+                chatData,
+                undefined,
+                update,
+                mindData,
+            );
             await sink.addText(
                 "data.json",
                 JSON.stringify(buildNomiJson(input, false), null, 2),

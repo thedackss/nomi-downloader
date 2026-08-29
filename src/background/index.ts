@@ -90,8 +90,11 @@ async function runDownload(
 }
 
 /** Build and save a Nomi's mind map as HTML. Returns false if none exists. */
-function downloadMindMap(nomiId: number): Promise<boolean> {
-    return nomi.downloadMindMap({ nomiId });
+function downloadMindMap(
+    nomiId: number,
+    onProgress?: ProgressFn,
+): Promise<boolean> {
+    return nomi.downloadMindMap({ nomiId, onProgress });
 }
 
 function main() {
@@ -260,8 +263,8 @@ function main() {
                         done: "Mind downloaded!",
                         error: "Error downloading mind",
                     },
-                    async () => {
-                        const ok = await downloadMindMap(nomiId);
+                    async (onProgress) => {
+                        const ok = await downloadMindMap(nomiId, onProgress);
                         if (!ok) throw new Error("No mind map data found");
                     },
                 );
@@ -291,7 +294,8 @@ function main() {
                         done: "JSON downloaded!",
                         error: "Error downloading JSON",
                     },
-                    () => nomi.downloadJson({ nomiId }, rawData),
+                    (onProgress) =>
+                        nomi.downloadJson({ nomiId, onProgress }, rawData),
                 );
                 break;
             }
@@ -303,7 +307,8 @@ function main() {
                         done: "Markdown downloaded!",
                         error: "Error downloading Markdown",
                     },
-                    () => nomi.downloadMarkdown({ nomiId }),
+                    (onProgress) =>
+                        nomi.downloadMarkdown({ nomiId, onProgress }),
                 );
                 break;
             }
@@ -317,13 +322,14 @@ function main() {
                         done: "Chat Markdown downloaded!",
                         error: "Error downloading chat Markdown",
                     },
-                    () =>
+                    (onProgress) =>
                         nomi.downloadChatMarkdown({
                             nomiId,
                             maxMessages,
                             rangeStart,
                             rangeEnd,
                             incremental,
+                            onProgress,
                         }),
                 );
                 break;
@@ -416,7 +422,7 @@ function main() {
 
                         try {
                             onProgress("Downloading mind map...");
-                            await downloadMindMap(nomiId);
+                            await downloadMindMap(nomiId, onProgress);
                         } catch (err) {
                             Log("Mind map step failed", err);
                         }
@@ -424,7 +430,7 @@ function main() {
                         try {
                             onProgress("Downloading JSON...");
                             await nomi.downloadJson(
-                                { nomiId },
+                                { nomiId, onProgress },
                                 allRawData === true,
                             );
                         } catch (err) {

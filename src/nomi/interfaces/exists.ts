@@ -14,4 +14,6 @@ export interface ChatMarkdownProps extends NomiExistsProps {
     rangeEnd?: number;
     /** BETA: export only messages newer than the last chat-Markdown run. */
     incremental?: boolean;
+    /** Status callback surfaced in the popup while the export runs. */
+    onProgress?: (message: string) => void;
 }
