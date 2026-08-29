@@ -1,7 +1,8 @@
 # Nomi Downloader
 
-Export and archive everything you do with your [nomi.ai](https://beta.nomi.ai)
-companions (albums, chats, memories and more) straight from a browser popup.
+Back up everything you do with your [nomi.ai](https://beta.nomi.ai)
+companions (albums, chats, voice, mind maps and shared notes) straight from a
+browser popup.
 
 A cross-browser extension (Chrome & Firefox, Manifest V3) built with
 React + TypeScript + Vite, using [`@crxjs/vite-plugin`](https://crxjs.dev/) for

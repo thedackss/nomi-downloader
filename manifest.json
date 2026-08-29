@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Nomi Downloader",
-    "description": "Export and archive your nomi.ai companions — albums, chats, memories and shared notes — as offline files, right from the popup.",
+    "description": "Back up your nomi.ai companions: save albums, chats, voice, mind maps and shared notes as offline HTML, Markdown and JSON files.",
     "version": "0.4.3",
     "action": { "default_popup": "index.html" },
 
