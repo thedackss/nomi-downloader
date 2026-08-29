@@ -8,13 +8,15 @@ import { Log } from "../../utils/log";
 
 const STORAGE_KEY = "nomi_incremental";
 
-export type IncrementalKind = "album" | "chat" | "group";
+export type IncrementalKind = "album" | "chat" | "chatMarkdown" | "group";
 
 /** kind → (id → newest downloaded ISO timestamp). */
 type IncrementalState = Record<IncrementalKind, Record<string, string>>;
 
 function emptyState(): IncrementalState {
-    return { album: {}, chat: {}, group: {} };
+    // chatMarkdown tracks its own history, independent of the HTML chat export,
+    // so exporting one format doesn't advance the other's "new since last".
+    return { album: {}, chat: {}, chatMarkdown: {}, group: {} };
 }
 
 function hasStorage(): boolean {

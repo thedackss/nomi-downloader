@@ -7,7 +7,10 @@ import type {
     DownloadGroupChatProps,
     GroupExportProps,
 } from "../../nomi/interfaces/downloadGroupChat";
-import type { NomiExistsProps } from "../../nomi/interfaces/exists";
+import type {
+    ChatMarkdownProps,
+    NomiExistsProps,
+} from "../../nomi/interfaces/exists";
 import type { ApiAnchorLooksResponse } from "../../nomi/types/api.nomis.id.anchorLooks";
 import { Log } from "../../utils/log";
 import { AlbumDownloader } from "./albumDownloader";
@@ -17,10 +20,17 @@ import { ChatDownloader } from "./chatDownloader";
 import { ALBUM_CHUNK_MAX_BYTES, DOWNLOAD_THROTTLE_MS } from "./constants";
 import { GroupChatDownloader } from "./groupChatDownloader";
 import { fetchHeaderMedia } from "./headerMedia";
+import {
+    filterNewerThan,
+    getLastTimestamp,
+    newestTimestamp,
+    setLastTimestamp,
+} from "./incrementalStore";
 import { buildNomiJson, type NomiJsonInput } from "./json/builder";
 import { buildGroupJson } from "./json/groupBuilder";
-import { buildNomiMarkdown } from "./markdown/builder";
+import { buildChatMarkdown, buildNomiMarkdown } from "./markdown/builder";
 import { buildGroupMarkdown } from "./markdown/groupBuilder";
+import { applyMessageRange } from "./messageRange";
 import { buildMindMapPayload } from "./mindmap/builder";
 import { OffscreenClient } from "./offscreenClient";
 import {
@@ -200,10 +210,72 @@ export class Nomi {
         await this.saveExport(input.nomi.name, markdown, "text/markdown", "md");
     }
 
-    /** Fetch every dataset the full export needs (chat is best-effort). */
+    /**
+     * Build and save a focused Markdown document with only the chat log and
+     * the backstory (Shared Notes). Honors the chat "Max messages" / "Message
+     * range" settings, and the "Only new since last" (incremental) toggle —
+     * tracked independently of the HTML chat export. The backstory is always
+     * included in full; only the chat log is trimmed. Returns a closing message
+     * when incremental finds nothing new.
+     */
+    async downloadChatMarkdown({
+        nomiId,
+        maxMessages = 0,
+        rangeStart = 0,
+        rangeEnd = 0,
+        incremental = false,
+    }: ChatMarkdownProps): Promise<string | undefined> {
+        // Resolve the cutoff first so the fetch itself can stop early instead
+        // of paging through the whole history just to discard it below.
+        const lastTs = incremental
+            ? await getLastTimestamp("chatMarkdown", nomiId)
+            : undefined;
+        const input = await this.gatherNomiData(nomiId, undefined, lastTs);
+
+        const itemTime = (item: NomiJsonInput["messages"][number]) =>
+            "sent" in item ? item.sent : item.completed;
+
+        // Incremental: keep only messages newer than the last chat-Markdown run
+        // (the page straddling the cutoff still carries older ones).
+        const fresh = incremental
+            ? filterNewerThan(input.messages, itemTime, lastTs)
+            : input.messages;
+        if (incremental && fresh.length === 0) {
+            Log(`Incremental: nothing newer than ${lastTs} — no file written.`);
+            return "No new messages since your last download.";
+        }
+
+        // Explicit From→To range wins; otherwise fall back to last-N.
+        const messages = applyMessageRange(
+            fresh,
+            rangeStart,
+            rangeEnd,
+            maxMessages,
+        );
+        const markdown = buildChatMarkdown({ ...input, messages });
+        await this.saveExport(
+            `${input.nomi.name}_Chat`,
+            markdown,
+            "text/markdown",
+            "md",
+        );
+
+        // Caught up: remember the newest message we just exported.
+        if (incremental && messages.length > 0) {
+            const newest = newestTimestamp(messages, itemTime);
+            if (newest) await setLastTimestamp("chatMarkdown", nomiId, newest);
+        }
+    }
+
+    /**
+     * Fetch every dataset the full export needs (chat is best-effort).
+     * `since` limits the chat fetch to pages reaching that timestamp, for
+     * incremental exports.
+     */
     private async gatherNomiData(
         nomiId: number,
         prefetchedChat?: NomiChatFeed,
+        since?: string,
     ): Promise<NomiJsonInput> {
         const [nomi, shared, anchors, mind] = await Promise.all([
             this.api.get({ nomiId }),
@@ -216,7 +288,8 @@ export class Nomi {
         let voiceCalls: NomiChatFeed["voiceCalls"] = [];
         try {
             const chatData =
-                prefetchedChat ?? (await this.api.getMessages({ nomiId }));
+                prefetchedChat ??
+                (await this.api.getMessages({ nomiId, since }));
             messages = chatData.items;
             voiceCalls = chatData.voiceCalls;
         } catch (err) {

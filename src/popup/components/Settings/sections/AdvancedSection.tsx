@@ -9,7 +9,8 @@ type DownloadType =
     | "mindMap"
     | "sharedNotes"
     | "json"
-    | "markdown";
+    | "markdown"
+    | "chatMarkdown";
 
 const TYPE_LABELS: Array<{ key: DownloadType; label: string }> = [
     { key: "album", label: "Album" },
@@ -18,6 +19,7 @@ const TYPE_LABELS: Array<{ key: DownloadType; label: string }> = [
     { key: "sharedNotes", label: "Shared Notes" },
     { key: "json", label: "JSON" },
     { key: "markdown", label: "Markdown" },
+    { key: "chatMarkdown", label: "Chat Markdown" },
 ];
 
 export const AdvancedSection = () => {

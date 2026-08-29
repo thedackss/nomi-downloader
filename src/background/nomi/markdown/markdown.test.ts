@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { ApiNomisIdResponse } from "../../../nomi/types/api.nomis.id";
 import type { ApiSharedNotesResponse } from "../../../nomi/types/api.nomis.id.sharedNotes";
+import { filterNewerThan } from "../incrementalStore";
 import type { NomiJsonInput } from "../json/builder";
-import { buildNomiMarkdown } from "./builder";
+import { applyMessageRange } from "../messageRange";
+import { buildChatMarkdown, buildNomiMarkdown } from "./builder";
 
 const shared = {
     nomiId: 1,
@@ -125,5 +127,51 @@ describe("buildNomiMarkdown", () => {
         // 2m30s call → (2:30) in the header.
         expect(md).toMatch(/## Call — .*\(2:30\)/);
         expect(md).toContain("Finally, you called.");
+    });
+});
+
+describe("buildChatMarkdown", () => {
+    const md = buildChatMarkdown(input);
+
+    it("includes the backstory (Shared Notes) and the chat log", () => {
+        expect(md).toContain("# Shared Notes");
+        expect(md).toContain("## Backstory");
+        expect(md).toContain("We met in winter.");
+        expect(md).toContain("# Chat Log");
+        expect(md).toContain("Hello &lt;3");
+        // Newest-first, same as the full export.
+        expect(md.indexOf("**Yuki**")).toBeLessThan(md.indexOf("**User**"));
+    });
+
+    it("omits everything else (info, image settings, mind map, voice calls)", () => {
+        expect(md).not.toContain("# Nomi Information");
+        expect(md).not.toContain("# Image Settings");
+        expect(md).not.toContain("# Mind Map");
+        expect(md).not.toContain("# Voice Calls");
+    });
+
+    it("can be limited to the most recent messages (as the facade does)", () => {
+        // Mirror the facade: slice to the last message, then render.
+        const recent = buildChatMarkdown({
+            ...input,
+            messages: applyMessageRange(input.messages, 0, 0, 1),
+        });
+        expect(recent).toContain("Hi!"); // newest kept
+        expect(recent).not.toContain("Hello &lt;3"); // older dropped
+    });
+
+    it("can export only messages newer than the last run (incremental)", () => {
+        // Mirror the facade: filter to messages after a baseline, then render.
+        const since = buildChatMarkdown({
+            ...input,
+            messages: filterNewerThan(
+                input.messages,
+                (m) => ("sent" in m ? m.sent : m.completed),
+                "2026-06-01T12:02:00Z", // between the two messages
+            ),
+        });
+        expect(since).toContain("Hi!"); // 12:05 kept
+        expect(since).not.toContain("Hello &lt;3"); // 12:00 dropped
+        expect(since).toContain("# Shared Notes"); // backstory still included
     });
 });

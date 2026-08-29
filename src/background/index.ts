@@ -302,6 +302,27 @@ function main() {
                 );
                 break;
             }
+            case "DOWNLOAD_CHAT_MARKDOWN": {
+                const { maxMessages, rangeStart, rangeEnd, incremental } =
+                    message.data;
+                runDownload(
+                    nomiId,
+                    {
+                        start: "Starting chat Markdown download...",
+                        done: "Chat Markdown downloaded!",
+                        error: "Error downloading chat Markdown",
+                    },
+                    () =>
+                        nomi.downloadChatMarkdown({
+                            nomiId,
+                            maxMessages,
+                            rangeStart,
+                            rangeEnd,
+                            incremental,
+                        }),
+                );
+                break;
+            }
             case "DOWNLOAD_SIMPLE": {
                 const {
                     downloadQuantity,

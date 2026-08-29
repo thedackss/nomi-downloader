@@ -10,7 +10,8 @@ export type DownloadTypeKey =
     | "mindMap"
     | "sharedNotes"
     | "json"
-    | "markdown";
+    | "markdown"
+    | "chatMarkdown";
 
 export interface DownloadSettings {
     /** Show per-type toggles + a select button instead of one combined button. */
@@ -21,6 +22,8 @@ export interface DownloadSettings {
     sharedNotes: boolean;
     json: boolean;
     markdown: boolean;
+    /** Chat + backstory only, as Markdown. */
+    chatMarkdown: boolean;
     /** Last type picked on the split button, remembered across sessions. */
     lastType: DownloadTypeKey;
     /** Same, for group chats (which offer fewer types). */

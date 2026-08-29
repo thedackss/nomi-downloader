@@ -22,6 +22,7 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         downloadBackstory,
         downloadJSON,
         downloadMarkdown,
+        downloadChatMarkdown,
     } = useBackground();
     const { Settings, updateSettings } = useSettings();
     const dl = Settings.download;
@@ -38,6 +39,11 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         { name: "Shared Notes", key: "sharedNotes", fn: downloadBackstory },
         { name: "JSON", key: "json", fn: downloadJSON },
         { name: "Markdown", key: "markdown", fn: downloadMarkdown },
+        {
+            name: "Chat Markdown",
+            key: "chatMarkdown",
+            fn: downloadChatMarkdown,
+        },
     ];
     const downloadOptions = allOptions.filter((o) => dl[o.key]);
 

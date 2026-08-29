@@ -24,6 +24,60 @@ function pre(text: string): string {
     return `<pre style="white-space: pre-wrap; word-wrap: break-word;">${escaped}</pre>`;
 }
 
+/** "# Shared Notes" block (the Nomi's backstory), or [] when there are none. */
+function sharedNotesSection(
+    name: string,
+    shared: NomiJsonInput["shared"],
+): string[] {
+    const notes = shared ? buildSharedNotes(name, shared) : [];
+    if (notes.length === 0) return [];
+    const out: string[] = ["# Shared Notes"];
+    for (const note of notes) {
+        out.push(`## ${note.title}`);
+        out.push(note.content);
+        out.push("");
+    }
+    return out;
+}
+
+/** "# Chat Log" block (messages, newest first), or [] when the chat is empty. */
+function chatLogSection(
+    name: string,
+    messages: NomiJsonInput["messages"],
+): string[] {
+    const chat = messages.filter((m): m is Message => "sent" in m);
+    if (chat.length === 0) return [];
+    const out: string[] = ["# Chat Log"];
+    out.push("> Messages are ordered from newest to oldest.");
+    out.push("");
+    // getMessages returns oldest -> newest; walk backwards for newest first.
+    for (let i = chat.length - 1; i >= 0; i--) {
+        const message = chat[i];
+        const sender =
+            message.type === "Nomi" || message.type === "NomiStarter"
+                ? name
+                : "User";
+        out.push(
+            `**${sender}**${message.isVoiceMessage ? " 🎙 (voice message)" : ""}`,
+        );
+        out.push(pre(message.text));
+        out.push("");
+    }
+    return out;
+}
+
+/**
+ * A focused Markdown export with only the backstory (Shared Notes) and the
+ * chat log — no Nomi info, image settings, mind map, or voice calls.
+ */
+export function buildChatMarkdown(input: NomiJsonInput): string {
+    const { nomi, shared, messages } = input;
+    return [
+        ...sharedNotesSection(nomi.name, shared),
+        ...chatLogSection(nomi.name, messages),
+    ].join("\n");
+}
+
 export function buildNomiMarkdown(input: NomiJsonInput): string {
     const { nomiId, nomi, shared, anchors, mind, messages, voiceCalls } = input;
     const name = nomi.name;
@@ -36,15 +90,7 @@ export function buildNomiMarkdown(input: NomiJsonInput): string {
     out.push(`- **Gender**: ${nomi.gender}`);
     out.push("");
 
-    const notes = shared ? buildSharedNotes(name, shared) : [];
-    if (notes.length > 0) {
-        out.push("# Shared Notes");
-        for (const note of notes) {
-            out.push(`## ${note.title}`);
-            out.push(note.content);
-            out.push("");
-        }
-    }
+    out.push(...sharedNotesSection(name, shared));
 
     const anchorRefs = anchors ? buildAnchorRefs(nomiId, anchors) : [];
     const imageNotes = shared ? buildImageNotes(name, shared) : [];
@@ -105,25 +151,7 @@ export function buildNomiMarkdown(input: NomiJsonInput): string {
         }
     }
 
-    const chat = messages.filter((m): m is Message => "sent" in m);
-    if (chat.length > 0) {
-        out.push("# Chat Log");
-        out.push("> Messages are ordered from newest to oldest.");
-        out.push("");
-        // getMessages returns oldest -> newest; walk backwards for newest first.
-        for (let i = chat.length - 1; i >= 0; i--) {
-            const message = chat[i];
-            const sender =
-                message.type === "Nomi" || message.type === "NomiStarter"
-                    ? name
-                    : "User";
-            out.push(
-                `**${sender}**${message.isVoiceMessage ? " 🎙 (voice message)" : ""}`,
-            );
-            out.push(pre(message.text));
-            out.push("");
-        }
-    }
+    out.push(...chatLogSection(name, messages));
 
     if (voiceCalls.length > 0) {
         out.push("# Voice Calls");

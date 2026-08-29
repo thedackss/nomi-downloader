@@ -181,6 +181,17 @@ export function useBackground() {
             ),
         downloadMarkdown: () =>
             startDownload("DOWNLOAD_MARKDOWN", "Starting Markdown download..."),
+        downloadChatMarkdown: () =>
+            startDownload(
+                "DOWNLOAD_CHAT_MARKDOWN",
+                "Starting chat Markdown download...",
+                {
+                    maxMessages: Settings.chatDownload.maxMessages,
+                    rangeStart: Settings.chatDownload.rangeStart,
+                    rangeEnd: Settings.chatDownload.rangeEnd,
+                    incremental: Settings.incremental.enabled,
+                },
+            ),
         downloadGroupChat: () =>
             startGroupDownload(
                 "DOWNLOAD_GROUP_CHAT",
