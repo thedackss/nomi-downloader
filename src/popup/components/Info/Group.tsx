@@ -16,21 +16,26 @@ export const GroupInfo = ({ group }: GroupInfoProps) => {
         downloadGroupJson,
         downloadGroupMarkdown,
     } = useBackground();
-    const { Settings } = useSettings();
+    const { Settings, updateSettings } = useSettings();
     const dl = Settings.download;
 
     // In advanced mode the select offers only the enabled group types.
-    const downloadOptions = [
+    const allOptions: Array<{
+        name: string;
+        key: "chat" | "json" | "markdown";
+        fn: () => void;
+    }> = [
         { name: "Chat", key: "chat", fn: downloadGroupChat },
         { name: "JSON", key: "json", fn: downloadGroupJson },
         { name: "Markdown", key: "markdown", fn: downloadGroupMarkdown },
-    ].filter((o) => dl[o.key as keyof typeof dl]);
+    ];
+    const downloadOptions = allOptions.filter((o) => dl[o.key]);
 
-    // Track the selection by name, then resolve the option fresh each render so
-    // the click always uses the latest settings (avoids a stale closure).
-    const [selectedName, setSelectedName] = useState(downloadOptions[0]?.name);
+    // The selection is remembered in settings (as the type key) and the option
+    // resolved fresh each render so the click always uses the latest settings
+    // (avoids a stale closure).
     const selected =
-        downloadOptions.find((o) => o.name === selectedName) ??
+        downloadOptions.find((o) => o.key === dl.lastGroupType) ??
         downloadOptions[0];
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const splitRef = useRef<HTMLDivElement>(null);
@@ -157,12 +162,17 @@ export const GroupInfo = ({ group }: GroupInfoProps) => {
                                         type="button"
                                         key={option.name}
                                         className={
-                                            selected?.name === option.name
+                                            selected?.key === option.key
                                                 ? styles.active
                                                 : undefined
                                         }
                                         onClick={() => {
-                                            setSelectedName(option.name);
+                                            updateSettings({
+                                                download: {
+                                                    ...dl,
+                                                    lastGroupType: option.key,
+                                                },
+                                            });
                                             setDropdownOpen(false);
                                         }}
                                         disabled={downloadStatus.inProgress}>

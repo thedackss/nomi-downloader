@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NomiApiClient } from "../../../nomi/api";
 import type { Nomi } from "../../../nomi/types/api.nomis";
+import type { DownloadTypeKey } from "../../context/settings/interfaces";
 import { useBackground } from "../../hooks/useBackground";
 import { useSettings } from "../../hooks/useSettings";
 import { LoadingSpin } from "../LoadingSpin";
@@ -22,26 +23,31 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         downloadJSON,
         downloadMarkdown,
     } = useBackground();
-    const { Settings } = useSettings();
+    const { Settings, updateSettings } = useSettings();
     const dl = Settings.download;
 
     // In advanced mode the select offers only the enabled types.
-    const downloadOptions = [
+    const allOptions: Array<{
+        name: string;
+        key: DownloadTypeKey;
+        fn: () => void;
+    }> = [
         { name: "Album", key: "album", fn: downloadAlbum },
         { name: "Chat", key: "chat", fn: downloadChat },
         { name: "Mind Map", key: "mindMap", fn: downloadMind },
         { name: "Shared Notes", key: "sharedNotes", fn: downloadBackstory },
         { name: "JSON", key: "json", fn: downloadJSON },
         { name: "Markdown", key: "markdown", fn: downloadMarkdown },
-    ].filter((o) => dl[o.key as keyof typeof dl]);
+    ];
+    const downloadOptions = allOptions.filter((o) => dl[o.key]);
 
     const [mindMapActive, setMindMapActive] = useState(false);
-    // Track the selection by name, then resolve the option fresh each render —
-    // storing the option object would capture a stale download closure (and
-    // thus stale settings) until the popup is reopened.
-    const [selectedName, setSelectedName] = useState(downloadOptions[0]?.name);
+    // The selection is remembered in settings (as the type key) and the option
+    // resolved fresh each render — storing the option object would capture a
+    // stale download closure (and thus stale settings) until the popup is
+    // reopened.
     const selected =
-        downloadOptions.find((o) => o.name === selectedName) ??
+        downloadOptions.find((o) => o.key === dl.lastType) ??
         downloadOptions[0];
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const splitRef = useRef<HTMLDivElement>(null);
@@ -215,15 +221,18 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
                                             <button
                                                 type="button"
                                                 className={
-                                                    selected?.name ===
-                                                    option.name
+                                                    selected?.key === option.key
                                                         ? styles.active
                                                         : undefined
                                                 }
                                                 onClick={() => {
-                                                    setSelectedName(
-                                                        option.name,
-                                                    );
+                                                    updateSettings({
+                                                        download: {
+                                                            ...dl,
+                                                            lastType:
+                                                                option.key,
+                                                        },
+                                                    });
                                                     setDropdownOpen(false);
                                                 }}
                                                 disabled={

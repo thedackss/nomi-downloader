@@ -15,6 +15,8 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             sharedNotes: true,
             json: true,
             markdown: true,
+            lastType: "album",
+            lastGroupType: "chat",
             embedHeaderVideo: false,
         },
         albumDownload: {
