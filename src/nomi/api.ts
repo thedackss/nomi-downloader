@@ -127,10 +127,9 @@ export class NomiApiClient {
     public async get({ nomiId }: NomiExistsProps) {
         try {
             Log(`Getting Nomi with ID: ${nomiId}`);
-            const { data } = await api.get<ApiNomisIdResponse>(
-                `nomis/${nomiId}`,
-            );
-            return data;
+            // Retried: a single transient blip here used to abort the whole
+            // download before anything was fetched.
+            return await getRetry<ApiNomisIdResponse>(`nomis/${nomiId}`);
         } catch {
             throw new NomiError({
                 message: `Failed to get Nomi with ID ${nomiId}`,
