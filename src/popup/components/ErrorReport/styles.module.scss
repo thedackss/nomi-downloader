@@ -119,3 +119,34 @@
         }
     }
 }
+
+// Optional "link my account email" checkbox, matching the manual report form.
+.consentRow {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid rgb(from var(--primary) r g b / 25%);
+    background: rgb(from var(--primary) r g b / 6%);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: rgb(from var(--text) r g b / 85%);
+    cursor: pointer;
+    text-align: left;
+
+    input {
+        width: 0.9rem;
+        height: 0.9rem;
+        margin-top: 0.15rem;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    strong {
+        color: var(--primary);
+        font-weight: 600;
+    }
+}
