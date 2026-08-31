@@ -21,6 +21,36 @@ function describeError(error: unknown): string {
     }
 }
 
+/**
+ * A readable "browser on OS" label from the user agent, so reports show at a
+ * glance whether they came from, say, Firefox on Android vs desktop (the save
+ * paths differ a lot). Best-effort: the raw UA is always kept alongside it.
+ */
+function describePlatform(ua: string): string {
+    if (!ua || ua === "n/a") return "unknown";
+
+    const isAndroid = /Android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod|CriOS|FxiOS/i.test(ua);
+
+    let os = "Desktop";
+    if (isAndroid) os = "Android";
+    else if (isIOS) os = "iOS";
+    else if (/Windows/i.test(ua)) os = "Windows";
+    else if (/Mac OS X|Macintosh/i.test(ua)) os = "macOS";
+    else if (/Linux|X11/i.test(ua)) os = "Linux";
+
+    let browser = "browser";
+    // Order matters: Firefox and Edge masquerade with Chrome tokens.
+    if (/FxiOS/i.test(ua)) browser = "Firefox";
+    else if (/\bFirefox\/\d/i.test(ua)) browser = "Firefox";
+    else if (/Edg\//i.test(ua)) browser = "Edge";
+    else if (/OPR\//i.test(ua)) browser = "Opera";
+    else if (/CriOS/i.test(ua)) browser = "Chrome";
+    else if (/\bChrom(e|ium)\/\d/i.test(ua)) browser = "Chrome";
+
+    return `${browser} ${os}`;
+}
+
 /** Light defense-in-depth scrub of session cookies / auth tokens. */
 function scrub(text: string): string {
     return text
@@ -44,6 +74,7 @@ export function buildReportText(error: unknown, source = "unknown"): string {
         `When: ${new Date().toISOString()}`,
         `Version: ${version}`,
         `Source: ${source}`,
+        `Platform: ${describePlatform(ua)}`,
         `User agent: ${ua}`,
         ``,
         `Error:`,
@@ -74,6 +105,7 @@ function reportHeader(kind: string): string[] {
         `Nomi Downloader ${kind}`,
         `When: ${new Date().toISOString()}`,
         `Version: ${version}`,
+        `Platform: ${describePlatform(ua)}`,
         `User agent: ${ua}`,
     ];
 }
