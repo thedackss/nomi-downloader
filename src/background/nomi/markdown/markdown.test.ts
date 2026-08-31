@@ -128,6 +128,18 @@ describe("buildNomiMarkdown", () => {
         expect(md).toMatch(/## Call — .*\(2:30\)/);
         expect(md).toContain("Finally, you called.");
     });
+
+    it("survives messages with null text (voice/selfie-only turns)", () => {
+        // The API returns null text for some messages despite the type.
+        expect(() =>
+            buildNomiMarkdown({
+                ...input,
+                messages: [
+                    { sent: "2026-06-01T12:00:00Z", text: null, type: "Nomi" },
+                ] as never,
+            }),
+        ).not.toThrow();
+    });
 });
 
 describe("buildChatMarkdown", () => {

@@ -8,8 +8,10 @@ import type { GroupMessage } from "../../../nomi/types/api.groupChats.id.message
 import type { GroupJsonInput } from "../json/groupBuilder";
 
 /** Wrap chat text in a whitespace-preserving <pre>, escaping HTML. */
-function pre(text: string): string {
-    const escaped = text
+function pre(text: string | null | undefined): string {
+    // The API returns null text for some messages (voice messages,
+    // selfie-only turns), even though the type says string.
+    const escaped = (text ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
