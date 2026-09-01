@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Log } from "../utils/log";
 import { NomiError } from "./errors";
 import { api } from "./http";
@@ -41,6 +42,15 @@ export interface NomiChatFeed {
 }
 
 const RETRY_ATTEMPTS = 3;
+
+/** " (HTTP 404)" style suffix from an axios error, for diagnosable messages. */
+function statusSuffix(error: unknown): string {
+    if (axios.isAxiosError(error)) {
+        if (error.response) return ` (HTTP ${error.response.status})`;
+        if (error.code) return ` (${error.code})`; // e.g. ECONNABORTED, ERR_NETWORK
+    }
+    return "";
+}
 
 /**
  * GET with retries and backoff. Long exports fire hundreds of sequential
@@ -116,10 +126,10 @@ export class NomiApiClient {
             await api.head(`nomis/${nomiId}`);
 
             return true;
-        } catch {
+        } catch (error) {
             throw new NomiError({
                 id: nomiId,
-                message: `Nomi with ID ${nomiId} not found`,
+                message: `Nomi with ID ${nomiId} not found${statusSuffix(error)}`,
             });
         }
     }
@@ -130,9 +140,11 @@ export class NomiApiClient {
             // Retried: a single transient blip here used to abort the whole
             // download before anything was fetched.
             return await getRetry<ApiNomisIdResponse>(`nomis/${nomiId}`);
-        } catch {
+        } catch (error) {
+            // Include the HTTP status so a report distinguishes a deleted or
+            // inaccessible Nomi (404/403) from a server or network failure.
             throw new NomiError({
-                message: `Failed to get Nomi with ID ${nomiId}`,
+                message: `Failed to get Nomi with ID ${nomiId}${statusSuffix(error)}`,
             });
         }
     }
