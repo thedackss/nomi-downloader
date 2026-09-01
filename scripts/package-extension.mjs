@@ -37,6 +37,32 @@ const targets = [
     { name: "firefox", script: "build:firefox" },
 ];
 
+/**
+ * Refuse to package a build that points at a local dev API. Testing uses a
+ * VITE_SITE_URL override (e.g. http://localhost:3210) so reports don't hit
+ * prod; this guard makes sure such a build never reaches a store zip. A bare
+ * "http://localhost" appears as a library fallback, so match a host:port only.
+ */
+function assertNoLocalEndpoint(folder) {
+    const localRe = /(localhost|127\.0\.0\.1|0\.0\.0\.0):\d+/;
+    const walk = (dir) => {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+            const full = join(dir, entry.name);
+            if (entry.isDirectory()) walk(full);
+            else if (entry.name.endsWith(".js")) {
+                const hit = readFileSync(full, "utf-8").match(localRe);
+                if (hit) {
+                    throw new Error(
+                        `Refusing to package: ${relative(root, full)} points at ${hit[0]}. ` +
+                            `Unset VITE_SITE_URL (and .env.local) before a release build.`,
+                    );
+                }
+            }
+        }
+    };
+    walk(folder);
+}
+
 /** Collect every file under `dir` as paths relative to it. */
 function listFiles(dir, base = dir) {
     const entries = [];
@@ -115,6 +141,9 @@ async function main() {
                 `dist/manifest.json missing after the ${target.name} build`,
             );
         }
+
+        // Never ship a build wired to a local dev API.
+        assertNoLocalEndpoint(distDir);
 
         // Keep an unpacked copy of this build alongside its zip.
         const folderPath = join(outDir, target.name);
