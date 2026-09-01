@@ -13,11 +13,13 @@ import type {
 } from "../../nomi/interfaces/exists";
 import type { ApiAnchorLooksResponse } from "../../nomi/types/api.nomis.id.anchorLooks";
 import { Log } from "../../utils/log";
-import { AlbumDownloader } from "./albumDownloader";
+import { AlbumDownloader, type AlbumMediaMeta } from "./albumDownloader";
 import { buildBundleIndexHtml } from "./bundle/indexHtml";
 import { BundleSink } from "./bundle/sink";
+import { callAnchor } from "./chat/types";
 import { ChatDownloader } from "./chatDownloader";
 import { ALBUM_CHUNK_MAX_BYTES, DOWNLOAD_THROTTLE_MS } from "./constants";
+import { fileStamp } from "./fileStamp";
 import { GroupChatDownloader } from "./groupChatDownloader";
 import { fetchHeaderMedia } from "./headerMedia";
 import {
@@ -82,7 +84,7 @@ export class Nomi {
 
         const { url, isBlob } = await this.toDownloadUrl(rendered.html);
         const nameSafe = rendered.name.replace(/ /g, "-");
-        const stamp = new Date().toISOString().slice(0, 10);
+        const stamp = fileStamp();
 
         await this.offscreen.download(
             url,
@@ -117,13 +119,16 @@ export class Nomi {
             this.embedHeaderVideo,
         );
 
-        const payload = buildMindMapPayload(
-            nomi.name,
-            data,
-            new Date().toISOString(),
-            avatar,
-            avatarVideo,
-        );
+        const payload = {
+            ...buildMindMapPayload(
+                nomi.name,
+                data,
+                new Date().toISOString(),
+                avatar,
+                avatarVideo,
+            ),
+            nomiId: nomi.id,
+        };
         const html = await this.offscreen.renderMindMap(payload);
         return { html, name: nomi.name };
     }
@@ -139,7 +144,7 @@ export class Nomi {
 
         const { url, isBlob } = await this.toDownloadUrl(rendered.html);
         const nameSafe = rendered.name.replace(/ /g, "-");
-        const stamp = new Date().toISOString().slice(0, 10);
+        const stamp = fileStamp();
 
         await this.offscreen.download(
             url,
@@ -181,6 +186,7 @@ export class Nomi {
         );
         const payload: SharedNotesRenderPayload = {
             name: nomi.name,
+            nomiId: nomi.id,
             avatar,
             avatarVideo,
             generatedAt: new Date().toISOString(),
@@ -361,7 +367,7 @@ export class Nomi {
         await this.offscreen.setupDocument();
         const nomi = await this.api.get({ nomiId });
         const nameSafe = (nomi.name || `Nomi_${nomiId}`).replace(/ /g, "-");
-        const dateStr = new Date().toDateString().replace(/ /g, "-");
+        const dateStr = fileStamp();
         const baseName = `Nomi_${nameSafe}_${dateStr}`;
 
         const maxBytes =
@@ -404,9 +410,12 @@ export class Nomi {
                     voiceAudioRecentLimit: props.voiceAudioRecentLimit,
                     onProgress,
                     prefetched: chatData,
+                    // Prefix the doc files with the Nomi name so they are
+                    // recognizable once extracted (Sarah_chat.html …).
                     emit: async (filename, html) => {
-                        await sink.addText(filename, html);
-                        chatParts.push(filename);
+                        const named = `${nameSafe}_${filename}`;
+                        await sink.addText(named, html);
+                        chatParts.push(named);
                     },
                     audioSink: {
                         addFile: (path, base64) => sink.addFile(path, base64),
@@ -416,22 +425,26 @@ export class Nomi {
                 Log("Bundle: chat section failed", err);
             }
         }
+        // Messages (not selfies) drive the chat card's count.
+        const messageCount = (chatData?.items ?? []).filter(
+            (i) => "sent" in i,
+        ).length;
 
         update("Rendering shared notes…");
-        let hasSharedNotes = false;
+        let sharedNotesFile: string | undefined;
         try {
             const rendered = await this.renderSharedNotesHtml(nomiId);
             if (rendered) {
-                await sink.addText("shared-notes.html", rendered.html);
-                hasSharedNotes = true;
+                sharedNotesFile = `${nameSafe}_shared-notes.html`;
+                await sink.addText(sharedNotesFile, rendered.html);
             }
         } catch (err) {
             Log("Bundle: shared notes section failed", err);
         }
 
         update("Rendering mind map…");
-        let hasMindMap = false;
-        // Fetched once and reused for both mind-map.html and data.json — a
+        let mindMapFile: string | undefined;
+        // Fetched once and reused for both the mind map and data.json — a
         // big mind map is by far the most expensive dataset here.
         let mindData: NomiJsonInput["mind"] = null;
         try {
@@ -449,15 +462,19 @@ export class Nomi {
                 mindData,
             );
             if (rendered) {
-                await sink.addText("mind-map.html", rendered.html);
-                hasMindMap = true;
+                mindMapFile = `${nameSafe}_mind-map.html`;
+                await sink.addText(mindMapFile, rendered.html);
             }
         } catch (err) {
             Log("Bundle: mind map section failed", err);
         }
+        const termCount = (mindData?.terms ?? []).reduce(
+            (n, t) => n + t.items.length,
+            0,
+        );
 
         update("Building data.json…");
-        let hasJson = false;
+        let dataFile: string | undefined;
         try {
             const input = await this.gatherNomiData(
                 nomiId,
@@ -466,15 +483,18 @@ export class Nomi {
                 update,
                 mindData,
             );
+            dataFile = `${nameSafe}_data.json`;
             await sink.addText(
-                "data.json",
+                dataFile,
                 JSON.stringify(buildNomiJson(input, false), null, 2),
             );
-            hasJson = true;
         } catch (err) {
             Log("Bundle: JSON section failed", err);
         }
 
+        // Collected as the album streams, so the index can group by type and
+        // caption each image with its prompt (paths get the `album/` prefix).
+        const albumMedia: AlbumMediaMeta[] = [];
         try {
             await new AlbumDownloader(this.api, this.offscreen).run({
                 nomiId,
@@ -489,6 +509,8 @@ export class Nomi {
                     addFile: (path, base64) =>
                         sink.addFile(`album/${path}`, base64),
                 },
+                onMedia: (m) =>
+                    albumMedia.push({ ...m, path: `album/${m.path}` }),
             });
         } catch (err) {
             Log("Bundle: album section failed", err);
@@ -498,27 +520,27 @@ export class Nomi {
         // into the first part, next to the docs.
         const paths = sink.entries().map((e) => e.path);
         const voiceFiles = paths.filter((p) => p.startsWith("voice/"));
-        const galleryImages = paths.filter(
-            (p) =>
-                p.startsWith("album/") &&
-                /\.(png|webp|jpg)$/i.test(p) &&
-                !/(^|\/)video\//.test(p),
-        );
-        const videos = paths.filter(
-            (p) => p.startsWith("album/") && p.endsWith(".mp4"),
-        );
+        const calls = (chatData?.voiceCalls ?? []).map((c) => ({
+            started: c.started,
+            ended: c.ended ?? undefined,
+            anchor: callAnchor(c.started),
+        }));
         await sink.addText(
             "index.html",
             buildBundleIndexHtml({
                 name: nomi.name,
+                nomiId,
                 generatedAt: new Date().toISOString(),
                 chatParts,
-                hasSharedNotes,
-                hasMindMap,
-                hasJson,
-                galleryImages,
-                videos,
+                messageCount,
+                sharedNotesFile,
+                mindMap: mindMapFile
+                    ? { file: mindMapFile, termCount }
+                    : undefined,
+                dataFile,
+                album: albumMedia,
                 voiceFiles,
+                calls,
             }),
             true,
         );
@@ -557,7 +579,7 @@ export class Nomi {
         await this.offscreen.setupDocument();
         const { url, isBlob } = await this.toDownloadUrl(content, type);
         const nameSafe = nomiName.replace(/ /g, "-");
-        const stamp = new Date().toISOString().slice(0, 10);
+        const stamp = fileStamp();
 
         await this.offscreen.download(
             url,

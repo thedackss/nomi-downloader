@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { NomiProfileLink } from "../nomiLink";
 import css from "./mindmap.scss?inline";
 import type { MindMapEntry, MindMapRenderPayload } from "./types";
 
@@ -256,8 +257,16 @@ function TermRow({ entry }: { entry: MindMapEntry }) {
 }
 
 function MindMapDocument(payload: MindMapRenderPayload) {
-    const { name, avatar, avatarVideo, generatedAt, nodes, edges, entries } =
-        payload;
+    const {
+        name,
+        nomiId,
+        avatar,
+        avatarVideo,
+        generatedAt,
+        nodes,
+        edges,
+        entries,
+    } = payload;
     const generated = formatDate(generatedAt);
 
     // Inlined graph data; escape "<" so it can't break out of the script tag.
@@ -271,7 +280,7 @@ function MindMapDocument(payload: MindMapRenderPayload) {
                     name="viewport"
                     content="width=device-width, initial-scale=1.0"
                 />
-                <title>{`${name} — Mind map`}</title>
+                <title>{`${name} · Mind map`}</title>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: inlining the compiled SCSS so the export is self-contained */}
                 <style dangerouslySetInnerHTML={{ __html: css }} />
             </head>
@@ -291,12 +300,13 @@ function MindMapDocument(payload: MindMapRenderPayload) {
                         <img className="avatar" src={avatar} alt={name} />
                     ) : null}
                     <div className="title">
-                        <h1>{name} — Mind map</h1>
+                        <h1>{name} · Mind map</h1>
                         {generated && (
                             <span className="generated">
                                 Generated {generated}
                             </span>
                         )}
+                        <NomiProfileLink nomiId={nomiId} />
                     </div>
                     <div className="toggle" id="filterToggle">
                         <button type="button" data-filter="active">

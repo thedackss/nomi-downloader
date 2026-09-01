@@ -6,6 +6,7 @@ import {
     renderChatPayload,
 } from "./ChatDocument";
 import css from "./chat.scss?inline";
+import { callAnchor } from "./types";
 
 describe("chat styling", () => {
     it("inlines the chat CSS with the classes the markup uses", () => {
@@ -180,6 +181,23 @@ describe("renderChatPayload", () => {
         expect(html).toContain("Finally, you called.");
         expect(html).toContain('class="call-line nomi"');
         expect(html).toContain('class="call-line user"');
+    });
+
+    it("gives a voice call an anchor id the index can deep-link to", () => {
+        const started = "2026-07-23T00:58:05Z";
+        const html = renderChatPayload({
+            name: "Veronica",
+            items: [
+                {
+                    kind: "voiceCall",
+                    started,
+                    anchor: callAnchor(started),
+                    messages: [],
+                },
+            ],
+        });
+        // Must match what the index builds for the call link target.
+        expect(html).toContain(`id="${callAnchor(started)}"`);
     });
 
     it("renders an empty-transcript note when a call has no lines", () => {

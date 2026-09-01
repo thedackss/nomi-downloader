@@ -1,5 +1,6 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { NomiProfileLink } from "../nomiLink";
 import css from "./chat.scss?inline";
 import type { ChatInfoRow, ChatRenderPayload, VoiceCallLine } from "./types";
 
@@ -103,6 +104,8 @@ export function ChatImageFailed() {
 interface ChatVoiceCallProps {
     started: Date;
     ended?: Date;
+    /** In-page anchor id, so the index can jump straight to this call. */
+    anchor?: string;
     messages: VoiceCallLine[];
 }
 
@@ -110,6 +113,7 @@ interface ChatVoiceCallProps {
 export function ChatVoiceCall({
     started,
     ended,
+    anchor,
     messages,
 }: ChatVoiceCallProps) {
     const time = `${pad(started.getHours())}:${pad(started.getMinutes())}`;
@@ -123,7 +127,7 @@ export function ChatVoiceCall({
     }
 
     return (
-        <li className="voice-call">
+        <li className="voice-call" id={anchor}>
             <div className="call-header">
                 <span className="call-title">📞 Voice call</span>
                 <span className="call-meta">
@@ -166,6 +170,8 @@ export function ChatInfo({ rows }: { rows: ChatInfoRow[] }) {
 interface ChatDocumentProps {
     /** Nomi name shown in the header and document title. */
     name: string;
+    /** Nomi id, for the "Open on Nomi.ai" header link. */
+    nomiId?: number;
     /** Avatar image as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
     /** Profile video as a data URI; played in the header when present. */
@@ -175,6 +181,7 @@ interface ChatDocumentProps {
 
 function ChatDocument({
     name,
+    nomiId,
     avatar,
     avatarVideo,
     children,
@@ -187,7 +194,7 @@ function ChatDocument({
                     name="viewport"
                     content="width=device-width, initial-scale=1.0"
                 />
-                <title>{`${name} — Nomi chat`}</title>
+                <title>{`${name} · Nomi chat`}</title>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: inlining the compiled SCSS so the export is self-contained */}
                 <style dangerouslySetInnerHTML={{ __html: css }} />
             </head>
@@ -206,7 +213,10 @@ function ChatDocument({
                     ) : avatar ? (
                         <img className="avatar" src={avatar} alt={name} />
                     ) : null}
-                    <h1>{name}</h1>
+                    <div className="header-text">
+                        <h1>{name}</h1>
+                        <NomiProfileLink nomiId={nomiId} />
+                    </div>
                 </header>
                 <ul id="messages">{children}</ul>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static click-to-zoom helper, no user input */}
@@ -262,6 +272,7 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
                     key: i,
                     started: new Date(item.started),
                     ended: item.ended ? new Date(item.ended) : undefined,
+                    anchor: item.anchor,
                     messages: item.messages,
                 }),
             );
@@ -272,6 +283,7 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
 
     return renderChatDocument({
         name: payload.name,
+        nomiId: payload.nomiId,
         avatar: payload.avatar,
         avatarVideo: payload.avatarVideo,
         children,

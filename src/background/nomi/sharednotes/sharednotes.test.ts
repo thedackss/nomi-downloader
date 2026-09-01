@@ -156,7 +156,7 @@ describe("renderSharedNotesDocument", () => {
     });
 
     it("renders the header with the Nomi name and avatar", () => {
-        expect(html).toContain("Yuki — Shared Notes");
+        expect(html).toContain("Yuki · Shared Notes");
         expect(html).toContain('src="data:image/webp;base64,AAAA"');
     });
 

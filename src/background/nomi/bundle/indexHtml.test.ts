@@ -1,34 +1,72 @@
 import { describe, expect, it } from "vitest";
-import { buildBundleIndexHtml } from "./indexHtml";
+import { type BundleIndexInput, buildBundleIndexHtml } from "./indexHtml";
 
-const base = {
+const base: BundleIndexInput = {
     name: "Lyra",
+    nomiId: 42,
     generatedAt: "2026-07-23T00:00:00.000Z",
-    chatParts: ["chat.html"],
-    hasSharedNotes: true,
-    hasMindMap: true,
-    hasJson: true,
-    galleryImages: ["album/photo/nomi_1_0_2026-07-01.webp"],
-    videos: ["album/video/nomi_1_5_2026-07-02.mp4"],
+    chatParts: ["Lyra_chat.html"],
+    messageCount: 1234,
+    sharedNotesFile: "Lyra_shared-notes.html",
+    mindMap: { file: "Lyra_mind-map.html", termCount: 34 },
+    dataFile: "Lyra_data.json",
+    album: [
+        {
+            path: "album/nomi_1_0_2026-07-01.webp",
+            type: "Photo",
+            prompt: null,
+            date: "2026-07-01",
+        },
+        {
+            path: "album/nomi_1_1_2026-07-01.webp",
+            type: "Art",
+            prompt: "a candid shot at the kitchen sink",
+            date: "2026-07-01",
+        },
+        {
+            path: "album/nomi_1_5_2026-07-02.mp4",
+            type: "Video",
+            prompt: null,
+            date: "2026-07-02",
+        },
+    ],
     voiceFiles: ["voice/voice_1_2026-07-03.flac"],
+    calls: [
+        {
+            started: "2026-07-23T00:58:05Z",
+            ended: "2026-07-23T01:00:35Z",
+            anchor: "call-20260723005805",
+        },
+    ],
 };
 
 describe("buildBundleIndexHtml", () => {
-    it("links every present section", () => {
+    it("links every present section by its Nomi-prefixed filename", () => {
         const html = buildBundleIndexHtml(base);
-        expect(html).toContain('href="chat.html"');
-        expect(html).toContain('href="shared-notes.html"');
-        expect(html).toContain('href="mind-map.html"');
-        expect(html).toContain('href="data.json"');
+        expect(html).toContain('href="Lyra_chat.html"');
+        expect(html).toContain('href="Lyra_shared-notes.html"');
+        expect(html).toContain('href="Lyra_mind-map.html"');
+        expect(html).toContain('href="Lyra_data.json"');
+    });
+
+    it("shows card counts and a link to the Nomi", () => {
+        const html = buildBundleIndexHtml(base);
+        expect(html).toContain("1,234 messages");
+        expect(html).toContain("34 memory terms");
+        expect(html).toContain('href="https://beta.nomi.ai/nomis/42"');
+    });
+
+    it("uses no em dashes", () => {
+        expect(buildBundleIndexHtml(base)).not.toContain("—");
     });
 
     it("omits sections that are missing", () => {
         const html = buildBundleIndexHtml({
             ...base,
             chatParts: [],
-            hasSharedNotes: false,
-            hasMindMap: false,
-            hasJson: false,
+            sharedNotesFile: undefined,
+            mindMap: undefined,
+            dataFile: undefined,
         });
         expect(html).not.toContain("chat.html");
         expect(html).not.toContain("shared-notes.html");
@@ -45,16 +83,41 @@ describe("buildBundleIndexHtml", () => {
         expect(html).toContain('href="chat_part2.html"');
     });
 
-    it("renders the gallery and video list with relative paths", () => {
+    it("groups the album by type with counts", () => {
         const html = buildBundleIndexHtml(base);
-        expect(html).toContain('src="album/photo/nomi_1_0_2026-07-01.webp"');
-        expect(html).toContain('href="album/video/nomi_1_5_2026-07-02.mp4"');
-        expect(html).toContain("Album — 1 images, 1 videos");
+        // One section header per non-empty type.
+        expect(html).toContain("Selfies");
+        expect(html).toContain("Art");
+        expect(html).toContain("Videos");
+        // No Edits section when there are none.
+        expect(html).not.toContain(">Edits");
+        expect(html).toContain('src="album/nomi_1_0_2026-07-01.webp"');
+        expect(html).toContain('<video src="album/nomi_1_5_2026-07-02.mp4"');
+    });
+
+    it("shows a generation prompt as a caption and a lightbox data attr", () => {
+        const html = buildBundleIndexHtml(base);
+        expect(html).toContain("a candid shot at the kitchen sink");
+        expect(html).toContain(
+            'data-prompt="a candid shot at the kitchen sink"',
+        );
+        // The lightbox scaffolding is present.
+        expect(html).toContain('id="lb"');
+    });
+
+    it("lists voice calls with a duration, deep-linked to the chat anchor", () => {
+        const html = buildBundleIndexHtml(base);
+        expect(html).toContain("Voice calls");
+        expect(html).toContain("2:30");
+        expect(html).toContain('href="Lyra_chat.html#call-20260723005805"');
+
+        const none = buildBundleIndexHtml({ ...base, calls: [] });
+        expect(none).not.toContain("Voice calls");
     });
 
     it("renders voice messages as audio players, and omits the section when empty", () => {
         const html = buildBundleIndexHtml(base);
-        expect(html).toContain("Voice messages — 1");
+        expect(html).toContain("Voice messages");
         expect(html).toContain(
             '<audio controls preload="none" src="voice/voice_1_2026-07-03.flac">',
         );

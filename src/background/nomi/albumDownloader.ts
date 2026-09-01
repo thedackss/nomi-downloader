@@ -4,6 +4,7 @@ import { api } from "../../nomi/http";
 import type { DownloadAlbumProps } from "../../nomi/interfaces/downloadAlbum";
 import type { Media } from "../../nomi/types/api.nomis.id.medias";
 import { Log } from "../../utils/log";
+import { type AlbumMediaItem, buildAlbumGalleryHtml } from "./bundle/indexHtml";
 import type { BundleFileSink } from "./bundle/sink";
 import { chunkBySize } from "./chunk";
 import {
@@ -17,6 +18,7 @@ import {
     SD_IMAGE_BYTES,
     VIDEO_BYTES,
 } from "./constants";
+import { fileStamp } from "./fileStamp";
 import {
     filterNewerThan,
     getLastTimestamp,
@@ -27,6 +29,14 @@ import { bytesToBase64, embedPrompt, textToBase64 } from "./metadata";
 import type { OffscreenClient } from "./offscreenClient";
 
 type MediaType = "Photo" | "Video" | "Art" | "PhotoEdit";
+
+/** Per-media metadata the bundle index needs to group and caption the gallery. */
+export interface AlbumMediaMeta {
+    path: string;
+    type: MediaType;
+    prompt: string | null;
+    date: string;
+}
 
 /** Downloads a Nomi's media album as one or more zip files. */
 export class AlbumDownloader {
@@ -48,12 +58,19 @@ export class AlbumDownloader {
         startIndex = 0,
         incremental = false,
         sink,
+        onMedia,
     }: DownloadAlbumProps & {
         /**
          * Bundle mode: stream files into this sink (which owns zip assembly
          * and size rollover) instead of building and downloading zips here.
          */
         sink?: BundleFileSink;
+        /**
+         * Bundle mode: report each saved media's type, prompt and date so the
+         * index can group the gallery and show captions. `path` is the sink
+         * path passed to addFile (before any `album/` prefix the caller adds).
+         */
+        onMedia?: (item: AlbumMediaMeta) => void;
     }) {
         const update = (message: string) => onProgress?.(message);
 
@@ -137,6 +154,9 @@ export class AlbumDownloader {
                     await this.offscreen.call("create-zip", { id: chunkId });
                 }
 
+                // Standalone mode: collect this zip's media for a gallery index.
+                const galleryItems: AlbumMediaItem[] = [];
+
                 const put = (path: string, content: string) =>
                     sink
                         ? sink.addFile(path, content)
@@ -216,6 +236,18 @@ export class AlbumDownloader {
 
                         await put(path, base64);
 
+                        // Tell the bundle index what this file is, so it can
+                        // group and caption the gallery. The prompt is resolved
+                        // independently of the `prompts` sidecar/embed setting.
+                        const meta = {
+                            path,
+                            type,
+                            prompt: this.extractPrompt(media, type),
+                            date: stringDate,
+                        };
+                        onMedia?.(meta);
+                        galleryItems.push(meta);
+
                         // Write a sidecar when asked for one, or as the fallback
                         // when embedding wasn't possible for this format.
                         const wantSidecar =
@@ -253,6 +285,18 @@ export class AlbumDownloader {
                 }
 
                 if (!sink) {
+                    // A gallery index for this zip: grouped thumbnails with a
+                    // lightbox, so the album is browsable without a file manager.
+                    if (galleryItems.length > 0) {
+                        const html = buildAlbumGalleryHtml({
+                            name: nomiName,
+                            nomiId,
+                            generatedAt: new Date().toISOString(),
+                            album: galleryItems,
+                        });
+                        await put("index.html", textToBase64(html));
+                    }
+
                     update(
                         `${chunkMessage}Packaging ${chunk.length} files into a zip…`,
                     );
@@ -463,7 +507,7 @@ export class AlbumDownloader {
         chunkCount: number;
     }): string {
         // e.g. Lexi_Album(360)_Thu-Feb-19-2026_(webp).zip
-        const dateStr = new Date().toDateString().replace(/ /g, "-");
+        const dateStr = fileStamp();
         const ext = quality === "HD" ? "png" : "webp";
         const partSuffix = chunkCount > 1 ? `_Part${chunkIndex + 1}` : "";
         return `${nomiName}_Album(${count})_${dateStr}_(${ext})${partSuffix}.zip`;

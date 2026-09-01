@@ -10,7 +10,7 @@ import type { VoiceCallWithMessages } from "../../nomi/types/api.nomis.id.voiceC
 import { Log } from "../../utils/log";
 import { type BundleFileSink, BundleSink } from "./bundle/sink";
 import { fetchVoiceAudio, voiceAudioPathMap } from "./bundle/voiceAudio";
-import type { ChatItem } from "./chat/types";
+import { type ChatItem, callAnchor } from "./chat/types";
 import { chunkBySize } from "./chunk";
 import {
     CHAT_CHUNK_MAX_BYTES_TEXT,
@@ -252,6 +252,7 @@ export class ChatDownloader {
                             kind: "voiceCall",
                             started: call.started,
                             ended: call.ended ?? undefined,
+                            anchor: callAnchor(call.started),
                             messages: call.messages.map((m) => ({
                                 isNomi: m.type !== "User",
                                 text: m.text ?? "",
@@ -268,6 +269,7 @@ export class ChatDownloader {
                 );
                 const chatHtml = await this.offscreen.renderChat({
                     name: nomi.name,
+                    nomiId,
                     avatar,
                     avatarVideo,
                     items,

@@ -43,6 +43,8 @@ export interface MindMapEntry {
 export interface MindMapRenderPayload {
     /** Nomi name, shown in the header and document title. */
     name: string;
+    /** Nomi id, for the "Open on Nomi.ai" header link. */
+    nomiId?: number;
     /** Avatar image as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
     /** Profile video as a data URI; played in the header when present. */

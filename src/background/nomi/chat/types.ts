@@ -26,8 +26,18 @@ export type ChatItem =
           kind: "voiceCall";
           started: string;
           ended?: string;
+          /** Stable in-page anchor id, so the index can link to this call. */
+          anchor?: string;
           messages: VoiceCallLine[];
       };
+
+/**
+ * A stable, collision-free anchor id for a call, derived from its start time.
+ * Used both as the chat section's id and the index link target, so they match.
+ */
+export function callAnchor(started: string): string {
+    return `call-${started.replace(/[^0-9]/g, "")}`;
+}
 
 /** One transcript line inside a voice-call section. */
 export interface VoiceCallLine {
@@ -45,6 +55,8 @@ export interface ChatInfoRow {
 export interface ChatRenderPayload {
     /** Nomi name shown in the header. */
     name: string;
+    /** Nomi id, for the "Open on Nomi.ai" header link (omitted for groups). */
+    nomiId?: number;
     /** Avatar as a data URI; omitted if it couldn't be fetched. */
     avatar?: string;
     /** Profile video as a data URI; played in the header when present. */

@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { NomiProfileLink } from "../nomiLink";
 import css from "./sharednotes.scss?inline";
 import type { AnchorLook, SharedNote, SharedNotesRenderPayload } from "./types";
 
@@ -131,6 +132,7 @@ function AnchorsNote({
 function SharedNotesDocument(payload: SharedNotesRenderPayload) {
     const {
         name,
+        nomiId,
         avatar,
         avatarVideo,
         generatedAt,
@@ -149,7 +151,7 @@ function SharedNotesDocument(payload: SharedNotesRenderPayload) {
                     name="viewport"
                     content="width=device-width, initial-scale=1.0"
                 />
-                <title>{`${name} — Shared Notes`}</title>
+                <title>{`${name} · Shared Notes`}</title>
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: inlining the compiled SCSS so the export is self-contained */}
                 <style dangerouslySetInnerHTML={{ __html: css }} />
             </head>
@@ -169,12 +171,13 @@ function SharedNotesDocument(payload: SharedNotesRenderPayload) {
                         <img className="avatar" src={avatar} alt={name} />
                     ) : null}
                     <div className="title">
-                        <h1>{name} — Shared Notes</h1>
+                        <h1>{name} · Shared Notes</h1>
                         {generated && (
                             <span className="generated">
                                 Generated {generated}
                             </span>
                         )}
+                        <NomiProfileLink nomiId={nomiId} />
                     </div>
                 </header>
 

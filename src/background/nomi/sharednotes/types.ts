@@ -34,6 +34,8 @@ export interface AnchorLook {
 }
 
 export interface SharedNotesRenderPayload {
+    /** Nomi id, for the "Open on Nomi.ai" header link. */
+    nomiId?: number;
     /** Nomi name, shown in the header and document title. */
     name: string;
     /** Avatar image as a data URI; omitted if it couldn't be fetched. */
