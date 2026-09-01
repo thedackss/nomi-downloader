@@ -226,6 +226,23 @@ describe("renderChatPayload", () => {
         ).not.toThrow();
     });
 
+    it("shows a caption under a selfie made from a prompt, none otherwise", () => {
+        const html = renderChatPayload({
+            name: "Sarah",
+            items: [
+                {
+                    kind: "selfie",
+                    src: "data:image/webp;base64,AAAA",
+                    prompt: "a candid shot at the kitchen sink",
+                },
+                { kind: "selfie", src: "data:image/webp;base64,BBBB" },
+            ],
+        });
+        expect(html).toContain("a candid shot at the kitchen sink");
+        // Exactly one caption span (only the prompted selfie has one).
+        expect(html.match(/<span class="selfie-prompt">/g)).toHaveLength(1);
+    });
+
     it("renders an info card at the top when info rows are given", () => {
         const html = renderChatPayload({
             name: "My Group",

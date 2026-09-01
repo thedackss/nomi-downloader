@@ -33,6 +33,22 @@ import type { OffscreenClient } from "./offscreenClient";
 
 const SELFIE_EXTENSION = "webp";
 
+/**
+ * The generation prompt for a chat selfie, when it was made from one (a
+ * described scene). Plain selfies have none. The prompt lives on the newer
+ * `mediaItems` shape; for group photos each Nomi carries its own, so fall
+ * back to the first non-empty one.
+ */
+function selfieRequestPrompt(request: SelfieRequest): string | undefined {
+    for (const item of request.mediaItems ?? []) {
+        const sr = item.selfieRequest;
+        const prompt =
+            sr?.artPrompt ?? sr?.nomis?.find((n) => n.artPrompt)?.artPrompt;
+        if (prompt?.trim()) return prompt.trim();
+    }
+    return undefined;
+}
+
 /** Downloads a Nomi's chat history as one or more standalone HTML files. */
 export class ChatDownloader {
     constructor(
@@ -368,6 +384,7 @@ export class ChatDownloader {
 
     private async fetchSelfies(request: SelfieRequest): Promise<ChatItem[]> {
         const items: ChatItem[] = [];
+        const prompt = selfieRequestPrompt(request);
         for (const selfie of request.selfies) {
             const url = `/selfie-requests/${request.id}/images/${selfie.id}.${SELFIE_EXTENSION}`;
             try {
@@ -379,6 +396,7 @@ export class ChatDownloader {
                 items.push({
                     kind: "selfie",
                     src: `data:image/${SELFIE_EXTENSION};base64,${base64}`,
+                    prompt,
                 });
             } catch (err) {
                 Log(`Failed to fetch selfie ${selfie.id}`, err);

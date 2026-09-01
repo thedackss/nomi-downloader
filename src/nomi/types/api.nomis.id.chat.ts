@@ -58,6 +58,17 @@ export interface SelfieRequest {
     completed: string;
     system: string;
     selfies: Selfie[];
+    /** Newer shape: each image with its own request metadata (art prompt). */
+    mediaItems?: MediaItem[];
+}
+
+export interface MediaItem {
+    type: string;
+    selfieRequest?: {
+        type: string;
+        artPrompt: string | null;
+        nomis?: Array<{ artPrompt: string | null }>;
+    };
 }
 
 export interface Selfie {

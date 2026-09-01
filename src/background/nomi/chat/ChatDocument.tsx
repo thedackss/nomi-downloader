@@ -82,10 +82,11 @@ export function ChatMessage({
 }
 
 /** A selfie image, rendered as a media row. `src` may be a data URI or URL. */
-export function ChatSelfie({ src }: { src: string }) {
+export function ChatSelfie({ src, prompt }: { src: string; prompt?: string }) {
     return (
         <li className="row nomi">
-            <img className="selfie" src={src} alt="selfie" />
+            <img className="selfie" src={src} alt={prompt || "selfie"} />
+            {prompt ? <span className="selfie-prompt">{prompt}</span> : null}
         </li>
     );
 }
@@ -248,7 +249,13 @@ export function renderChatPayload(payload: ChatRenderPayload): string {
                 }),
             );
         } else if (item.kind === "selfie") {
-            children.push(createElement(ChatSelfie, { key: i, src: item.src }));
+            children.push(
+                createElement(ChatSelfie, {
+                    key: i,
+                    src: item.src,
+                    prompt: item.prompt,
+                }),
+            );
         } else if (item.kind === "voiceCall") {
             children.push(
                 createElement(ChatVoiceCall, {

@@ -15,7 +15,12 @@ export type ChatItem =
           /** Relative path to the message's audio file, when exported. */
           audioSrc?: string;
       }
-    | { kind: "selfie"; src: string }
+    | {
+          kind: "selfie";
+          src: string;
+          /** Generation prompt, when the image was made from one. */
+          prompt?: string;
+      }
     | { kind: "failed" }
     | {
           kind: "voiceCall";

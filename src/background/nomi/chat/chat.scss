@@ -277,6 +277,17 @@ body {
                     transform: scale(1.015);
                 }
             }
+
+            // Generation prompt shown under an image that was made from one.
+            .selfie-prompt {
+                width: 280px;
+                max-width: 78vw;
+                margin: 6px 4px 0;
+                font-size: 0.72rem;
+                font-style: italic;
+                line-height: 1.4;
+                color: var(--muted);
+            }
         }
     }
 
