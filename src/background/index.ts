@@ -435,6 +435,13 @@ function main() {
                         });
 
                         try {
+                            onProgress("Downloading shared notes...");
+                            await nomi.downloadSharedNotes({ nomiId });
+                        } catch (err) {
+                            Log("Shared notes step failed", err);
+                        }
+
+                        try {
                             onProgress("Downloading mind map...");
                             await downloadMindMap(nomiId, onProgress);
                         } catch (err) {

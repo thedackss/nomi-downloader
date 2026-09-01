@@ -9,6 +9,7 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
         list: { iconShape: "circle", iconSize: "medium" },
         download: {
             advanced: false,
+            all: true,
             album: true,
             chat: true,
             mindMap: true,

@@ -5,6 +5,7 @@ export interface IconSettings {
 
 /** The per-type keys offered on the separated-downloads split button. */
 export type DownloadTypeKey =
+    | "all"
     | "album"
     | "chat"
     | "mindMap"
@@ -16,6 +17,8 @@ export type DownloadTypeKey =
 export interface DownloadSettings {
     /** Show per-type toggles + a select button instead of one combined button. */
     advanced: boolean;
+    /** "All": everything in one zip (the same bundle as simple mode). */
+    all: boolean;
     album: boolean;
     chat: boolean;
     mindMap: boolean;

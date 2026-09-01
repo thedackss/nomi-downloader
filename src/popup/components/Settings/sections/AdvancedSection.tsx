@@ -4,6 +4,7 @@ import { Group, Row, Switch } from "../controls";
 // Per-type "Enable X download" toggles, grayed while advanced mode is off
 // (the simple button ignores per-type choices).
 type DownloadType =
+    | "all"
     | "album"
     | "chat"
     | "mindMap"
@@ -13,6 +14,7 @@ type DownloadType =
     | "chatMarkdown";
 
 const TYPE_LABELS: Array<{ key: DownloadType; label: string }> = [
+    { key: "all", label: "All (everything in one zip)" },
     { key: "album", label: "Album" },
     { key: "chat", label: "Chat" },
     { key: "mindMap", label: "Mind Map" },

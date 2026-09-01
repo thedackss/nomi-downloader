@@ -34,6 +34,8 @@ export const NomiInfo = ({ nomi }: NomiInfoProps) => {
         key: DownloadTypeKey;
         fn: () => void;
     }> = [
+        // "All" is the everything-in-one-zip bundle (same as simple mode).
+        { name: "All", key: "all", fn: downloadSimple },
         { name: "Album", key: "album", fn: downloadAlbum },
         { name: "Chat", key: "chat", fn: downloadChat },
         { name: "Mind Map", key: "mindMap", fn: downloadMind },
