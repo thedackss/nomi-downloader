@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { buildLogsText } from "../../../../utils/report";
 import { type DevReply, useReplies } from "../../../hooks/useReplies";
 import {
     type FollowUpError,
@@ -8,6 +9,19 @@ import {
     type Ticket,
 } from "../../../report/sendReport";
 import styles from "../styles.module.scss";
+
+/**
+ * Fit text into a follow-up message: when too long, keep the head (the report
+ * header with platform/version) and the tail (the newest log lines, which
+ * carry the failure), dropping the middle.
+ */
+function fitFollowUp(text: string, max: number): string {
+    if (text.length <= max) return text;
+    const head = 240;
+    const sep = "\n…(older lines trimmed)…\n";
+    const tail = max - head - sep.length;
+    return text.slice(0, head) + sep + text.slice(-tail);
+}
 
 /** Server-side cap on a follow-up message (FollowUpDto). */
 const MAX_LENGTH = 2000;
@@ -138,6 +152,18 @@ const TicketModal = ({
         })),
     ];
 
+    function echo(text: string) {
+        // Echo through the shared store so the message survives closing and
+        // reopening the modal within this popup session.
+        onSent({
+            id: `local-${crypto.randomUUID()}`,
+            reportId: ticket.id,
+            text,
+            created: new Date().toISOString(),
+            author: "user",
+        });
+    }
+
     async function submit() {
         const text = draft.trim();
         if (!text) return;
@@ -146,19 +172,23 @@ const TicketModal = ({
         const { ok, error } = await sendFollowUp(ticket.id, text);
         setSendState("idle");
         if (ok) {
-            // Echo through the shared store so the message survives closing
-            // and reopening the modal within this popup session.
-            onSent({
-                id: `local-${crypto.randomUUID()}`,
-                reportId: ticket.id,
-                text,
-                created: new Date().toISOString(),
-                author: "user",
-            });
+            echo(text);
             setDraft("");
         } else {
             setSendError(error ?? "error");
         }
+    }
+
+    // Attach the extension's recent logs to this ticket, so the developer can
+    // see what happened without the user having to file a whole new report.
+    async function sendLogs() {
+        setSendState("sending");
+        setSendError(null);
+        const logs = fitFollowUp(await buildLogsText(), MAX_LENGTH);
+        const { ok, error } = await sendFollowUp(ticket.id, logs);
+        setSendState("idle");
+        if (ok) echo(logs);
+        else setSendError(error ?? "error");
     }
 
     // Chat convention: open at the newest message (any unread developer
@@ -257,6 +287,13 @@ const TicketModal = ({
                               : "Send"}
                     </button>
                 </div>
+                <button
+                    type="button"
+                    className={styles.attachLogs}
+                    disabled={sendState === "sending"}
+                    onClick={sendLogs}>
+                    Attach recent logs
+                </button>
             </div>
         </div>,
         document.body,
