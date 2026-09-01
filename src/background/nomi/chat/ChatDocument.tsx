@@ -134,7 +134,7 @@ export function ChatVoiceCall({
                 <ul className="call-lines">
                     {messages.map((line) => (
                         <li
-                            key={line.created + line.text.slice(0, 16)}
+                            key={line.created + (line.text ?? "").slice(0, 16)}
                             className={`call-line ${line.isNomi ? "nomi" : "user"}`}>
                             {line.text}
                         </li>

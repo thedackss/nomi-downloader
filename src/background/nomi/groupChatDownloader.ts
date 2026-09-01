@@ -167,7 +167,9 @@ export class GroupChatDownloader {
                         items.push({
                             kind: "message",
                             isNomi,
-                            text: message.text,
+                            // Null text (voice/selfie-only turns) despite the
+                            // type; coalesce so the render can't crash.
+                            text: message.text ?? "",
                             sent: message.sent,
                             name: isNomi ? message.nomiName : undefined,
                             isVoice: message.isVoiceMessage || undefined,

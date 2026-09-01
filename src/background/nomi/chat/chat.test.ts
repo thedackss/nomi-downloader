@@ -197,6 +197,35 @@ describe("renderChatPayload", () => {
         expect(html).toContain("No transcript available");
     });
 
+    it("survives null text in messages and call lines", () => {
+        // The API returns null text for some messages despite the type; the
+        // chat export must not crash on it (a user hit this on 0.4.3).
+        expect(() =>
+            renderChatPayload({
+                name: "Veronica",
+                items: [
+                    {
+                        kind: "message",
+                        isNomi: true,
+                        text: null,
+                        sent: "2026-07-23T01:04:00Z",
+                    },
+                    {
+                        kind: "voiceCall",
+                        started: "2026-07-23T00:58:05Z",
+                        messages: [
+                            {
+                                isNomi: false,
+                                text: null,
+                                created: "2026-07-23T00:58:09Z",
+                            },
+                        ],
+                    },
+                ],
+            } as never),
+        ).not.toThrow();
+    });
+
     it("renders an info card at the top when info rows are given", () => {
         const html = renderChatPayload({
             name: "My Group",

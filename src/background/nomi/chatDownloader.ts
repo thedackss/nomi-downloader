@@ -217,7 +217,10 @@ export class ChatDownloader {
                         items.push({
                             kind: "message",
                             isNomi,
-                            text: message.text,
+                            // The API returns null text for some messages
+                            // (voice messages, selfie-only turns) despite the
+                            // type; coalesce so the chat render can't crash.
+                            text: message.text ?? "",
                             sent: message.sent,
                             isVoice: message.isVoiceMessage || undefined,
                             audioSrc: voiceMap.get(message.uuid),
@@ -235,7 +238,7 @@ export class ChatDownloader {
                             ended: call.ended ?? undefined,
                             messages: call.messages.map((m) => ({
                                 isNomi: m.type !== "User",
-                                text: m.text,
+                                text: m.text ?? "",
                                 created: m.created,
                             })),
                         });
@@ -343,6 +346,12 @@ export class ChatDownloader {
                 Log("Unexpected error during chat download:", error);
                 update("Unexpected error during chat download.");
             }
+            // Rethrow so the caller reports failure instead of "Chat
+            // downloaded!"; swallowing it here made a crashed export (e.g. a
+            // null-text message) look like a successful save with no file.
+            // The bundle path wraps this call in its own try/catch, so an
+            // "everything" download still finishes its other sections.
+            throw error;
         }
     }
 
