@@ -114,11 +114,14 @@ export function getUpdateCheck(): Promise<VersionCheck | null> {
 
 export async function checkForUpdate(): Promise<VersionCheck | null> {
     const current = chrome.runtime.getManifest().version;
+    const browser = __IS_FIREFOX__ ? "firefox" : "chrome";
     try {
-        // `v` carries only the installed version so the server can keep an
-        // anonymous per-version daily counter — no identifiers of any kind.
+        // `v` carries only the installed version and `b` the store target, so
+        // the server can report the version that store actually has (the two
+        // stores approve a release at different times) and keep an anonymous
+        // per-version, per-browser daily counter — no identifiers of any kind.
         const res = await fetch(
-            `${VERSION_ENDPOINT}?v=${encodeURIComponent(current)}`,
+            `${VERSION_ENDPOINT}?v=${encodeURIComponent(current)}&b=${browser}`,
             { headers: { Accept: "application/json" } },
         );
         if (!res.ok) {
