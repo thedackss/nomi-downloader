@@ -21,7 +21,7 @@ bundling and HMR.
 > Nomi Downloader is a powerful **Firefox** extension designed to help you easily
 > manage and save all your interactions with your favourite Nomi. Whether you want
 > to keep a complete archive of your chats or download an entire album of your
-> Nomi's media, Nomi Saver has you covered. With just a few clicks, you can download
+> Nomi's media, Nomi Downloader has you covered. With just a few clicks, you can download
 > entire albums or entire chat histories, preserving your memories with your Nomi
 > for offline access.
 
