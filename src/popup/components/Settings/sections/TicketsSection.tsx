@@ -198,13 +198,26 @@ const TicketModal = ({
         threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight });
     }, [thread.length]);
 
+    // Escape closes the modal: the keyboard-accessible equivalent of clicking
+    // the backdrop (which is a mouse-only convenience).
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [onClose]);
+
     // Portaled to <body>: the settings page keeps a transform from its
     // slide-in animation, which would turn position: fixed into
     // position-relative-to-the-page and clip the backdrop to the content pane.
     return createPortal(
+        // The backdrop is presentational; dismissing by clicking it is a mouse
+        // convenience, with Escape and the close button as the keyboard paths.
+        // biome-ignore lint/a11y/noStaticElementInteractions: presentational backdrop, keyboard-dismissable via Escape/close button
+        // biome-ignore lint/a11y/useKeyWithClickEvents: Escape (above) is the keyboard equivalent of the backdrop click
         <div
             className={styles.ticketOverlay}
-            role="presentation"
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}>
