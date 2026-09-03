@@ -31,6 +31,7 @@ h1 {
     font-size: 1.3rem;
     background: linear-gradient(135deg, #a855f7, #7c3aed);
     background-clip: text;
+    /* stylelint-disable-next-line property-no-vendor-prefix -- required for the gradient-text clip in WebKit/Blink */
     -webkit-background-clip: text;
     color: transparent;
 }
