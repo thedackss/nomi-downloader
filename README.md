@@ -264,3 +264,7 @@ isn't active; fall back to `npm run build`.
 To deliver `dist/` to the desktop, a mapped network drive (SMB) pointing at the project
 folder is convenient: the browser always sees the current build, and the CRXJS entry stubs
 rarely change, so HMR keeps working without re-copying.
+
+## License
+
+MIT. See `LICENSE`.
