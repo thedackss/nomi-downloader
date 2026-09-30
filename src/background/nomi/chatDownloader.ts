@@ -73,6 +73,7 @@ export class ChatDownloader {
         prefetched,
         emit,
         audioSink,
+        selfieSrc,
     }: DownloadChatProps & {
         /** Reuse an already-fetched chat feed instead of fetching again. */
         prefetched?: NomiChatFeed;
@@ -83,6 +84,14 @@ export class ChatDownloader {
         emit?: (filename: string, html: string) => Promise<void>;
         /** Bundle mode: where voice audio files go (paths under voice/). */
         audioSink?: BundleFileSink;
+        /**
+         * Bundle mode: resolve a selfie image id to a file already in the
+         * zip (the album copy). A resolved selfie is linked by relative path
+         * instead of embedded, so the bundle carries each image once. Selfies
+         * the album didn't include (or a failed album) fall back to embedding
+         * when `includeSelfies` is on.
+         */
+        selfieSrc?: (selfieImageId: string) => string | undefined;
     }) {
         const update = (message: string) => onProgress?.(message);
 
@@ -191,7 +200,8 @@ export class ChatDownloader {
                     : Number.POSITIVE_INFINITY;
             const chunks = chunkBySize(
                 messages,
-                (item) => this.estimateItemSize(item, includeSelfies),
+                (item) =>
+                    this.estimateItemSize(item, includeSelfies, selfieSrc),
                 maxBytes,
                 maxCount,
             );
@@ -242,9 +252,17 @@ export class ChatDownloader {
                             audioSrc: voiceMap.get(message.uuid),
                         });
                     } else if ("completed" in element) {
-                        if (includeSelfies) {
+                        // Linked selfies cost nothing, so they are always
+                        // included; embedding is what `includeSelfies` gates.
+                        if (includeSelfies || selfieSrc) {
                             const request = element as SelfieRequest;
-                            items.push(...(await this.fetchSelfies(request)));
+                            items.push(
+                                ...(await this.fetchSelfies(
+                                    request,
+                                    includeSelfies ?? false,
+                                    selfieSrc,
+                                )),
+                            );
                         }
                     } else {
                         const call = element as VoiceCallWithMessages;
@@ -376,18 +394,39 @@ export class ChatDownloader {
     private estimateItemSize(
         item: Message | SelfieRequest | VoiceCallWithMessages,
         includeSelfies?: boolean,
+        selfieSrc?: (selfieImageId: string) => string | undefined,
     ): number {
         if ("sent" in item) return MESSAGE_BYTES;
         if ("completed" in item) {
-            return includeSelfies ? item.selfies.length * SELFIE_BYTES : 0;
+            // A linked selfie is just a path in the HTML; only an embedded
+            // one carries the image bytes.
+            return item.selfies.reduce((bytes, selfie) => {
+                if (selfieSrc?.(String(selfie.id))) return bytes + MESSAGE_BYTES;
+                return bytes + (includeSelfies ? SELFIE_BYTES : 0);
+            }, 0);
         }
         return Math.max(1, item.messages.length) * MESSAGE_BYTES;
     }
 
-    private async fetchSelfies(request: SelfieRequest): Promise<ChatItem[]> {
+    /**
+     * The chat items for one selfie request. Each selfie is linked to its
+     * album copy when `selfieSrc` knows it, embedded as a data URI when
+     * `embed` is on, and skipped otherwise.
+     */
+    private async fetchSelfies(
+        request: SelfieRequest,
+        embed: boolean,
+        selfieSrc?: (selfieImageId: string) => string | undefined,
+    ): Promise<ChatItem[]> {
         const items: ChatItem[] = [];
         const prompt = selfieRequestPrompt(request);
         for (const selfie of request.selfies) {
+            const linked = selfieSrc?.(String(selfie.id));
+            if (linked) {
+                items.push({ kind: "selfie", src: linked, prompt });
+                continue;
+            }
+            if (!embed) continue;
             const url = `/selfie-requests/${request.id}/images/${selfie.id}.${SELFIE_EXTENSION}`;
             try {
                 const { data } = await api.get(url, {

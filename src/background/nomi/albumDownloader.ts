@@ -36,6 +36,12 @@ export interface AlbumMediaMeta {
     type: MediaType;
     prompt: string | null;
     date: string;
+    /**
+     * The media's API id. For selfies it is the same image id the chat feed
+     * references, which lets a bundled chat link to the album file instead of
+     * embedding a second copy.
+     */
+    mediaId: string;
 }
 
 /** Downloads a Nomi's media album as one or more zip files. */
@@ -244,6 +250,7 @@ export class AlbumDownloader {
                             type,
                             prompt: this.extractPrompt(media, type),
                             date: stringDate,
+                            mediaId: String(media.id),
                         };
                         onMedia?.(meta);
                         galleryItems.push(meta);

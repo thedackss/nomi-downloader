@@ -376,6 +376,36 @@ export class Nomi {
                 : ALBUM_CHUNK_MAX_BYTES;
         const sink = new BundleSink(this.offscreen, maxBytes);
 
+        // The album goes first so the chat can link to its files. Collected
+        // as it streams, so the index can group by type and caption each
+        // image with its prompt (paths get the `album/` prefix).
+        const albumMedia: AlbumMediaMeta[] = [];
+        try {
+            await new AlbumDownloader(this.api, this.offscreen).run({
+                nomiId,
+                onProgress,
+                quality: props.quality,
+                folderization: props.folderization,
+                downloadQuantity: props.downloadQuantity,
+                prompts: props.prompts,
+                recentLimit: props.recentLimit,
+                startIndex: props.startIndex,
+                sink: {
+                    addFile: (path, base64) =>
+                        sink.addFile(`album/${path}`, base64),
+                },
+                onMedia: (m) =>
+                    albumMedia.push({ ...m, path: `album/${m.path}` }),
+            });
+        } catch (err) {
+            Log("Bundle: album section failed", err);
+        }
+        // Selfie image id -> path inside the zip. The chat HTML sits at the
+        // zip root, so these relative paths resolve once it is extracted.
+        const albumPathById = new Map(
+            albumMedia.map((m) => [m.mediaId, m.path] as const),
+        );
+
         // One messages fetch feeds both the chat HTML and the JSON export.
         let chatData: NomiChatFeed | undefined;
         try {
@@ -420,6 +450,10 @@ export class Nomi {
                     audioSink: {
                         addFile: (path, base64) => sink.addFile(path, base64),
                     },
+                    // Link selfies to the album copy already in the zip rather
+                    // than embedding a duplicate; embedding only happens for
+                    // selfies the album didn't include.
+                    selfieSrc: (id) => albumPathById.get(id),
                 });
             } catch (err) {
                 Log("Bundle: chat section failed", err);
@@ -490,30 +524,6 @@ export class Nomi {
             );
         } catch (err) {
             Log("Bundle: JSON section failed", err);
-        }
-
-        // Collected as the album streams, so the index can group by type and
-        // caption each image with its prompt (paths get the `album/` prefix).
-        const albumMedia: AlbumMediaMeta[] = [];
-        try {
-            await new AlbumDownloader(this.api, this.offscreen).run({
-                nomiId,
-                onProgress,
-                quality: props.quality,
-                folderization: props.folderization,
-                downloadQuantity: props.downloadQuantity,
-                prompts: props.prompts,
-                recentLimit: props.recentLimit,
-                startIndex: props.startIndex,
-                sink: {
-                    addFile: (path, base64) =>
-                        sink.addFile(`album/${path}`, base64),
-                },
-                onMedia: (m) =>
-                    albumMedia.push({ ...m, path: `album/${m.path}` }),
-            });
-        } catch (err) {
-            Log("Bundle: album section failed", err);
         }
 
         // The hub goes last (it needs the final file list) but is pinned
