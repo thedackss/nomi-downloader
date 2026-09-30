@@ -58,6 +58,9 @@ export is a self-contained file (or `.zip`) that works fully offline.
 - **Markdown**: the same structured data as a readable `.md` document.
 - **Download All / one-click**: grab album + chat + shared notes in a single
   click, or (in advanced mode) pick exactly which type the button downloads.
+  In the bundle the chat links each selfie to the album copy already in the
+  zip, so nothing is stored twice; only selfies the album left out (for
+  example outside a photo range) get embedded.
 
 ### Group chats
 
@@ -96,14 +99,16 @@ A tabbed settings panel (Interface · Downloads · Advanced):
 - **Messages per file**: split the chat export every N messages (0 = no count cap).
 - **Max file size (MB)**: per-file size cap for chat exports (0 = the built-in
   safe default). Raise it to split into fewer, larger files.
-- **Include selfies in chat**: embed images in the chat HTML, or keep it text-only.
+- **Include selfies in chat**: embed images in the chat HTML (default), or keep
+  it text-only. Only affects a chat-only export; the bundle links to the album
+  instead of embedding.
 - **Incremental download (BETA)**: opt-in (off by default). Album, chat and group
   downloads fetch only content newer than your last successful download, tracked
   per Nomi/group. A **Reset history** button forgets everything and downloads in
   full again.
 - **Animate header**: when a Nomi's profile is a video, embed the playing video in
   the chat / mind map / shared notes HTML headers instead of a still frame.
-- **Prompt files**: off / sidecar `.txt` / image metadata / both.
+- **Prompt files**: off / sidecar `.txt` (default) / image metadata / both.
 - **Raw data**: include the untouched API responses in JSON exports.
 - **Advanced download mode**: per-type toggles that turn the download button into
   a selector, so you choose precisely which export each click produces.
