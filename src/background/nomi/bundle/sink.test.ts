@@ -65,6 +65,24 @@ describe("BundleSink", () => {
         expect(second).toEqual(["three.bin"]);
     });
 
+    it("drops the entry again when the offscreen add fails", async () => {
+        const { client, zips } = fakeOffscreen();
+        const original = client.call.bind(client);
+        client.call = (async (action: string, args: Record<string, unknown>) => {
+            if (action === "add-file" && args.path === "bad.bin") {
+                throw new Error("port closed");
+            }
+            return original(action, args);
+        }) as OffscreenClient["call"];
+        const sink = new BundleSink(client, 750 * 1024 * 1024);
+
+        await sink.addFile("good.bin", b64(100));
+        await expect(sink.addFile("bad.bin", b64(100))).rejects.toThrow();
+
+        expect(sink.entries().map((e) => e.path)).toEqual(["good.bin"]);
+        expect([...zips.values()][0]).toEqual(["good.bin"]);
+    });
+
     it("keeps concurrent writers from both slipping past the cap", async () => {
         const { client, zips } = fakeOffscreen();
         const sink = new BundleSink(client, 2500);

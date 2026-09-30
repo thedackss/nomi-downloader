@@ -89,11 +89,28 @@ export class BundleSink {
     async addFile(path: string, base64: string): Promise<void> {
         const bytes = Math.ceil(base64.length * 0.75);
         const target = await this.place(path, bytes);
-        await this.offscreen.call("add-file", {
-            id: target.id,
-            path,
-            content: base64,
-        });
+        await this.write(target, path, bytes, base64);
+    }
+
+    /** Add the file to its part; on failure, drop the reservation again. */
+    private async write(
+        target: { id: string; entries: BundleEntry[]; bytes: number },
+        path: string,
+        bytes: number,
+        base64: string,
+    ): Promise<void> {
+        try {
+            await this.offscreen.call("add-file", {
+                id: target.id,
+                path,
+                content: base64,
+            });
+        } catch (error) {
+            const i = target.entries.findIndex((e) => e.path === path);
+            if (i >= 0) target.entries.splice(i, 1);
+            target.bytes -= bytes;
+            throw error;
+        }
     }
 
     /**
@@ -116,11 +133,7 @@ export class BundleSink {
             first.bytes += bytes;
             return first;
         });
-        await this.offscreen.call("add-file", {
-            id: target.id,
-            path,
-            content: base64,
-        });
+        await this.write(target, path, bytes, base64);
     }
 
     /** Generate every non-empty part; returns the downloads in part order. */
