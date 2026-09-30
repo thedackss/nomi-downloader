@@ -26,6 +26,15 @@ export class BundleSink {
         bytes: number;
     }[] = [];
 
+    /**
+     * Writers run concurrently (the album uses several workers), but choosing
+     * or creating a part must not: two writers racing on an empty sink would
+     * each create a "first" part, and possibly with the same id. This chain
+     * serializes the pick-or-create step; the actual file add still overlaps.
+     */
+    private placing: Promise<unknown> = Promise.resolve();
+    private created = 0;
+
     constructor(
         private readonly offscreen: OffscreenClient,
         private readonly maxBytes: number,
@@ -36,37 +45,55 @@ export class BundleSink {
         return this.parts.flatMap((p) => p.entries);
     }
 
+    /** Run `fn` after every earlier placement has settled. */
+    private serialize<T>(fn: () => Promise<T>): Promise<T> {
+        const run = this.placing.then(fn, fn);
+        this.placing = run.catch(() => {});
+        return run;
+    }
+
     private async part(index: number) {
         while (this.parts.length <= index) {
-            const id = `bundle_${this.parts.length}_${Date.now()}`;
+            this.created += 1;
+            const id = `bundle_${this.created}_${Date.now()}`;
             await this.offscreen.call("create-zip", { id });
             this.parts.push({ id, entries: [], bytes: 0 });
         }
         return this.parts[index];
     }
 
+    /**
+     * Pick the part a file of `bytes` goes into, rolling into a new one at
+     * the size cap; the size is reserved here, under the lock, so concurrent
+     * writers cannot both squeeze past the cap.
+     */
+    private place(path: string, bytes: number) {
+        return this.serialize(async () => {
+            let index = Math.max(0, this.parts.length - 1);
+            const current = await this.part(index);
+            // Never leave a part empty, so a single oversized file still
+            // gets packaged.
+            if (
+                current.entries.length > 0 &&
+                current.bytes + bytes > this.maxBytes
+            ) {
+                index++;
+            }
+            const target = await this.part(index);
+            target.entries.push({ path, bytes });
+            target.bytes += bytes;
+            return target;
+        });
+    }
+
     async addFile(path: string, base64: string): Promise<void> {
         const bytes = Math.ceil(base64.length * 0.75);
-
-        let index = Math.max(0, this.parts.length - 1);
-        const current = await this.part(index);
-        // Roll into a new part at the size cap — but never leave a part
-        // empty, so a single oversized file still gets packaged.
-        if (
-            current.entries.length > 0 &&
-            current.bytes + bytes > this.maxBytes
-        ) {
-            index++;
-        }
-
-        const target = await this.part(index);
+        const target = await this.place(path, bytes);
         await this.offscreen.call("add-file", {
             id: target.id,
             path,
             content: base64,
         });
-        target.entries.push({ path, bytes });
-        target.bytes += bytes;
     }
 
     /**
@@ -82,15 +109,18 @@ export class BundleSink {
         const base64 = textToBase64(text);
         if (!firstPart) return this.addFile(path, base64);
 
-        const target = await this.part(0);
+        const bytes = Math.ceil(base64.length * 0.75);
+        const target = await this.serialize(async () => {
+            const first = await this.part(0);
+            first.entries.push({ path, bytes });
+            first.bytes += bytes;
+            return first;
+        });
         await this.offscreen.call("add-file", {
             id: target.id,
             path,
             content: base64,
         });
-        const bytes = Math.ceil(base64.length * 0.75);
-        target.entries.push({ path, bytes });
-        target.bytes += bytes;
     }
 
     /** Generate every non-empty part; returns the downloads in part order. */
@@ -99,6 +129,15 @@ export class BundleSink {
     ): Promise<{ url: string; filename: string }[]> {
         const downloads: { url: string; filename: string }[] = [];
         const filled = this.parts.filter((p) => p.entries.length > 0);
+        Log(
+            `Bundle: ${filled.length} part(s): ` +
+                filled
+                    .map(
+                        (p, i) =>
+                            `#${i + 1} ${p.entries.length} files ~${(p.bytes / 1e6).toFixed(1)} MB`,
+                    )
+                    .join(", "),
+        );
 
         for (let i = 0; i < filled.length; i++) {
             const part = filled[i];
