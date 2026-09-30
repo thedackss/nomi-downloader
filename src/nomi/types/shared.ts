@@ -122,8 +122,12 @@ export interface GroupNomi {
     archived: Date | null;
     status: Status;
     characterId: string;
-    pictureImageId: string;
-    pictureSelfieImageId: null | string;
+    /** The avatar's media item; the only picture reference since 2026-09. */
+    pictureMediaItemUuid?: string | null;
+    pictureMediaItemType?: string | null;
+    /** Legacy, no longer returned by the API. */
+    pictureImageId?: string;
+    pictureSelfieImageId?: null | string;
     settings: NomiSettings;
     artSettings: NomiArtSettings;
     customTraits: CustomTrait[];

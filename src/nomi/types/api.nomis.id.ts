@@ -11,8 +11,12 @@ export interface ApiNomisIdResponse {
     archived: string | null;
     status: string;
     characterId: string;
-    pictureImageId: string;
-    pictureSelfieImageId: string;
+    /** The avatar's media item; the only picture reference since 2026-09. */
+    pictureMediaItemUuid?: string | null;
+    pictureMediaItemType?: string | null;
+    /** Legacy, no longer returned by the API. */
+    pictureImageId?: string;
+    pictureSelfieImageId?: string;
     settings: Settings;
     artSettings: ArtSettings;
     customTraits: CustomTrait[];
