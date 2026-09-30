@@ -1,3 +1,4 @@
+import { SESSION_EXPIRED_MESSAGE, isSessionExpired } from "../nomi/errors";
 import type { DownloadStatus } from "../popup/components/Info/interfaces";
 import { Log, setDebugLogging, setLogContext } from "../utils/log";
 import { buildReportText } from "../utils/report";
@@ -96,6 +97,11 @@ async function runDownload(
         );
     } catch (error) {
         Log(messages.error, error);
+        // A dead nomi.ai session is the user's to fix, not a bug to report.
+        if (isSessionExpired(error)) {
+            setIdleStatus(SESSION_EXPIRED_MESSAGE);
+            return;
+        }
         setIdleStatus(messages.error);
         reportError(messages.error, error);
     } finally {
