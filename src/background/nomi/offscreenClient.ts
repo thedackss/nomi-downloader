@@ -50,12 +50,16 @@ export class OffscreenClient {
         // whole block dead-code-eliminate out of that bundle.
         if (!__IS_FIREFOX__) {
             if (!(await chrome.offscreen.hasDocument())) {
+                // Older Chromes lack some Reason members (WORKERS arrived
+                // after BLOBS); passing an undefined one makes the call throw,
+                // so only declare the reasons this browser knows.
+                const reasons = [
+                    chrome.offscreen.Reason.BLOBS,
+                    chrome.offscreen.Reason.WORKERS,
+                ].filter((r): r is chrome.offscreen.Reason => r !== undefined);
                 await chrome.offscreen.createDocument({
                     url: OFFSCREEN_DOCUMENT_PATH,
-                    reasons: [
-                        chrome.offscreen.Reason.BLOBS,
-                        chrome.offscreen.Reason.WORKERS,
-                    ],
+                    reasons,
                     justification: "To generate ZIP files for download",
                 });
             }
