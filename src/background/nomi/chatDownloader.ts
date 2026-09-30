@@ -16,6 +16,7 @@ import {
     CHAT_CHUNK_MAX_BYTES_TEXT,
     CHAT_CHUNK_MAX_BYTES_WITH_SELFIES,
     CHAT_ZIP_MAX_BYTES,
+    OFFSCREEN_MESSAGE_SAFE_BYTES,
     DOWNLOAD_THROTTLE_MS,
     MESSAGE_BYTES,
     SELFIE_BYTES,
@@ -191,12 +192,20 @@ export class ChatDownloader {
             // Linked selfies (bundle mode) are just paths, so only actual
             // embedding earns the larger cap.
             const embedsSelfies = !!includeSelfies && !selfieSrc;
-            const maxBytes =
+            const requestedBytes =
                 maxFileSizeMB > 0
                     ? maxFileSizeMB * 1024 * 1024
                     : embedsSelfies
                       ? CHAT_CHUNK_MAX_BYTES_WITH_SELFIES
                       : CHAT_CHUNK_MAX_BYTES_TEXT;
+            // On Chrome each part is rendered through the offscreen document
+            // over runtime.sendMessage, which rejects messages over 64 MiB;
+            // a larger user-set cap would crash the export partway through.
+            const rendersOffscreen =
+                typeof chrome !== "undefined" && !!chrome.offscreen;
+            const maxBytes = rendersOffscreen
+                ? Math.min(requestedBytes, OFFSCREEN_MESSAGE_SAFE_BYTES)
+                : requestedBytes;
             const maxCount =
                 messagesPerFile > 0
                     ? messagesPerFile

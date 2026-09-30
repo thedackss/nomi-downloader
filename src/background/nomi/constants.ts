@@ -5,8 +5,17 @@ export const OFFSCREEN_DOCUMENT_PATH = "src/offscreen/index.html";
 
 /** Per-zip memory budget so huge albums/chats split across multiple files. */
 export const ALBUM_CHUNK_MAX_BYTES = 750 * MB;
-export const CHAT_CHUNK_MAX_BYTES_WITH_SELFIES = 75_000_000;
+/**
+ * Chat parts are rendered in the offscreen document, and both the render
+ * payload (with base64 selfies) and the returned HTML travel through
+ * chrome.runtime.sendMessage, which Chrome caps at 64 MiB per message. The
+ * estimates below are raw image bytes; base64 inflates them by a third, so
+ * 40 MB estimated lands around 53 MB on the wire. A user-set file cap is
+ * clamped to this ceiling on Chrome (see chatDownloader).
+ */
+export const CHAT_CHUNK_MAX_BYTES_WITH_SELFIES = 40_000_000;
 export const CHAT_CHUNK_MAX_BYTES_TEXT = 10_000_000;
+export const OFFSCREEN_MESSAGE_SAFE_BYTES = 40_000_000;
 /** Per-zip cap when a chat exports as a zip (HTML + voice audio files). */
 export const CHAT_ZIP_MAX_BYTES = 750 * MB;
 
