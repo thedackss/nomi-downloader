@@ -77,6 +77,27 @@ async function getRetry<T>(url: string, timeoutMs?: number): Promise<T> {
     throw lastError;
 }
 
+const PROMPT_CONCURRENCY = 4;
+
+/** The prompt-bearing part of a selfie / edit / video request detail. */
+interface PromptDetail {
+    artPrompt?: string | null;
+    textPrompt?: string | null;
+    nomis?: { artPrompt?: string | null }[];
+}
+
+/**
+ * An Art prompt lives at the top level, or per Nomi for a group photo.
+ * Shared by the album item and the request detail, which use the same shape.
+ */
+function resolveArtPrompt(source: PromptDetail): string | undefined {
+    const prompt =
+        source.artPrompt ??
+        source.nomis?.find((n) => n.artPrompt)?.artPrompt ??
+        undefined;
+    return prompt?.trim() ? prompt : undefined;
+}
+
 /** Map with at most `limit` calls in flight, preserving order. */
 async function mapLimit<T, R>(
     items: T[],
@@ -388,8 +409,6 @@ export class NomiApiClient {
                 }
             }
 
-            await this.hydratePrompts(selfies, onProgress);
-
             return selfies.sort((a, b) => {
                 const dateA = new Date(a.completed);
                 const dateB = new Date(b.completed);
@@ -407,58 +426,62 @@ export class NomiApiClient {
     /**
      * Fill in generation prompts the album list no longer carries. Since
      * 2026-09 `/medias` returns `artPrompt` / `textPrompt` as empty strings;
-     * the text still lives on each request's own endpoint. Fetch it for the
-     * items that have none (Art selfies, edits, videos), a few at a time, and
-     * write it back into the same fields so every consumer (gallery captions,
-     * sidecars, JSON/Markdown) keeps working unchanged. A failed lookup just
-     * leaves that item without a prompt, as before.
+     * the text still lives on each request's own endpoint. Called by the
+     * album downloader on the items it will actually export (after range
+     * filtering), so a "most recent 20" download does not pay for the whole
+     * album. Requests are deduplicated per endpoint (the images of one selfie
+     * request share it), retried like every other export request, and a
+     * prompt is only written back when the endpoint actually has one. A
+     * failed lookup leaves that item without a prompt, as before.
      */
-    private async hydratePrompts(
+    public async hydratePrompts(
         medias: Media[],
-        onProgress?: GetMediasProps["onProgress"],
-    ) {
-        const pending = medias.filter((m) => this.promptEndpoint(m) !== null);
-        if (pending.length === 0) return;
+        onProgress?: (message: string) => void,
+    ): Promise<void> {
+        const byEndpoint = new Map<string, Media[]>();
+        for (const media of medias) {
+            const endpoint = this.promptEndpoint(media);
+            if (!endpoint) continue;
+            const group = byEndpoint.get(endpoint);
+            if (group) group.push(media);
+            else byEndpoint.set(endpoint, [media]);
+        }
+        if (byEndpoint.size === 0) return;
 
-        Log(`Fetching prompts for ${pending.length} album items`);
-        const CONCURRENCY = 4;
+        Log(`Fetching prompts: ${byEndpoint.size} request(s)`);
         let done = 0;
-
-        const worker = async () => {
-            while (pending.length > 0) {
-                const media = pending.shift();
-                if (!media) return;
-                const endpoint = this.promptEndpoint(media);
-                if (!endpoint) continue;
+        await mapLimit(
+            [...byEndpoint.entries()],
+            PROMPT_CONCURRENCY,
+            async ([endpoint, group]) => {
                 try {
-                    const { data } = await api.get<{
-                        artPrompt?: string | null;
-                        textPrompt?: string | null;
-                    }>(endpoint);
-                    if (media.mediaType === "Selfie") {
-                        media.artPrompt = data.artPrompt ?? media.artPrompt;
-                    } else {
-                        media.textPrompt = data.textPrompt ?? media.textPrompt;
+                    const data = await getRetry<PromptDetail>(endpoint);
+                    const prompt = resolveArtPrompt(data) ?? data.textPrompt;
+                    if (prompt?.trim()) {
+                        for (const media of group) {
+                            if (media.mediaType === "Selfie") {
+                                media.artPrompt = prompt;
+                            } else {
+                                media.textPrompt = prompt;
+                            }
+                        }
                     }
                 } catch (error) {
                     Log(`Failed to fetch prompt via ${endpoint}`, error);
                 }
                 done += 1;
                 if (onProgress && done % 25 === 0) {
-                    onProgress(`Fetching prompts — ${done} done…`);
+                    onProgress(`Fetching prompts: ${done}/${byEndpoint.size}`);
                 }
-            }
-        };
-
-        await Promise.all(
-            Array.from({ length: CONCURRENCY }, () => worker()),
+            },
         );
     }
 
     /** The request-detail endpoint holding an item's prompt, or null if none applies. */
     private promptEndpoint(media: Media): string | null {
         if (media.mediaType === "Selfie") {
-            if (media.type !== "Art" || media.artPrompt) return null;
+            if (media.type !== "Art") return null;
+            if (resolveArtPrompt(media)) return null;
             return media.selfieRequestId
                 ? `/selfie-requests/${media.selfieRequestId}`
                 : null;

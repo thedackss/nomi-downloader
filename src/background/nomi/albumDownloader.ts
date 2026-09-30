@@ -131,6 +131,13 @@ export class AlbumDownloader {
                 });
             }
 
+            // Prompts are only needed when they get written out (sidecar or
+            // embed) or captioned in a bundle gallery, and only for the
+            // items in range.
+            if (prompts !== "off" || onMedia) {
+                await this.nomiApi.hydratePrompts(medias, onProgress);
+            }
+
             // The byte budget is always enforced; an optional user-set
             // "images per zip" (0 = auto) caps the count on top of it.
             const maxCount =
@@ -250,7 +257,9 @@ export class AlbumDownloader {
                             type,
                             prompt: this.extractPrompt(media, type),
                             date: stringDate,
-                            mediaId: String(media.id),
+                            // Selfies carry the image id the chat feed also
+                            // uses; edits and videos only have a uuid.
+                            mediaId: String(media.id ?? media.uuid ?? ""),
                         };
                         onMedia?.(meta);
                         galleryItems.push(meta);
