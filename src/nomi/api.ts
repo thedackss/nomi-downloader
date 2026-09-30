@@ -388,6 +388,8 @@ export class NomiApiClient {
                 }
             }
 
+            await this.hydratePrompts(selfies, onProgress);
+
             return selfies.sort((a, b) => {
                 const dateA = new Date(a.completed);
                 const dateB = new Date(b.completed);
@@ -400,6 +402,76 @@ export class NomiApiClient {
                 message: `Nomi with ID ${nomiId} does not exist`,
             });
         }
+    }
+
+    /**
+     * Fill in generation prompts the album list no longer carries. Since
+     * 2026-09 `/medias` returns `artPrompt` / `textPrompt` as empty strings;
+     * the text still lives on each request's own endpoint. Fetch it for the
+     * items that have none (Art selfies, edits, videos), a few at a time, and
+     * write it back into the same fields so every consumer (gallery captions,
+     * sidecars, JSON/Markdown) keeps working unchanged. A failed lookup just
+     * leaves that item without a prompt, as before.
+     */
+    private async hydratePrompts(
+        medias: Media[],
+        onProgress?: GetMediasProps["onProgress"],
+    ) {
+        const pending = medias.filter((m) => this.promptEndpoint(m) !== null);
+        if (pending.length === 0) return;
+
+        Log(`Fetching prompts for ${pending.length} album items`);
+        const CONCURRENCY = 4;
+        let done = 0;
+
+        const worker = async () => {
+            while (pending.length > 0) {
+                const media = pending.shift();
+                if (!media) return;
+                const endpoint = this.promptEndpoint(media);
+                if (!endpoint) continue;
+                try {
+                    const { data } = await api.get<{
+                        artPrompt?: string | null;
+                        textPrompt?: string | null;
+                    }>(endpoint);
+                    if (media.mediaType === "Selfie") {
+                        media.artPrompt = data.artPrompt ?? media.artPrompt;
+                    } else {
+                        media.textPrompt = data.textPrompt ?? media.textPrompt;
+                    }
+                } catch (error) {
+                    Log(`Failed to fetch prompt via ${endpoint}`, error);
+                }
+                done += 1;
+                if (onProgress && done % 25 === 0) {
+                    onProgress(`Fetching prompts — ${done} done…`);
+                }
+            }
+        };
+
+        await Promise.all(
+            Array.from({ length: CONCURRENCY }, () => worker()),
+        );
+    }
+
+    /** The request-detail endpoint holding an item's prompt, or null if none applies. */
+    private promptEndpoint(media: Media): string | null {
+        if (media.mediaType === "Selfie") {
+            if (media.type !== "Art" || media.artPrompt) return null;
+            return media.selfieRequestId
+                ? `/selfie-requests/${media.selfieRequestId}`
+                : null;
+        }
+        if (media.mediaType === "ImageEditRequest") {
+            if (media.textPrompt || !media.uuid) return null;
+            return `/image-edit-requests/${media.uuid}`;
+        }
+        if (media.mediaType === "VideoRequest") {
+            if (media.textPrompt || !media.uuid) return null;
+            return `/video-requests/${media.uuid}`;
+        }
+        return null;
     }
 
     /**
