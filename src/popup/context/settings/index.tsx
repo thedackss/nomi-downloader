@@ -27,7 +27,9 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             downloadQuantity: 2,
             imagesPerZip: 0,
             maxZipSizeMB: 750,
-            prompts: "off",
+            // On by default: the prompt behind an Art / edited image is part of
+            // the memory worth backing up. A sidecar works for every format.
+            prompts: "sidecar",
             recentLimit: 0,
             startIndex: 0,
         },
@@ -37,9 +39,11 @@ const SettingsProvider: FC<ReactElement> = ({ children }) => {
             rangeEnd: 0,
             messagesPerFile: 0,
             maxFileSizeMB: 0,
-            // Off by default: the simple download already grabs the album, so
-            // embedding selfies in the chat too would just duplicate them.
-            includeSelfies: false,
+            // On by default so a chat-only export is self-contained. The
+            // bundle does not duplicate anything: it links each selfie to the
+            // album copy already in the zip and only embeds the ones the
+            // album left out.
+            includeSelfies: true,
             includeVoiceAudio: false,
             voiceAudioRecentLimit: 0,
         },
