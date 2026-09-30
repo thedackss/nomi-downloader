@@ -444,7 +444,7 @@ export class Nomi {
                     // recognizable once extracted (Sarah_chat.html …).
                     emit: async (filename, html) => {
                         const named = `${nameSafe}_${filename}`;
-                        await sink.addText(named, html);
+                        await sink.addText(named, html, true);
                         chatParts.push(named);
                     },
                     audioSink: {
@@ -470,7 +470,7 @@ export class Nomi {
             const rendered = await this.renderSharedNotesHtml(nomiId);
             if (rendered) {
                 sharedNotesFile = `${nameSafe}_shared-notes.html`;
-                await sink.addText(sharedNotesFile, rendered.html);
+                await sink.addText(sharedNotesFile, rendered.html, true);
             }
         } catch (err) {
             Log("Bundle: shared notes section failed", err);
@@ -497,7 +497,7 @@ export class Nomi {
             );
             if (rendered) {
                 mindMapFile = `${nameSafe}_mind-map.html`;
-                await sink.addText(mindMapFile, rendered.html);
+                await sink.addText(mindMapFile, rendered.html, true);
             }
         } catch (err) {
             Log("Bundle: mind map section failed", err);
@@ -521,13 +521,16 @@ export class Nomi {
             await sink.addText(
                 dataFile,
                 JSON.stringify(buildNomiJson(input, false), null, 2),
+                true,
             );
         } catch (err) {
             Log("Bundle: JSON section failed", err);
         }
 
-        // The hub goes last (it needs the final file list) but is pinned
-        // into the first part, next to the docs.
+        // The hub goes last (it needs the final file list). Like the docs
+        // above, it is pinned into the first part: the album streams first
+        // and may span several parts, but the readable files (which are small
+        // now that selfies are linked) must all sit together in part 1.
         const paths = sink.entries().map((e) => e.path);
         const voiceFiles = paths.filter((p) => p.startsWith("voice/"));
         const calls = (chatData?.voiceCalls ?? []).map((c) => ({
