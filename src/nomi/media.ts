@@ -43,7 +43,11 @@ export function getNomiMedia(nomi: NomiMediaSource): NomiMedia {
     const base = `${API}/nomis/${nomi.id}`;
 
     return {
-        default: `${base}/images/${nomi.pictureImageId}.webp`,
+        // No id at all (a Nomi without any picture yet): an empty src rather
+        // than a guaranteed 404 for ".../images/undefined.webp".
+        default: nomi.pictureImageId
+            ? `${base}/images/${nomi.pictureImageId}.webp`
+            : "",
         selfie: nomi.pictureSelfieImageId
             ? `${base}/selfies/${nomi.pictureSelfieImageId}.webp`
             : undefined,

@@ -188,10 +188,13 @@ export class ChatDownloader {
             // A file closes when either limit is hit. The byte cap defaults to
             // the built-in safe value (selfie-heavy files allow more); an
             // optional "messages per file" caps the count on top of it.
+            // Linked selfies (bundle mode) are just paths, so only actual
+            // embedding earns the larger cap.
+            const embedsSelfies = !!includeSelfies && !selfieSrc;
             const maxBytes =
                 maxFileSizeMB > 0
                     ? maxFileSizeMB * 1024 * 1024
-                    : includeSelfies
+                    : embedsSelfies
                       ? CHAT_CHUNK_MAX_BYTES_WITH_SELFIES
                       : CHAT_CHUNK_MAX_BYTES_TEXT;
             const maxCount =
@@ -227,7 +230,7 @@ export class ChatDownloader {
 
                     if (percentage !== lastPercent) {
                         update(
-                            includeSelfies
+                            includeSelfies || selfieSrc
                                 ? `Collecting messages & selfies… ${percentage}%`
                                 : `Collecting messages… ${percentage}%`,
                         );
